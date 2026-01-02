@@ -18,6 +18,7 @@ module.exports = {
         primary: {
           DEFAULT: "#3B82F6",
           foreground: "#FFFFFF",
+          hover: "#2563EB",
         },
 
         secondary: {

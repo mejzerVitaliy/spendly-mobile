@@ -1,9 +1,19 @@
+import { BalanceView } from '@/features/balance-view';
 import { CreateTransaction } from '@/features/create-transaction/manually';
-import { Button, Card } from '@/shared/ui';
+import { EditTransaction, EditTransactionRef } from '@/features/edit-transaction';
+import { TransactionsList } from '@/features/transactions-list';
+import { Transaction } from '@/shared/types';
+import { useRef } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export function HomeScreen() {
+  const editTransactionRef = useRef<EditTransactionRef>(null);
+
+  const handleTransactionPress = (transaction: Transaction) => {
+    editTransactionRef.current?.open(transaction);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView className="flex-1">
@@ -11,38 +21,15 @@ export function HomeScreen() {
           <Text className="text-3xl font-bold text-foreground mb-2">Spendly</Text>
           <Text className="text-muted-foreground mb-6">Finance management</Text>
 
-          <Card className="mb-4">
-            <Text className="text-lg font-semibold text-foreground mb-2">Balance</Text>
-            <Text className="text-3xl font-bold text-primary">0 ₽</Text>
-          </Card>
-
-          <View className="flex-row gap-3 mb-4">
-            <Card className="flex-1">
-              <Text className="text-sm text-muted-foreground">Income</Text>
-              <Text className="text-xl font-bold text-success">0 ₽</Text>
-            </Card>
-            <Card className="flex-1">
-              <Text className="text-sm text-muted-foreground">Expenses</Text>
-              <Text className="text-xl font-bold text-destructive">0 ₽</Text>
-            </Card>
-          </View>
-
-          <Button 
-            title="Add transaction" 
-            onPress={() => console.log('Add transaction')}
-          />
+          <BalanceView />
           
-          <View className="mt-3">
-            <Button 
-              title="View history" 
-              variant="secondary"
-              onPress={() => console.log('History')}
-            />
-          </View> 
+          <TransactionsList onTransactionPress={handleTransactionPress} />
+           
         </View>
       </ScrollView>
 
       <CreateTransaction />
+      <EditTransaction ref={editTransactionRef} />
     </SafeAreaView>
   );
 }

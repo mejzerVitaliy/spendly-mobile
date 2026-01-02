@@ -63,7 +63,7 @@ function RootNavigator() {
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#111827" }}>
       <QueryClientProvider client={queryClient}>
         <RootNavigator />
       </QueryClientProvider>

@@ -1,9 +1,13 @@
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const insets = useSafeAreaInsets();
+  
   return (
-    <View className="flex-row bg-card border-t border-border">
+    <View className="bg-background" style={{ paddingBottom: insets.bottom }}>
+      <View className="flex-row bg-card border-t border-border">
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =
@@ -40,8 +44,8 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               return '🏠';
             case 'transactions':
               return '💰';
-            case 'profile':
-              return '👤';
+            case 'settings':
+              return '⚙️';
             default:
               return '📱';
           }
@@ -68,6 +72,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           </Pressable>
         );
       })}
+      </View>
     </View>
   );
 }

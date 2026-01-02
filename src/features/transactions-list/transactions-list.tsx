@@ -1,48 +1,52 @@
 import { useTransactions } from '@/shared/hooks';
-import { ActivityIndicator, FlatList, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Transaction } from '@/shared/types';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
-export default function TransactionsScreen() {
+interface TransactionsListProps {
+  onTransactionPress?: (transaction: Transaction) => void;
+}
+
+export function TransactionsList({ onTransactionPress }: TransactionsListProps) {
   const { getAllQuery } = useTransactions();
 
   if (getAllQuery.isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-background items-center justify-center">
+      <View className="py-8 items-center justify-center">
         <ActivityIndicator size="large" color="#3b82f6" />
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (getAllQuery.isError) {
     return (
-      <SafeAreaView className="flex-1 bg-background items-center justify-center px-5">
+      <View className="py-8 items-center justify-center">
         <Text className="text-destructive text-center">
-          Ошибка загрузки транзакций
+          Fetching transactions failed
         </Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
   const transactions = getAllQuery.data?.data || [];
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <View className="flex-1 px-5">
-        <Text className="text-3xl font-bold text-foreground mb-4 mt-2">Transactions</Text>
+    <View className="mt-4">
+      <Text className="text-2xl font-bold text-foreground mb-4">Transactions</Text>
 
-        {transactions.length === 0 ? (
-          <View className="flex-1 items-center justify-center">
-            <Text className="text-muted-foreground text-center">
-              No transactions.{'\n'}Create your first transaction!
-            </Text>
-          </View>
-        ) : (
-          <FlatList
-            data={transactions}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <View className="bg-card rounded-lg p-4 mb-3 shadow-sm border border-border">
+      {transactions.length === 0 ? (
+        <View className="py-8 items-center justify-center">
+          <Text className="text-muted-foreground text-center">
+            No transactions.{'\n'}Create your first transaction!
+          </Text>
+        </View>
+      ) : (
+        <View>
+          {transactions.map((item) => (
+              <Pressable
+                key={item.id}
+                onPress={() => onTransactionPress?.(item)}
+                className="bg-card rounded-lg p-4 mb-3 shadow-sm border border-border active:opacity-80"
+              >
                 <View className="flex-row justify-between items-start mb-2">
                   <View className="flex-1">
                     <Text className="text-lg font-semibold text-foreground">
@@ -62,7 +66,7 @@ export default function TransactionsScreen() {
                         item.type === 'INCOME' ? 'text-success' : 'text-destructive'
                       }`}
                     >
-                      {item.type === 'INCOME' ? 'Доход' : 'Расход'}
+                      {item.type === 'INCOME' ? 'Income' : 'Expense'}
                     </Text>
                   </View>
                 </View>
@@ -80,11 +84,10 @@ export default function TransactionsScreen() {
                     day: 'numeric',
                   })}
                 </Text>
-              </View>
-            )}
-          />
-        )}
-      </View>
-    </SafeAreaView>
+              </Pressable>
+          ))}
+        </View>
+      )}
+    </View>
   );
 }

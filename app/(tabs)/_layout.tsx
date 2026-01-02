@@ -14,15 +14,9 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="transactions"
+        name="settings"
         options={{
-          title: 'Transactions',
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
+          title: 'Settings',
         }}
       />
     </Tabs>
