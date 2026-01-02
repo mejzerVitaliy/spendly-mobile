@@ -1,10 +1,10 @@
-import { View, Text, Alert } from 'react-native';
-import { useForm, Controller } from 'react-hook-form';
+import { useAuth } from '@/shared/hooks/auth';
+import { Button, Input } from '@/shared/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Input } from '@/components/ui';
-import { useAuth } from '@/hooks/auth';
-import { loginSchema, LoginFormData } from './schemas';
 import { router } from 'expo-router';
+import { Controller, useForm } from 'react-hook-form';
+import { Alert, Text, View } from 'react-native';
+import { LoginFormData, loginSchema } from './schemas';
 
 export function LoginForm() {
   const { loginMutation } = useAuth();
@@ -26,15 +26,15 @@ export function LoginForm() {
       await loginMutation.mutateAsync(data);
       router.replace('/');
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 'Ошибка входа';
-      Alert.alert('Ошибка', errorMessage);
+      const errorMessage = error?.response?.data?.message || 'Error';
+      Alert.alert('Error', errorMessage);
     }
   };
 
   return (
     <View className="w-full space-y-4">
       <View className="mb-4">
-        <Text className="text-sm font-medium text-gray-700 mb-2">Email</Text>
+        <Text className="text-sm font-medium text-foreground mb-2">Email</Text>
         <Controller
           control={control}
           name="email"
@@ -51,7 +51,7 @@ export function LoginForm() {
       </View>
 
       <View className="mb-6">
-        <Text className="text-sm font-medium text-gray-700 mb-2">Пароль</Text>
+        <Text className="text-sm font-medium text-foreground mb-2">Password</Text>
         <Controller
           control={control}
           name="password"
@@ -68,7 +68,7 @@ export function LoginForm() {
       </View>
 
       <Button
-        title={loginMutation.isPending ? 'Вход...' : 'Войти'}
+        title={loginMutation.isPending ? 'Logging in...' : 'Log in'}
         onPress={handleSubmit(onSubmit)}
         disabled={loginMutation.isPending}
       />

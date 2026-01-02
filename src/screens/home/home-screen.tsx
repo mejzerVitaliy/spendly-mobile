@@ -1,44 +1,48 @@
-import { SafeAreaView, ScrollView, Text, View } from 'react-native';
-import { Button, Card } from '@/components/ui';
+import { CreateTransaction } from '@/features/create-transaction/manually';
+import { Button, Card } from '@/shared/ui';
+import { ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export function HomeScreen() {
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-background">
       <ScrollView className="flex-1">
-        <View className="p-5">
-          <Text className="text-3xl font-bold mb-2">Spendly</Text>
-          <Text className="text-gray-600 mb-6">Управление финансами</Text>
+        <View className="px-5">
+          <Text className="text-3xl font-bold text-foreground mb-2">Spendly</Text>
+          <Text className="text-muted-foreground mb-6">Finance management</Text>
 
           <Card className="mb-4">
-            <Text className="text-lg font-semibold mb-2">Баланс</Text>
-            <Text className="text-3xl font-bold text-blue-600">0 ₽</Text>
+            <Text className="text-lg font-semibold text-foreground mb-2">Balance</Text>
+            <Text className="text-3xl font-bold text-primary">0 ₽</Text>
           </Card>
 
           <View className="flex-row gap-3 mb-4">
             <Card className="flex-1">
-              <Text className="text-sm text-gray-600">Доходы</Text>
-              <Text className="text-xl font-bold text-green-600">0 ₽</Text>
+              <Text className="text-sm text-muted-foreground">Income</Text>
+              <Text className="text-xl font-bold text-success">0 ₽</Text>
             </Card>
             <Card className="flex-1">
-              <Text className="text-sm text-gray-600">Расходы</Text>
-              <Text className="text-xl font-bold text-red-600">0 ₽</Text>
+              <Text className="text-sm text-muted-foreground">Expenses</Text>
+              <Text className="text-xl font-bold text-destructive">0 ₽</Text>
             </Card>
           </View>
 
           <Button 
-            title="Добавить транзакцию" 
-            onPress={() => console.log('Добавить транзакцию')}
+            title="Add transaction" 
+            onPress={() => console.log('Add transaction')}
           />
           
           <View className="mt-3">
             <Button 
-              title="Просмотреть историю" 
+              title="View history" 
               variant="secondary"
-              onPress={() => console.log('История')}
+              onPress={() => console.log('History')}
             />
-          </View>
+          </View> 
         </View>
       </ScrollView>
+
+      <CreateTransaction />
     </SafeAreaView>
   );
 }

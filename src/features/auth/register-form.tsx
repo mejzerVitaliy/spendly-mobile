@@ -1,10 +1,10 @@
-import { View, Text, Alert, ScrollView } from 'react-native';
-import { useForm, Controller } from 'react-hook-form';
+import { useAuth } from '@/shared/hooks/auth';
+import { Button, Input } from '@/shared/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Input } from '@/components/ui';
-import { useAuth } from '@/hooks/auth';
-import { registerSchema, RegisterFormData } from './schemas';
 import { router } from 'expo-router';
+import { Controller, useForm } from 'react-hook-form';
+import { Alert, ScrollView, Text, View } from 'react-native';
+import { RegisterFormData, registerSchema } from './schemas';
 
 export function RegisterForm() {
   const { registerMutation } = useAuth();
@@ -31,8 +31,8 @@ export function RegisterForm() {
       router.replace('/');
     } catch (error: any) {
       console.log(error);
-      const errorMessage = error?.response?.data?.message || 'Ошибка регистрации';
-      Alert.alert('Ошибка', errorMessage);
+      const errorMessage = error?.response?.data?.message || 'Error';
+      Alert.alert('Error', errorMessage);
     }
   };
 
@@ -40,13 +40,13 @@ export function RegisterForm() {
     <ScrollView className="w-full">
       <View className="space-y-4">
         <View className="mb-4">
-          <Text className="text-sm font-medium text-gray-700 mb-2">Имя</Text>
+          <Text className="text-sm font-medium text-foreground mb-2">First Name</Text>
           <Controller
             control={control}
             name="firstName"
             render={({ field: { onChange, value } }) => (
               <Input
-                placeholder="Иван"
+                placeholder="Type your name"
                 type="text"
                 value={value}
                 onChangeText={onChange}
@@ -57,13 +57,13 @@ export function RegisterForm() {
         </View>
 
         <View className="mb-4">
-          <Text className="text-sm font-medium text-gray-700 mb-2">Фамилия</Text>
+          <Text className="text-sm font-medium text-foreground mb-2">Last Name</Text>
           <Controller
             control={control}
             name="lastName"
             render={({ field: { onChange, value } }) => (
               <Input
-                placeholder="Иванов"
+                placeholder="Type your last name"
                 type="text"
                 value={value}
                 onChangeText={onChange}
@@ -74,7 +74,7 @@ export function RegisterForm() {
         </View>
 
         <View className="mb-4">
-          <Text className="text-sm font-medium text-gray-700 mb-2">Email</Text>
+          <Text className="text-sm font-medium text-foreground mb-2">Email</Text>
           <Controller
             control={control}
             name="email"
@@ -91,7 +91,7 @@ export function RegisterForm() {
         </View>
 
         <View className="mb-4">
-          <Text className="text-sm font-medium text-gray-700 mb-2">Пароль</Text>
+          <Text className="text-sm font-medium text-foreground mb-2">Password</Text>
           <Controller
             control={control}
             name="password"
@@ -108,8 +108,8 @@ export function RegisterForm() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-sm font-medium text-gray-700 mb-2">
-            Подтвердите пароль
+          <Text className="text-sm font-medium text-foreground mb-2">
+            Confirm Password
           </Text>
           <Controller
             control={control}
@@ -127,7 +127,7 @@ export function RegisterForm() {
         </View>
 
         <Button
-          title={registerMutation.isPending ? 'Регистрация...' : 'Зарегистрироваться'}
+          title={registerMutation.isPending ? 'Registering...' : 'Register'}
           onPress={handleSubmit(onSubmit)}
           disabled={registerMutation.isPending}
         />

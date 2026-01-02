@@ -4,15 +4,10 @@
     "strict": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@/components/*": ["./src/components/*"],
       "@/screens/*": ["./src/screens/*"],
       "@/features/*": ["./src/features/*"],
-      "@/hooks/*": ["./src/hooks/*"],
-      "@/services/*": ["./src/services/*"],
-      "@/utils/*": ["./src/utils/*"],
-      "@/constants/*": ["./src/constants/*"],
-      "@/types/*": ["./src/types/*"],
-      "@/theme/*": ["./src/theme/*"]
+      "@/widgets/*": ["./src/widgets/*"],
+      "@/shared/*": ["./src/shared/*"],
     }
   },
   "include": [

@@ -1,3 +1,113 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    /* Background colors */
+    --background: #ffffff; /* white */
+    --foreground: #0f172a; /* slate-900 */
+    
+    /* Card colors */
+    --card: #ffffff; /* white */
+    --card-foreground: #0f172a; /* slate-900 */
+    
+    /* Primary brand colors */
+    --primary: #3b82f6; /* blue-500 */
+    --primary-foreground: #ffffff; /* white */
+    
+    /* Secondary colors */
+    --secondary: #f1f5f9; /* slate-100 */
+    --secondary-foreground: #0f172a; /* slate-900 */
+    
+    /* Accent colors */
+    --accent: #f0fdf4; /* green-50 */
+    --accent-foreground: #166534; /* green-800 */
+    
+    /* Destructive/Error colors */
+    --destructive: #ef4444; /* red-500 */
+    --destructive-foreground: #ffffff; /* white */
+    
+    /* Muted colors (для неактивных элементов) */
+    --muted: #f1f5f9; /* slate-100 */
+    --muted-foreground: #64748b; /* slate-500 */
+    
+    /* Border colors */
+    --border: #e2e8f0; /* slate-200 */
+    --input: #e2e8f0; /* slate-200 */
+    
+    /* Ring color (для focus состояний) */
+    --ring: #3b82f6; /* blue-500 */
+    
+    /* Success colors */
+    --success: #22c55e; /* green-500 */
+    --success-foreground: #ffffff; /* white */
+    
+    /* Warning colors */
+    --warning: #eab308; /* yellow-500 */
+    --warning-foreground: #ffffff; /* white */
+    
+    /* Info colors */
+    --info: #0ea5e9; /* sky-500 */
+    --info-foreground: #ffffff; /* white */
+  }
+
+  .dark {
+    /* Background colors */
+    --background: #0f172a; /* slate-900 */
+    --foreground: #f8fafc; /* slate-50 */
+    
+    /* Card colors */
+    --card: #1e293b; /* slate-800 */
+    --card-foreground: #f8fafc; /* slate-50 */
+    
+    /* Primary brand colors */
+    --primary: #3b82f6; /* blue-500 */
+    --primary-foreground: #ffffff; /* white */
+    
+    /* Secondary colors */
+    --secondary: #334155; /* slate-700 */
+    --secondary-foreground: #f8fafc; /* slate-50 */
+    
+    /* Accent colors */
+    --accent: #14532d; /* green-900 */
+    --accent-foreground: #bbf7d0; /* green-200 */
+    
+    /* Destructive/Error colors */
+    --destructive: #ef4444; /* red-500 */
+    --destructive-foreground: #ffffff; /* white */
+    
+    /* Muted colors */
+    --muted: #334155; /* slate-700 */
+    --muted-foreground: #94a3b8; /* slate-400 */
+    
+    /* Border colors */
+    --border: #334155; /* slate-700 */
+    --input: #334155; /* slate-700 */
+    
+    /* Ring color */
+    --ring: #3b82f6; /* blue-500 */
+    
+    /* Success colors */
+    --success: #22c55e; /* green-500 */
+    --success-foreground: #ffffff; /* white */
+    
+    /* Warning colors */
+    --warning: #eab308; /* yellow-500 */
+    --warning-foreground: #ffffff; /* white */
+    
+    /* Info colors */
+    --info: #0ea5e9; /* sky-500 */
+    --info-foreground: #ffffff; /* white */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+  }
+}
