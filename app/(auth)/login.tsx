@@ -23,7 +23,7 @@ export default function LoginScreen() {
           <LoginForm />
 
           <View className="mt-6 flex-row justify-center items-center">
-            <Text className="text-muted-foreground">Don't have an account? </Text>
+            <Text className="text-muted-foreground">Don&apos;t have an account? </Text>
             <TouchableOpacity onPress={() => router.push('/register')}>
               <Text className="text-primary font-semibold">
                 Register

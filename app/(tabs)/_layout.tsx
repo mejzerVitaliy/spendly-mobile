@@ -14,6 +14,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="analytics"
+        options={{
+          title: 'Analytics',
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',

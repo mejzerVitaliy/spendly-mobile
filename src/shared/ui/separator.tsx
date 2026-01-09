@@ -15,7 +15,7 @@ export function Separator({
 
   return (
     <View 
-      className={`bg-border ${orientationClasses} ${className}`}
+      className={`bg-border my-3 ${orientationClasses} ${className}`}
       {...props}
     />
   );

@@ -1,1 +1,1 @@
-export { useReportsSummary } from './use-reports-summary';
+export { useReports } from './use-reports';

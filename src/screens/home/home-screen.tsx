@@ -11,7 +11,7 @@ export function HomeScreen() {
   const editTransactionRef = useRef<EditTransactionRef>(null);
 
   const handleTransactionPress = (transaction: Transaction) => {
-    editTransactionRef.current?.open(transaction);
+    editTransactionRef.current?.open(transaction.id);
   };
 
   return (

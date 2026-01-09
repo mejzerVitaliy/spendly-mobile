@@ -1,11 +1,10 @@
-import { Category, Currency, TransactionType } from '@/shared/constants';
+import { Category, Currency, CURRENCY_OPTIONS, TransactionType } from '@/shared/constants';
 import { useTransactions } from '@/shared/hooks';
-import { Transaction } from '@/shared/types';
 import { FormDatePicker, FormPicker, FormSwitch, Input } from '@/shared/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { EditTransactionFormData, editTransactionSchema } from '../schemas';
 
 const CATEGORY_OPTIONS = [
@@ -21,43 +20,56 @@ const CATEGORY_OPTIONS = [
   { label: 'Other', value: Category.OTHER },
 ];
 
-const CURRENCY_OPTIONS = [
-  { label: 'USD ($)', value: Currency.USD },
-  { label: 'EUR (€)', value: Currency.EUR },
-  { label: 'UAH (₴)', value: Currency.UAH },
-];
-
 const TRANSACTION_TYPE_OPTIONS = [
   { label: 'Income', value: TransactionType.INCOME },
   { label: 'Expense', value: TransactionType.EXPENSE },
 ];
 
 interface EditTransactionFormProps {
-  transaction: Transaction;
+  transactionId: string;
   onSuccess?: () => void;
 }
 
-const EditTransactionForm = ({ transaction, onSuccess }: EditTransactionFormProps) => {
-  const { updateMutation, createMutation, removeMutation } = useTransactions();
+const EditTransactionForm = ({ transactionId, onSuccess }: EditTransactionFormProps) => {
+  const { updateMutation, createMutation, removeMutation, getByIdQuery } = useTransactions();
   const [menuVisible, setMenuVisible] = useState(false);
+
+  const { data: transactionData, isLoading, isError } = getByIdQuery(transactionId);
+  const transaction = transactionData?.data;
 
   const {
     control,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<EditTransactionFormData>({
     resolver: zodResolver(editTransactionSchema),
     defaultValues: {
-      amount: transaction.amount,
-      date: transaction.date,
-      currency: transaction.currency,
-      type: transaction.type,
-      category: transaction.category,
-      description: transaction.description || '',
+      amount: 0,
+      date: new Date().toISOString(),
+      currency: Currency.USD,
+      type: TransactionType.EXPENSE,
+      category: Category.OTHER,
+      description: '',
     },
   });
 
+  useEffect(() => {
+    if (transaction) {
+      reset({
+        amount: transaction.amount,
+        date: transaction.date,
+        currency: transaction.currency,
+        type: transaction.type,
+        category: transaction.category,
+        description: transaction.description || '',
+      });
+    }
+  }, [transaction, reset]);
+
   const onSubmit = async (data: EditTransactionFormData) => {
+    if (!transaction) return;
+    
     try {
       await updateMutation.mutateAsync({
         id: transaction.id,
@@ -72,6 +84,8 @@ const EditTransactionForm = ({ transaction, onSuccess }: EditTransactionFormProp
   };
 
   const handleDuplicate = async () => {
+    if (!transaction) return;
+    
     setMenuVisible(false);
     try {
       await createMutation.mutateAsync({
@@ -91,6 +105,8 @@ const EditTransactionForm = ({ transaction, onSuccess }: EditTransactionFormProp
   };
 
   const handleDelete = () => {
+    if (!transaction) return;
+    
     setMenuVisible(false);
     Alert.alert(
       'Delete Transaction',
@@ -117,6 +133,24 @@ const EditTransactionForm = ({ transaction, onSuccess }: EditTransactionFormProp
       ]
     );
   };
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-card items-center justify-center py-20">
+        <ActivityIndicator size="large" color="#3b82f6" />
+      </View>
+    );
+  }
+
+  if (isError || !transaction) {
+    return (
+      <View className="flex-1 bg-card items-center justify-center py-20 px-6">
+        <Text className="text-destructive text-center text-lg">
+          Failed to load transaction
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView className="flex-1 bg-card" showsVerticalScrollIndicator={false}>

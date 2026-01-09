@@ -1,38 +1,37 @@
-import { Transaction } from '@/shared/types';
 import { BottomSheet, BottomSheetRef } from '@/shared/ui';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { EditTransactionForm } from './ui/edit-transaction-form';
 
 export interface EditTransactionRef {
-  open: (transaction: Transaction) => void;
+  open: (transactionId: string) => void;
   close: () => void;
 }
 
 const EditTransaction = forwardRef<EditTransactionRef>((_, ref) => {
   const bottomSheetRef = useRef<BottomSheetRef>(null);
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
   useImperativeHandle(ref, () => ({
-    open: (transaction: Transaction) => {
-      setSelectedTransaction(transaction);
+    open: (transactionId: string) => {
+      setSelectedTransactionId(transactionId);
       bottomSheetRef.current?.open();
     },
     close: () => {
       bottomSheetRef.current?.close();
-      setSelectedTransaction(null);
+      setSelectedTransactionId(null);
     },
   }));
 
   const handleSuccess = () => {
     bottomSheetRef.current?.close();
-    setSelectedTransaction(null);
+    setSelectedTransactionId(null);
   };
 
   return (
     <BottomSheet ref={bottomSheetRef}>
-      {selectedTransaction && (
+      {selectedTransactionId && (
         <EditTransactionForm
-          transaction={selectedTransaction}
+          transactionId={selectedTransactionId}
           onSuccess={handleSuccess}
         />
       )}
