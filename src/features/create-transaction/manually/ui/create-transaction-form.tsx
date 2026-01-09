@@ -1,4 +1,4 @@
-import { Category, Currency, TransactionType } from '@/shared/constants';
+import { Category, Currency, CURRENCY_OPTIONS, TransactionType } from '@/shared/constants';
 import { useTransactions } from '@/shared/hooks';
 import { FormDatePicker, FormInput, FormPicker, FormSwitch } from '@/shared/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,12 +17,6 @@ const CATEGORY_OPTIONS = [
   { label: 'Health', value: Category.HEALTH },
   { label: 'Hobby', value: Category.HOBBY },
   { label: 'Other', value: Category.OTHER },
-];
-
-const CURRENCY_OPTIONS = [
-  { label: 'USD ($)', value: Currency.USD },
-  { label: 'EUR (€)', value: Currency.EUR },
-  { label: 'UAH (₴)', value: Currency.UAH },
 ];
 
 const TRANSACTION_TYPE_OPTIONS = [

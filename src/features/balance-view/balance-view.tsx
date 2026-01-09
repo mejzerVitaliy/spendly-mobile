@@ -1,12 +1,17 @@
-import { useReportsSummary } from '@/shared/hooks'
+import { useReports } from '@/shared/hooks'
 import { Card } from '@/shared/ui'
 import React from 'react'
 import { ActivityIndicator, Text, View } from 'react-native'
 
-const BalanceView = () => {
-  const { data, isLoading, isError } = useReportsSummary()
+interface BalanceViewProps {
+  startDate?: string
+  endDate?: string
+}
 
-  if (isLoading) {
+const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
+  const { getSummary } = useReports({ startDate, endDate })
+
+  if (getSummary.isLoading) {
     return (
       <View className="py-8 items-center justify-center">
         <ActivityIndicator size="large" color="#3b82f6" />
@@ -14,7 +19,7 @@ const BalanceView = () => {
     )
   }
 
-  if (isError) {
+  if (getSummary.isError) {
     return (
       <View className="py-8 items-center justify-center">
         <Text className="text-destructive text-center">
@@ -24,9 +29,11 @@ const BalanceView = () => {
     )
   }
 
-  const totalBalance = data?.data?.totalBalance ?? 0
-  const totalIncome = data?.data?.totalIncome ?? 0
-  const totalExpenses = data?.data?.totalExpense ?? 0
+  const { data } = getSummary?.data || {}
+
+  const totalBalance = data?.totalBalance ?? 0
+  const totalIncome = data?.totalIncome ?? 0
+  const totalExpenses = data?.totalExpense ?? 0
 
   return (
     <View>

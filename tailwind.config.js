@@ -12,17 +12,17 @@ module.exports = {
         input: "#1F2937",
         ring: "#3B82F6",
 
-        background: "#0B0F14",
+        background: "#0C0516",
         foreground: "#E5E7EB",
 
         primary: {
-          DEFAULT: "#3B82F6",
+          DEFAULT: "#977DFF",
           foreground: "#FFFFFF",
           hover: "#2563EB",
         },
 
         secondary: {
-          DEFAULT: "#22C55E",
+          DEFAULT: "#321F54",
           foreground: "#052E16",
         },
 
@@ -42,7 +42,7 @@ module.exports = {
         },
 
         card: {
-          DEFAULT: "#111827",
+          DEFAULT: "#1B0642",
           foreground: "#E5E7EB",
         },
 
@@ -62,9 +62,9 @@ module.exports = {
         },
       },
       borderRadius: {
-        lg: "12px",
-        md: "8px",
-        sm: "4px",
+        lg: "14px",
+        md: "10px",
+        sm: "6px",
       },
     },
   },
