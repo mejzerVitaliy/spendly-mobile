@@ -1,4 +1,4 @@
-import { Category, Currency, TransactionType } from "@/shared/constants";
+import { Category, TransactionType } from "@/shared/constants";
 import { ApiResponse } from "../api";
 
 interface Transaction {
@@ -8,7 +8,9 @@ interface Transaction {
   type: TransactionType
   date: string
   category: Category
-  currency: Currency
+  currencyCode: string
+  convertedAmount: number
+  mainCurrencyCode: string
 }
 
 interface CreateTransactionRequest {
@@ -17,7 +19,7 @@ interface CreateTransactionRequest {
   type: TransactionType
   date: string
   category: Category
-  currency: Currency
+  currencyCode: string
 }
 
 interface CreateTransactionResponse
@@ -35,7 +37,7 @@ interface UpdateTransactionRequest {
   type: TransactionType
   date: string
   category: Category
-  currency: Currency
+  currencyCode: string
 }
 
 interface UpdateTransactionResponse
@@ -43,11 +45,10 @@ interface UpdateTransactionResponse
 
 
 export type {
-  Transaction,
-  CreateTransactionRequest,
-  CreateTransactionResponse,
-  GetAllTransactionsResponse,
-  GetTransactionByIdResponse,
-  UpdateTransactionRequest,
-  UpdateTransactionResponse
-}
+    CreateTransactionRequest,
+    CreateTransactionResponse,
+    GetAllTransactionsResponse,
+    GetTransactionByIdResponse, Transaction, UpdateTransactionRequest,
+    UpdateTransactionResponse
+};
+

@@ -1,6 +1,6 @@
-import { Category, Currency, CURRENCY_OPTIONS, TransactionType } from '@/shared/constants';
+import { Category, TransactionType } from '@/shared/constants';
 import { useTransactions } from '@/shared/hooks';
-import { FormDatePicker, FormInput, FormPicker, FormSwitch } from '@/shared/ui';
+import { FormCurrencyPicker, FormDatePicker, FormInput, FormPicker, FormSwitch } from '@/shared/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
@@ -41,7 +41,7 @@ const CreateTransactionForm = ({ onSuccess }: CreateTransactionFormProps) => {
     defaultValues: {
       amount: 0,
       date: new Date().toISOString(),
-      currency: Currency.USD,
+      currencyCode: 'USD',
       type: TransactionType.EXPENSE,
       category: Category.FOOD,
       description: '',
@@ -84,12 +84,11 @@ const CreateTransactionForm = ({ onSuccess }: CreateTransactionFormProps) => {
           error={errors.amount?.message}
         />
 
-        <FormPicker
+        <FormCurrencyPicker
           control={control}
-          name="currency"
+          name="currencyCode"
           label="Currency"
-          options={CURRENCY_OPTIONS}
-          error={errors.currency?.message}
+          error={errors.currencyCode?.message}
         />
 
         <FormDatePicker

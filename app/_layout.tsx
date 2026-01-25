@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/shared/stores';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -44,7 +45,7 @@ function RootNavigator() {
     } else if (isAuthenticated && inAuthGroup) {
       router.replace('/');
     }
-  }, [isAuthenticated, segments, isLoading]);
+  }, [isAuthenticated, segments, isLoading, router]);
 
   if (isLoading) {
     return null;
@@ -65,7 +66,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#111827" }}>
       <QueryClientProvider client={queryClient}>
-        <RootNavigator />
+        <BottomSheetModalProvider>
+          <RootNavigator />
+        </BottomSheetModalProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

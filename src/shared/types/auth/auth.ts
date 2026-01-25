@@ -8,6 +8,7 @@ interface User {
 
   avatarUrl?: string;
   totalBalance: number;
+  mainCurrencyCode: string;
 }
 
 interface AuthStore {
@@ -60,9 +61,16 @@ interface RefreshResponse
 interface GetMeResponse 
   extends ApiResponse<User> {}
 
+interface UpdateSettingsRequest {
+  mainCurrencyCode: string;
+}
+
+interface UpdateSettingsResponse extends ApiResponse<null> {}
+
 export {
   AuthStore, GetMeResponse, LoginRequest,
   LoginResponse, RefreshResponse, RegisterRequest,
-  RegisterResponse, User, VerifyTwoFactorRequest
+  RegisterResponse, UpdateSettingsRequest, UpdateSettingsResponse,
+  User, VerifyTwoFactorRequest
 };
 

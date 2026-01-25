@@ -13,6 +13,7 @@ const CreateTransaction = () => {
   return (
     <BottomSheet
       ref={bottomSheetRef}
+      snapPoints={['100%']}
       trigger={({ toggle }) => (
         <Pressable
           onPress={(_e) => toggle()}

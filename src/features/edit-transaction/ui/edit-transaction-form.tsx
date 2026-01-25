@@ -1,6 +1,6 @@
-import { Category, Currency, CURRENCY_OPTIONS, TransactionType } from '@/shared/constants';
+import { Category, TransactionType } from '@/shared/constants';
 import { useTransactions } from '@/shared/hooks';
-import { FormDatePicker, FormPicker, FormSwitch, Input } from '@/shared/ui';
+import { FormCurrencyPicker, FormDatePicker, FormPicker, FormSwitch, Input } from '@/shared/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -47,7 +47,7 @@ const EditTransactionForm = ({ transactionId, onSuccess }: EditTransactionFormPr
     defaultValues: {
       amount: 0,
       date: new Date().toISOString(),
-      currency: Currency.USD,
+      currencyCode: 'USD',
       type: TransactionType.EXPENSE,
       category: Category.OTHER,
       description: '',
@@ -59,7 +59,7 @@ const EditTransactionForm = ({ transactionId, onSuccess }: EditTransactionFormPr
       reset({
         amount: transaction.amount,
         date: transaction.date,
-        currency: transaction.currency,
+        currencyCode: transaction.currencyCode,
         type: transaction.type,
         category: transaction.category,
         description: transaction.description || '',
@@ -91,7 +91,7 @@ const EditTransactionForm = ({ transactionId, onSuccess }: EditTransactionFormPr
       await createMutation.mutateAsync({
         amount: transaction.amount,
         date: new Date().toISOString(),
-        currency: transaction.currency,
+        currencyCode: transaction.currencyCode,
         type: transaction.type,
         category: transaction.category,
         description: transaction.description,
@@ -222,12 +222,11 @@ const EditTransactionForm = ({ transactionId, onSuccess }: EditTransactionFormPr
           />
         </View>
 
-        <FormPicker
+        <FormCurrencyPicker
           control={control}
-          name="currency"
+          name="currencyCode"
           label="Currency"
-          options={CURRENCY_OPTIONS}
-          error={errors.currency?.message}
+          error={errors.currencyCode?.message}
         />
 
         <FormDatePicker

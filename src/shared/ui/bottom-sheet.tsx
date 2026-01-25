@@ -1,7 +1,11 @@
-import { useCallback, useMemo, useRef, forwardRef, useImperativeHandle, useEffect } from 'react';
-import type { ReactNode } from 'react';
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
+import type { PropsWithChildren, ReactNode } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import { StyleSheet } from 'react-native';
-import GorhomBottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 
 export interface BottomSheetRef {
   open: (index?: number) => void;
@@ -16,6 +20,11 @@ interface BottomSheetProps {
   snapPoints?: string[] | number[];
   openIndex?: number;
   enablePanDownToClose?: boolean;
+  enableContentPanningGesture?: boolean;
+  enableHandlePanningGesture?: boolean;
+  enableDynamicSizing?: boolean;
+  maxDynamicContentSize?: number;
+  enableOverDrag?: boolean;
   backdropOpacity?: number;
   children: ReactNode;
   trigger?: (controls: {
@@ -26,19 +35,41 @@ interface BottomSheetProps {
   }) => ReactNode;
 }
 
-const BottomSheet = forwardRef<BottomSheetRef, React.PropsWithChildren<BottomSheetProps>>(
-  ({ open, onOpenChange, snapPoints: snapPointsProp, openIndex = 0, enablePanDownToClose = true, backdropOpacity = 0.5, children, trigger }, ref) => {
-    const bottomSheetRef = useRef<GorhomBottomSheet>(null);
-    const snapPoints = useMemo(() => snapPointsProp ?? [], [snapPointsProp]);
+const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProps>>(
+  (
+    {
+      open,
+      onOpenChange,
+      snapPoints: snapPointsProp,
+      openIndex = 0,
+      enablePanDownToClose = true,
+      enableContentPanningGesture,
+      enableHandlePanningGesture,
+      enableDynamicSizing,
+      maxDynamicContentSize,
+      enableOverDrag,
+      backdropOpacity = 0.5,
+      children,
+      trigger,
+    },
+    ref,
+  ) => {
+    const bottomSheetRef = useRef<BottomSheetModal>(null);
+    const snapPoints = useMemo(() => {
+      if (!snapPointsProp || snapPointsProp.length === 0) return ['100%'];
+      return snapPointsProp;
+    }, [snapPointsProp]);
     const currentIndexRef = useRef<number>(-1);
 
     const openSheet = (index?: number) => {
-      if (typeof index === 'number') bottomSheetRef.current?.snapToIndex(index);
-      else if (openIndex != null) bottomSheetRef.current?.snapToIndex(openIndex);
-      else bottomSheetRef.current?.expand();
+      bottomSheetRef.current?.present();
+      const targetIndex = typeof index === 'number' ? index : openIndex;
+      requestAnimationFrame(() => {
+        bottomSheetRef.current?.snapToIndex(targetIndex);
+      });
     };
 
-    const closeSheet = () => bottomSheetRef.current?.close();
+    const closeSheet = () => bottomSheetRef.current?.dismiss();
     const snapTo = (index: number) => bottomSheetRef.current?.snapToIndex(index);
     const toggleSheet = (preferredIndex?: number) => {
       if (currentIndexRef.current === -1) openSheet(preferredIndex);
@@ -50,7 +81,7 @@ const BottomSheet = forwardRef<BottomSheetRef, React.PropsWithChildren<BottomShe
       close: closeSheet,
       snapTo,
       toggle: toggleSheet,
-    }), [openIndex, openSheet, toggleSheet]);
+    }), [openSheet, toggleSheet]);
 
     useEffect(() => {
       if (open === undefined) return;
@@ -76,11 +107,17 @@ const BottomSheet = forwardRef<BottomSheetRef, React.PropsWithChildren<BottomShe
     return (
       <>
       {trigger?.({ open: openSheet, close: closeSheet, toggle: toggleSheet, snapTo })}
-      <GorhomBottomSheet
+      <BottomSheetModal
         ref={bottomSheetRef}
-        index={-1}
+        index={openIndex}
         snapPoints={snapPoints}
         enablePanDownToClose={enablePanDownToClose}
+        enableContentPanningGesture={enableContentPanningGesture}
+        enableHandlePanningGesture={enableHandlePanningGesture}
+        enableDynamicSizing={enableDynamicSizing}
+        maxDynamicContentSize={maxDynamicContentSize}
+        enableOverDrag={enableOverDrag}
+        stackBehavior="push"
         backdropComponent={renderBackdrop}
         backgroundStyle={styles.bottomSheetBackground}
         handleIndicatorStyle={styles.handleIndicator}
@@ -92,7 +129,7 @@ const BottomSheet = forwardRef<BottomSheetRef, React.PropsWithChildren<BottomShe
         <BottomSheetView style={styles.contentContainer}>
           {children}
         </BottomSheetView>
-      </GorhomBottomSheet>
+      </BottomSheetModal>
       </>
     );
   }
