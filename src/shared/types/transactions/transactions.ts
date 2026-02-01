@@ -1,5 +1,6 @@
-import { Category, TransactionType } from "@/shared/constants";
+import { TransactionType } from "@/shared/constants";
 import { ApiResponse } from "../api";
+import { CategoryDto } from "../category";
 
 interface Transaction {
   id: string
@@ -7,8 +8,10 @@ interface Transaction {
   amount: number
   type: TransactionType
   date: string
-  category: Category
+  categoryId: string
+  category?: CategoryDto
   currencyCode: string
+  walletId: string
   convertedAmount: number
   mainCurrencyCode: string
 }
@@ -18,8 +21,9 @@ interface CreateTransactionRequest {
   amount: number
   type: TransactionType
   date: string
-  category: Category
+  categoryId: string
   currencyCode: string
+  walletId?: string
 }
 
 interface CreateTransactionResponse
@@ -36,8 +40,9 @@ interface UpdateTransactionRequest {
   amount: number
   type: TransactionType
   date: string
-  category: Category
+  categoryId: string
   currencyCode: string
+  walletId?: string
 }
 
 interface UpdateTransactionResponse

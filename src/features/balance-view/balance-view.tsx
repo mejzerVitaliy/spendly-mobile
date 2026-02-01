@@ -40,18 +40,18 @@ const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
       <Card className="mb-4">
         <Text className="text-lg font-semibold text-foreground mb-2">Balance</Text>
         <Text className="text-3xl font-bold text-primary">
-          ${totalBalance.toFixed(2)}
+          ${(totalBalance / 100).toFixed(2)}
         </Text>
       </Card>
 
       <View className="flex-row gap-3">
         <Card className="flex-1">
           <Text className="text-sm text-muted-foreground">Income</Text>
-          <Text className="text-xl font-bold text-success">${totalIncome.toFixed(2)}</Text>
+          <Text className="text-xl font-bold text-success">${(totalIncome / 100).toFixed(2)}</Text>
         </Card>
         <Card className="flex-1">
           <Text className="text-sm text-muted-foreground">Expenses</Text>
-          <Text className="text-xl font-bold text-destructive">${totalExpenses.toFixed(2)}</Text>
+          <Text className="text-xl font-bold text-destructive">${(totalExpenses / 100).toFixed(2)}</Text>
         </Card>
       </View>
     </View>

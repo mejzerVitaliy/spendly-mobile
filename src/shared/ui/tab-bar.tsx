@@ -42,8 +42,10 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           switch (route.name) {
             case 'index':
               return '🏠';
+            case 'wallets':
+              return '💳';
             case 'analytics':
-              return '💰';
+              return '📊';
             case 'settings':
               return '⚙️';
             default:

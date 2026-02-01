@@ -50,10 +50,10 @@ export function TransactionsList({ onTransactionPress }: TransactionsListProps) 
                 <View className="flex-row justify-between items-start mb-2">
                   <View className="flex-1">
                     <Text className="text-lg font-semibold text-foreground">
-                      {item.amount} {item.currencyCode}
+                      {(item.amount / 100).toFixed(2)} {item.currencyCode}
                     </Text>
                     <Text className="text-sm text-muted-foreground mt-1">
-                      {item.category}
+                      {item.category?.name}
                     </Text>
                   </View>
                   <View

@@ -14,6 +14,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="wallets"
+        options={{
+          title: 'Wallets',
+        }}
+      />
+      <Tabs.Screen
         name="analytics"
         options={{
           title: 'Analytics',

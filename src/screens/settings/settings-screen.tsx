@@ -22,6 +22,12 @@ export function SettingsScreen() {
           />
 
           <SettingsItem
+            title="Categories"
+            icon="grid-outline"
+            onPress={() => router.push('/settings/categories')}
+          />
+
+          <SettingsItem
             title="Currencies"
             icon="cash-outline"
             onPress={() => router.push('/settings/currencies')}

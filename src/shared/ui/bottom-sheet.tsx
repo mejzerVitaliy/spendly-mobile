@@ -61,27 +61,37 @@ const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProp
     }, [snapPointsProp]);
     const currentIndexRef = useRef<number>(-1);
 
-    const openSheet = (index?: number) => {
-      bottomSheetRef.current?.present();
-      const targetIndex = typeof index === 'number' ? index : openIndex;
-      requestAnimationFrame(() => {
-        bottomSheetRef.current?.snapToIndex(targetIndex);
-      });
-    };
+    const openSheet = useCallback(
+      (index?: number) => {
+        bottomSheetRef.current?.present();
+        const targetIndex = typeof index === 'number' ? index : openIndex;
+        requestAnimationFrame(() => {
+          bottomSheetRef.current?.snapToIndex(targetIndex);
+        });
+      },
+      [openIndex],
+    );
 
-    const closeSheet = () => bottomSheetRef.current?.dismiss();
-    const snapTo = (index: number) => bottomSheetRef.current?.snapToIndex(index);
-    const toggleSheet = (preferredIndex?: number) => {
-      if (currentIndexRef.current === -1) openSheet(preferredIndex);
-      else closeSheet();
-    };
+    const closeSheet = useCallback(() => bottomSheetRef.current?.dismiss(), []);
+    const snapTo = useCallback((index: number) => bottomSheetRef.current?.snapToIndex(index), []);
+    const toggleSheet = useCallback(
+      (preferredIndex?: number) => {
+        if (currentIndexRef.current === -1) openSheet(preferredIndex);
+        else closeSheet();
+      },
+      [closeSheet, openSheet],
+    );
 
-    useImperativeHandle(ref, () => ({
-      open: openSheet,
-      close: closeSheet,
-      snapTo,
-      toggle: toggleSheet,
-    }), [openSheet, toggleSheet]);
+    useImperativeHandle(
+      ref,
+      () => ({
+        open: openSheet,
+        close: closeSheet,
+        snapTo,
+        toggle: toggleSheet,
+      }),
+      [closeSheet, openSheet, snapTo, toggleSheet],
+    );
 
     useEffect(() => {
       if (open === undefined) return;
@@ -90,7 +100,7 @@ const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProp
       } else {
         closeSheet();
       }
-    }, [open, openIndex, openSheet]);
+    }, [open, openIndex, openSheet, closeSheet]);
 
     const renderBackdrop = useCallback(
       (props: any) => (

@@ -12,12 +12,24 @@ const useTransactions = () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['reports'] })
       queryClient.invalidateQueries({ queryKey: ['user'] })
+      queryClient.invalidateQueries({ queryKey: ['wallets'] })
     },
   })
 
   const getAllQuery = useQuery({
     queryKey: ['transactions'],
-    queryFn: () => transactionsApi.getAll(),
+    queryFn: async () => {
+      console.log('🔄 Fetching transactions...');
+      try {
+        const result = await transactionsApi.getAll();
+        console.log('✅ Transactions fetched:', result.data?.length || 0);
+        return result;
+      } catch (error) {
+        console.error('❌ Failed to fetch transactions:', error);
+        throw error;
+      }
+    },
+    retry: 1,
   })
 
   const useGetByIdQuery = (id: string) => useQuery({
@@ -34,6 +46,7 @@ const useTransactions = () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['reports'] })
       queryClient.invalidateQueries({ queryKey: ['user'] })
+      queryClient.invalidateQueries({ queryKey: ['wallets'] })
     },
   })
 
@@ -44,6 +57,7 @@ const useTransactions = () => {
       queryClient.invalidateQueries({ queryKey: ['reports'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['user'] })
+      queryClient.invalidateQueries({ queryKey: ['wallets'] })
     },
   })
 
