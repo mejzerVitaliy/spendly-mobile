@@ -1,4 +1,4 @@
-import { useReports } from '@/shared/hooks'
+import { useAuth, useReports } from '@/shared/hooks'
 import { Card } from '@/shared/ui'
 import React from 'react'
 import { ActivityIndicator, Text, View } from 'react-native'
@@ -10,6 +10,7 @@ interface BalanceViewProps {
 
 const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
   const { getSummary } = useReports({ startDate, endDate })
+  const { getMeQuery } = useAuth()
 
   if (getSummary.isLoading) {
     return (
@@ -34,24 +35,25 @@ const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
   const totalBalance = data?.totalBalance ?? 0
   const totalIncome = data?.totalIncome ?? 0
   const totalExpenses = data?.totalExpense ?? 0
+  const mainCurrencyCode = getMeQuery.data?.data?.mainCurrencyCode ?? 'USD'
 
   return (
     <View>
       <Card className="mb-4">
         <Text className="text-lg font-semibold text-foreground mb-2">Balance</Text>
         <Text className="text-3xl font-bold text-primary">
-          ${(totalBalance / 100).toFixed(2)}
+          {(totalBalance / 100).toFixed(2)} {mainCurrencyCode}
         </Text>
       </Card>
 
       <View className="flex-row gap-3">
         <Card className="flex-1">
           <Text className="text-sm text-muted-foreground">Income</Text>
-          <Text className="text-xl font-bold text-success">${(totalIncome / 100).toFixed(2)}</Text>
+          <Text className="text-lg font-bold text-success">{(totalIncome / 100).toFixed(2)} {mainCurrencyCode}</Text>
         </Card>
         <Card className="flex-1">
           <Text className="text-sm text-muted-foreground">Expenses</Text>
-          <Text className="text-xl font-bold text-destructive">${(totalExpenses / 100).toFixed(2)}</Text>
+          <Text className="text-lg font-bold text-destructive">{(totalExpenses / 100).toFixed(2)} {mainCurrencyCode}</Text>
         </Card>
       </View>
     </View>
