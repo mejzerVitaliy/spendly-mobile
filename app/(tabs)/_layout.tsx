@@ -1,11 +1,14 @@
-import { TabBar } from '@/shared/ui';
+import { TabBarWithModal } from '@/widgets/tab-bar-with-modal';
 import { Tabs } from 'expo-router';
 
 export default function TabsLayout() {
   return (
     <Tabs
-      screenOptions={{ headerShown: false }}
-      tabBar={(props) => <TabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+        animation: 'none',
+      }}
+      tabBar={(props) => <TabBarWithModal {...props} />}
     >
       <Tabs.Screen
         name="index"
@@ -17,6 +20,12 @@ export default function TabsLayout() {
         name="analytics"
         options={{
           title: 'Analytics',
+        }}
+      />
+      <Tabs.Screen
+        name="wallets"
+        options={{
+          title: 'Wallets',
         }}
       />
       <Tabs.Screen

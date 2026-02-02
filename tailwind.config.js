@@ -23,7 +23,7 @@ module.exports = {
 
         secondary: {
           DEFAULT: "#321F54",
-          foreground: "#052E16",
+          foreground: "#fff",
         },
 
         destructive: {

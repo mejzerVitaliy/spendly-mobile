@@ -1,3 +1,6 @@
 export * from './auth'
-export * from './transactions'
+export * from './currency'
+export * from './category'
 export * from './reports'
+export * from './transactions'
+export * from './wallet'
