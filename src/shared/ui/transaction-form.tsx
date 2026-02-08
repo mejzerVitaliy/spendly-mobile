@@ -1,5 +1,5 @@
 import { TransactionType } from '@/shared/constants';
-import { useTransactions } from '@/shared/hooks';
+import { useAuth, useTransactions, useGetTransactionById } from '@/shared/hooks';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -36,11 +36,14 @@ interface TransactionFormProps {
 }
 
 export function TransactionForm({ mode, transactionId, onSuccess }: TransactionFormProps) {
-  const { createMutation, updateMutation, removeMutation, getByIdQuery } = useTransactions();
+  const { createMutation, updateMutation, removeMutation } = useTransactions();
+  const { getMeQuery } = useAuth();
   const [menuVisible, setMenuVisible] = useState(false);
+  
+  const userMainCurrency = getMeQuery.data?.data?.mainCurrencyCode || 'USD';
 
   const { data: transactionData, isLoading: isLoadingTransaction, isError } = 
-    mode === 'edit' && transactionId ? getByIdQuery(transactionId) : { data: null, isLoading: false, isError: false };
+    useGetTransactionById(mode === 'edit' && transactionId ? transactionId : '');
   
   const transaction = transactionData?.data;
 
@@ -49,17 +52,21 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
+    setValue,
   } = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
     defaultValues: {
       amount: 0,
       date: new Date().toISOString(),
-      currencyCode: 'USD',
+      currencyCode: userMainCurrency,
       type: TransactionType.EXPENSE,
       categoryId: '',
       description: '',
     },
   });
+  
+  const transactionType = watch('type');
 
   useEffect(() => {
     if (mode === 'edit' && transaction) {
@@ -67,13 +74,19 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
         amount: transaction.amount / 100,
         date: transaction.date,
         currencyCode: transaction.currencyCode,
-        type: transaction.type,
+        type: transaction.type as TransactionType,
         categoryId: transaction.categoryId,
         description: transaction.description || '',
         walletId: transaction.walletId,
       });
     }
   }, [transaction, reset, mode]);
+
+  useEffect(() => {
+    if (mode === 'create') {
+      setValue('categoryId', '');
+    }
+  }, [transactionType, mode, setValue]);
 
   const onSubmit = async (data: TransactionFormData) => {
     try {
@@ -267,7 +280,7 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
           control={control}
           name="categoryId"
           label="Category"
-          transactionType={control._formValues.type}
+          transactionType={transactionType}
           error={errors.categoryId?.message}
         />
 

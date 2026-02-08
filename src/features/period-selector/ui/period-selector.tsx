@@ -1,10 +1,18 @@
-import { useAnalyticsStore } from '@/shared/stores';
+import { useAnalyticsStore, useHomeStore } from '@/shared/stores';
 import { formatPeriodLabel, getDateRangeForPeriod, navigatePeriod } from '@/shared/utils';
 import { useEffect } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-export const PeriodSelector = () => {
-  const { periodType, currentDate, setPeriodType, setCurrentDate, setDateRange } = useAnalyticsStore();
+interface PeriodSelectorProps {
+  store?: 'analytics' | 'home';
+}
+
+export const PeriodSelector = ({ store = 'analytics' }: PeriodSelectorProps) => {
+  const analyticsStore = useAnalyticsStore();
+  const homeStore = useHomeStore();
+  
+  const { periodType, currentDate, setPeriodType, setCurrentDate, setDateRange } = 
+    store === 'home' ? homeStore : analyticsStore;
 
   useEffect(() => {
     const { startDate, endDate } = getDateRangeForPeriod(currentDate, periodType);

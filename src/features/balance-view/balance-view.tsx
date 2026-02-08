@@ -1,4 +1,4 @@
-import { useAuth, useReports } from '@/shared/hooks'
+import { useAuth, useReports, useWallets } from '@/shared/hooks'
 import { Card } from '@/shared/ui'
 import React from 'react'
 import { ActivityIndicator, Text, View } from 'react-native'
@@ -10,9 +10,10 @@ interface BalanceViewProps {
 
 const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
   const { getSummary } = useReports({ startDate, endDate })
+  const { totalBalance: walletTotalBalance, isLoading: isWalletsLoading } = useWallets()
   const { getMeQuery } = useAuth()
 
-  if (getSummary.isLoading) {
+  if (getSummary.isLoading || isWalletsLoading) {
     return (
       <View className="py-8 items-center justify-center">
         <ActivityIndicator size="large" color="#3b82f6" />
@@ -32,7 +33,7 @@ const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
 
   const { data } = getSummary?.data || {}
 
-  const totalBalance = data?.totalBalance ?? 0
+  const totalBalance = walletTotalBalance?.totalBalance ?? 0
   const totalIncome = data?.totalIncome ?? 0
   const totalExpenses = data?.totalExpense ?? 0
   const mainCurrencyCode = getMeQuery.data?.data?.mainCurrencyCode ?? 'USD'

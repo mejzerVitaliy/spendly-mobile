@@ -1,15 +1,41 @@
-import { useTransactions } from '@/shared/hooks';
+import { useGetAllTransactions } from '@/shared/hooks';
 import { Transaction } from '@/shared/types';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { useMemo } from 'react';
 
 interface TransactionsListProps {
   onTransactionPress?: (transaction: Transaction) => void;
+  startDate?: string;
+  endDate?: string;
+  search?: string;
 }
 
-export function TransactionsList({ onTransactionPress }: TransactionsListProps) {
-  const { getAllQuery } = useTransactions();
+interface GroupedTransactions {
+  [date: string]: Transaction[];
+}
 
-  if (getAllQuery.isLoading) {
+export function TransactionsList({ onTransactionPress, startDate, endDate, search }: TransactionsListProps) {
+  const query = useGetAllTransactions({ startDate, endDate, search });
+
+  const groupedTransactions = useMemo(() => {
+    if (!query.data?.data) return {};
+
+    const grouped: GroupedTransactions = {};
+    query.data.data.forEach((transaction) => {
+      const date = new Date(transaction.date).toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+      if (!grouped[date]) {
+        grouped[date] = [];
+      }
+      grouped[date].push(transaction);
+    });
+    return grouped;
+  }, [query.data]);
+
+  if (query.isLoading) {
     return (
       <View className="py-8 items-center justify-center">
         <ActivityIndicator size="large" color="#3b82f6" />
@@ -17,7 +43,7 @@ export function TransactionsList({ onTransactionPress }: TransactionsListProps) 
     );
   }
 
-  if (getAllQuery.isError) {
+  if (query.isError) {
     return (
       <View className="py-8 items-center justify-center">
         <Text className="text-destructive text-center">
@@ -27,64 +53,68 @@ export function TransactionsList({ onTransactionPress }: TransactionsListProps) 
     );
   }
 
-  const transactions = getAllQuery.data?.data || [];
+  const dateKeys = Object.keys(groupedTransactions);
 
   return (
     <View className="mt-4">
       <Text className="text-2xl font-bold text-foreground mb-4">Transactions</Text>
 
-      {transactions.length === 0 ? (
+      {dateKeys.length === 0 ? (
         <View className="py-8 items-center justify-center">
           <Text className="text-muted-foreground text-center">
-            No transactions.{'\n'}Create your first transaction!
+            No transactions
           </Text>
         </View>
       ) : (
         <View>
-          {transactions.map((item) => (
-              <Pressable
-                key={item.id}
-                onPress={() => onTransactionPress?.(item)}
-                className="bg-card rounded-lg p-4 mb-3 shadow-sm border border-border active:opacity-80"
-              >
-                <View className="flex-row justify-between items-start mb-2">
-                  <View className="flex-1">
-                    <Text className="text-lg font-semibold text-foreground">
-                      {(item.amount / 100).toFixed(2)} {item.currencyCode}
-                    </Text>
-                    <Text className="text-sm text-muted-foreground mt-1">
-                      {item.category?.name}
-                    </Text>
+          {dateKeys.map((date) => (
+            <View key={date} className="mb-4">
+              <Text className="text-sm font-medium text-muted-foreground mb-2">
+                {date}
+              </Text>
+              {groupedTransactions[date].map((item) => (
+                <Pressable
+                  key={item.id}
+                  onPress={() => onTransactionPress?.(item)}
+                  className="h-[70px] bg-card rounded-lg p-3 mb-2 border border-border active:opacity-80"
+                >
+                  <View className="flex-row justify-between items-start">
+                    <View className="flex-1">
+                      <View className="flex-row items-center gap-2 mb-1">
+                        {item.category?.color && (
+                          <View 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: item.category.color }}
+                          />
+                        )}
+                        <Text className="text-sm font-medium text-foreground">
+                          {item.category?.name}
+                        </Text>
+                      </View>
+                      {item.description && (
+                        <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+                          {item.description}
+                        </Text>
+                      )}
+                    </View>
+                    <View className="items-end">
+                      <Text
+                        className={`text-base font-semibold ${
+                          item.type === 'INCOME' ? 'text-success' : 'text-destructive'
+                        }`}
+                      >
+                        {item.type === 'INCOME' ? '+' : '-'}{(item.amount / 100).toFixed(2)} {item.currencyCode}
+                      </Text>
+                      {item.currencyCode !== item.mainCurrencyCode && (
+                        <Text className="text-xs text-muted-foreground mt-0.5">
+                          {item.type === 'INCOME' ? '+' : '-'}{(item.convertedAmount / 100).toFixed(2)} {item.mainCurrencyCode}
+                        </Text>
+                      )}
+                    </View>
                   </View>
-                  <View
-                    className={`px-3 py-1 rounded-full ${
-                      item.type === 'INCOME' ? 'bg-success/10' : 'bg-destructive/10'
-                    }`}
-                  >
-                    <Text
-                      className={`text-xs font-medium ${
-                        item.type === 'INCOME' ? 'text-success' : 'text-destructive'
-                      }`}
-                    >
-                      {item.type === 'INCOME' ? 'Income' : 'Expense'}
-                    </Text>
-                  </View>
-                </View>
-
-                {item.description && (
-                  <Text className="text-sm text-muted-foreground mb-2">
-                    {item.description}
-                  </Text>
-                )}
-
-                <Text className="text-xs text-muted-foreground/70">
-                  {new Date(item.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </Text>
-              </Pressable>
+                </Pressable>
+              ))}
+            </View>
           ))}
         </View>
       )}
