@@ -10,8 +10,16 @@ const create = async (request: CreateTransactionRequest): Promise<CreateTransact
   return response.data;
 };
 
-const getAll = async (): Promise<GetAllTransactionsResponse> => {
-  const response = await apiClient.get("/transaction");
+interface GetAllTransactionsParams {
+  startDate?: string;
+  endDate?: string;
+  search?: string;
+}
+
+const getAll = async (params?: GetAllTransactionsParams): Promise<GetAllTransactionsResponse> => {
+  const response = await apiClient.get("/transaction", {
+    params,
+  });
 
   return response.data;
 };
