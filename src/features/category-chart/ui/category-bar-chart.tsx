@@ -26,7 +26,7 @@ const CategoryBarChart = ({ startDate, endDate, type }: CategoryBarChartProps) =
     )
   }
 
-  const chartData = getCategoryBarChart.data?.data.data
+  const chartData = getCategoryBarChart.data?.data?.data
 
   if (!chartData || chartData.length === 0) {
     return (
@@ -36,7 +36,7 @@ const CategoryBarChart = ({ startDate, endDate, type }: CategoryBarChartProps) =
     )
   }
 
-  const maxValue = Math.max(...chartData.map(item => item.value))
+  const maxValue = Math.max(...chartData.map(item => item.value || 0), 0)
 
   return (
       <View className="mt-2 w-full max-w-full">

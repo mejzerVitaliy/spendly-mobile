@@ -13,7 +13,7 @@ interface BalanceTrendProps {
 const BalanceTrend = ({ startDate, endDate }: BalanceTrendProps) => {
   const { getBalanceTrendChart } = useReports({ startDate, endDate });
 
-  const chartData = getBalanceTrendChart.data?.data.data;
+  const chartData = getBalanceTrendChart.data?.data?.data;
 
   const { positiveData, negativeData, adjustedMaxValue, adjustedMinValue } = useMemo(() => {
     if (!chartData || chartData.length === 0) {
@@ -25,8 +25,8 @@ const BalanceTrend = ({ startDate, endDate }: BalanceTrendProps) => {
       };
     }
 
-    const maxValue = Math.max(...chartData.map(item => item.value));
-    const minValue = Math.min(...chartData.map(item => item.value));
+    const maxValue = Math.max(...chartData.map(item => item.value || 0), 0);
+    const minValue = Math.min(...chartData.map(item => item.value || 0), 0);
 
     return {
       positiveData: chartData.map(item => ({

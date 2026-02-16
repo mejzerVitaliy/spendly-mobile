@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import '../src/global.css';
@@ -23,8 +23,13 @@ const queryClient = new QueryClient({
 function RootNavigator() {
   const router = useRouter();
   const segments = useSegments();
+  const [isMounted, setIsMounted] = useState(false);
   
   const { isAuthenticated, isLoading, initializeAuth } = useAuthStore();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -36,16 +41,17 @@ function RootNavigator() {
   }, [initializeAuth]);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (!isMounted || isLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const inOnboarding = (segments[0] as string) === '(onboarding)';
 
-    if (!isAuthenticated && !inAuthGroup) {
-      router.replace('/login');
-    } else if (isAuthenticated && inAuthGroup) {
-      router.replace('/');
+    if (!isAuthenticated && !inAuthGroup && !inOnboarding) {
+      router.replace('/(onboarding)' as any);
+    } else if (isAuthenticated && (inAuthGroup || inOnboarding || segments[0] === undefined)) {
+      router.replace('/(tabs)' as any);
     }
-  }, [isAuthenticated, segments, isLoading, router]);
+  }, [isMounted, isAuthenticated, segments, isLoading, router]);
 
   if (isLoading) {
     return null;
@@ -54,6 +60,7 @@ function RootNavigator() {
   return (
     <>
       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>

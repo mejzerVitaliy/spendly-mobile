@@ -30,7 +30,6 @@ export function RegisterForm() {
       await registerMutation.mutateAsync(registerData);
       router.replace('/');
     } catch (error: any) {
-      console.log(error);
       const errorMessage = error?.response?.data?.message || 'Error';
       Alert.alert('Error', errorMessage);
     }

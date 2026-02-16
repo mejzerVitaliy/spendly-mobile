@@ -26,7 +26,7 @@ const CategoryPieChart = ({ startDate, endDate, type }: CategoryPieChartProps) =
     )
   }
 
-  const chartData = getCategoryPieChart.data?.data.data
+  const chartData = getCategoryPieChart.data?.data?.data
 
   if (!chartData || chartData.length === 0) {
     return (
@@ -36,10 +36,10 @@ const CategoryPieChart = ({ startDate, endDate, type }: CategoryPieChartProps) =
     )
   }
 
-  const totalValue = chartData.reduce((sum, item) => sum + item.value, 0)
+  const totalValue = chartData.reduce((sum, item) => sum + (item.value || 0), 0)
 
   const renderLegendItem = (item: CategoryPieChartItem) => {
-    const percentage = ((item.value / totalValue) * 100).toFixed(1)
+    const percentage = totalValue > 0 ? ((item.value / totalValue) * 100).toFixed(1) : '0.0'
     
     return (
       <View key={item.label} className="flex-row items-center mb-2">

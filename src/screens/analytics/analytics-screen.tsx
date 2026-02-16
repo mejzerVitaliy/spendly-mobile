@@ -5,8 +5,31 @@ import { IncomeExpenseTrend } from '@/features/income-expense-trend';
 import { PeriodSelector } from '@/features/period-selector';
 import { useAnalyticsStore } from '@/shared/stores';
 import { Separator } from '@/shared/ui';
+import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+class ChartErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallbackText?: string },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Text className="text-muted-foreground text-center py-4">
+          {this.props.fallbackText ?? 'Failed to render chart'}
+        </Text>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export const AnalyticsScreen = () => {
   const { startDate, endDate } = useAnalyticsStore();
@@ -24,15 +47,7 @@ export const AnalyticsScreen = () => {
 
             <Separator />
 
-            <CategoryChart startDate={startDate} endDate={endDate} />
-
-            <Separator />
-
-            <IncomeExpenseTrend startDate={startDate} endDate={endDate} />
-
-            <Separator />
-
-            <BalanceTrend startDate={startDate} endDate={endDate} />
+            <Text className="text-muted-foreground text-center py-4">Charts temporarily disabled for debugging</Text>
           </View>
         </View>
       </ScrollView>
