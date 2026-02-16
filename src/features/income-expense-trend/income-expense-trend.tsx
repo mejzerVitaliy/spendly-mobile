@@ -24,8 +24,8 @@ const IncomeExpenseTrend = (props: IncomeExpenseTrendProps) => {
     );
   }
 
-  const expensesLine = getIncomesExpensesTrendChart.data?.data.expenses;
-  const incomesLine = getIncomesExpensesTrendChart.data?.data.incomes;
+  const expensesLine = getIncomesExpensesTrendChart.data?.data?.expenses;
+  const incomesLine = getIncomesExpensesTrendChart.data?.data?.incomes;
 
   if (!expensesLine || !incomesLine || expensesLine.length === 0 || incomesLine.length === 0) {
     return (
@@ -35,7 +35,11 @@ const IncomeExpenseTrend = (props: IncomeExpenseTrendProps) => {
     );
   }
 
-  const maxValue = Math.max(...expensesLine.map(item => item.value), ...incomesLine.map(item => item.value));
+  const maxValue = Math.max(
+    ...expensesLine.map(item => item.value || 0), 
+    ...incomesLine.map(item => item.value || 0),
+    0
+  );
 
   return (
     <Card>

@@ -103,8 +103,6 @@ apiClient.interceptors.response.use(
 
         await tokenStorage.removeTokens();
         
-        console.log('Token refresh failed - logging out');
-        
         const { useAuthStore } = await import('@/shared/stores');
         const { clearAuth } = useAuthStore.getState();
         await clearAuth();

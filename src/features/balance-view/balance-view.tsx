@@ -31,12 +31,12 @@ const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
     )
   }
 
-  const { data } = getSummary?.data || {}
+  const data = getSummary?.data?.data
 
   const totalBalance = walletTotalBalance?.totalBalance ?? 0
   const totalIncome = data?.totalIncome ?? 0
   const totalExpenses = data?.totalExpense ?? 0
-  const mainCurrencyCode = getMeQuery.data?.data?.mainCurrencyCode ?? 'USD'
+  const mainCurrencyCode = getMeQuery?.data?.data?.mainCurrencyCode ?? 'USD'
 
   return (
     <View>

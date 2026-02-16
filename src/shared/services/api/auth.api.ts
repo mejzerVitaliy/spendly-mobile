@@ -1,5 +1,23 @@
-import { GetMeResponse, LoginRequest, LoginResponse, RefreshResponse, RegisterRequest, RegisterResponse } from "@/shared/types";
+import { GetMeResponse, GuestRequest, GuestResponse, LoginRequest, LoginResponse, RefreshResponse, RegisterRequest, RegisterResponse, UpgradeGuestRequest, UpgradeGuestResponse } from "@/shared/types";
 import { apiClient } from "./api";
+
+const guest = async (request: GuestRequest): Promise<GuestResponse> => {
+  const response = await apiClient.post(
+    "/auth/guest",
+    request
+  );
+
+  return response.data;
+};
+
+const upgradeGuest = async (request: UpgradeGuestRequest): Promise<UpgradeGuestResponse> => {
+  const response = await apiClient.post(
+    "/auth/upgrade",
+    request
+  );
+
+  return response.data;
+};
 
 const register = async (request: RegisterRequest): Promise<RegisterResponse> => {
   const response = await apiClient.post(
@@ -47,6 +65,8 @@ const logout = async () => {
 };
 
 export const authApi = {
+  guest,
+  upgradeGuest,
   register,
   login,
   refresh,

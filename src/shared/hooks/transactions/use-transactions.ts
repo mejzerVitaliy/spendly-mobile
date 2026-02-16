@@ -56,13 +56,10 @@ export const useGetAllTransactions = (params?: GetAllTransactionsParams) => {
   return useQuery({
     queryKey: ['transactions', params],
     queryFn: async () => {
-      console.log('🔄 Fetching transactions...', params);
       try {
         const result = await transactionsApi.getAll(params);
-        console.log('✅ Transactions fetched:', result.data?.length || 0);
         return result;
       } catch (error) {
-        console.error('❌ Failed to fetch transactions:', error);
         throw error;
       }
     },

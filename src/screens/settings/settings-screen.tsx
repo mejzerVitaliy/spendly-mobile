@@ -33,35 +33,36 @@ export function SettingsScreen() {
             onPress={() => router.push('/settings/currencies')}
           />
 
-          <SettingsItem
+          {/* <SettingsItem
             title="Language"
             icon="language-outline"
             disabled
-          />
+          /> */}
 
-          <SettingsItem
+          {/* <SettingsItem
             title="Notifications"
             icon="notifications-outline"
             disabled
-          />
+          /> */}
 
-          <SettingsItem
+          {/* <SettingsItem
             title="Security"
             icon="shield-checkmark-outline"
             onPress={() => router.push('/settings/security')}
-          />
+          /> */}
 
-          <SettingsItem
+          {/* <SettingsItem
             title="Data & Storage"
             icon="server-outline"
             onPress={() => router.push('/settings/data-storage')}
-          />
+          /> */}
 
           <SettingsItem
             title="Support & About"
             icon="information-circle-outline"
             onPress={() => router.push('/settings/support-about')}
           />
+
         </View>
       </ScrollView>
     </SafeAreaView>

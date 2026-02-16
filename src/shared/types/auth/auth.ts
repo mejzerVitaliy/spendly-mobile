@@ -1,14 +1,15 @@
 import { ApiResponse } from "../api";
 
+type UserType = 'GUEST' | 'REGISTERED';
+
 interface User {
   id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-
+  type: UserType;
+  email?: string | null;
   avatarUrl?: string;
   totalBalance: number;
   mainCurrencyCode: string;
+  onboardingCompleted: boolean;
 }
 
 interface AuthStore {
@@ -21,44 +22,67 @@ interface AuthStore {
   initializeAuth: () => Promise<void>;
 }
 
-interface RegisterRequest {
-  firstName: string
-  lastName: string
-  email: string
-  password: string
+interface GuestRequest {
+  mainCurrencyCode: string;
+  favoriteCategories: string[];
+  walletInitialBalance?: number;
 }
 
-interface RegisterResponse 
+interface GuestResponse
   extends ApiResponse<{
-    user: User
-    accessToken: string
-    refreshToken: string
+    user: User;
+    accessToken: string;
+    refreshToken: string;
+  }> {}
+
+interface UpgradeGuestRequest {
+  email: string;
+  password: string;
+}
+
+interface UpgradeGuestResponse
+  extends ApiResponse<{
+    user: User;
+    accessToken: string;
+    refreshToken: string;
+  }> {}
+
+interface RegisterRequest {
+  email: string;
+  password: string;
+}
+
+interface RegisterResponse
+  extends ApiResponse<{
+    user: User;
+    accessToken: string;
+    refreshToken: string;
   }> {}
 
 interface LoginRequest {
-  email: string
-  password: string
+  email: string;
+  password: string;
 }
 
 interface VerifyTwoFactorRequest {
-  email: string
-  code: string
+  email: string;
+  code: string;
 }
 
-interface LoginResponse 
+interface LoginResponse
   extends ApiResponse<{
-    user: User
-    accessToken: string
-    refreshToken: string
+    user: User;
+    accessToken: string;
+    refreshToken: string;
   }> {}
 
-interface RefreshResponse 
+interface RefreshResponse
   extends ApiResponse<{
-    accessToken: string
-    refreshToken: string
+    accessToken: string;
+    refreshToken: string;
   }> {}
 
-interface GetMeResponse 
+interface GetMeResponse
   extends ApiResponse<User> {}
 
 interface UpdateSettingsRequest {
@@ -68,9 +92,11 @@ interface UpdateSettingsRequest {
 interface UpdateSettingsResponse extends ApiResponse<null> {}
 
 export {
-  AuthStore, GetMeResponse, LoginRequest,
-  LoginResponse, RefreshResponse, RegisterRequest,
-  RegisterResponse, UpdateSettingsRequest, UpdateSettingsResponse,
-  User, VerifyTwoFactorRequest
+  AuthStore, GetMeResponse, GuestRequest, GuestResponse,
+  LoginRequest, LoginResponse, RefreshResponse,
+  RegisterRequest, RegisterResponse,
+  UpdateSettingsRequest, UpdateSettingsResponse,
+  UpgradeGuestRequest, UpgradeGuestResponse,
+  User, UserType, VerifyTwoFactorRequest
 };
 
