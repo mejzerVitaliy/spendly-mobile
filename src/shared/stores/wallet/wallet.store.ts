@@ -32,7 +32,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     try {
       const response = await walletApi.getAll(includeArchived);
       set({ wallets: response.data, isLoading: false });
-    } catch (error) {
+    } catch {
       set({ error: 'Failed to fetch wallets', isLoading: false });
     }
   },
@@ -41,7 +41,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     try {
       const response = await walletApi.getDefault();
       set({ defaultWallet: response.data });
-    } catch (error) {
+    } catch {
       set({ error: 'Failed to fetch default wallet' });
     }
   },
@@ -50,7 +50,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     try {
       const response = await walletApi.getTotalBalance();
       set({ totalBalance: response.data });
-    } catch (error) {
+    } catch {
       set({ error: 'Failed to fetch total balance' });
     }
   },
