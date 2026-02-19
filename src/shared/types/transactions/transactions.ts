@@ -56,6 +56,9 @@ interface ParseTextTransactionRequest {
 interface ParseTextTransactionResponse
   extends ApiResponse<Transaction[]> {}
 
+interface ParseVoiceTransactionResponse
+  extends ApiResponse<Transaction[]> {}
+
 export type {
     CreateTransactionRequest,
     CreateTransactionResponse,
@@ -63,6 +66,7 @@ export type {
     GetTransactionByIdResponse,
     ParseTextTransactionRequest,
     ParseTextTransactionResponse,
+    ParseVoiceTransactionResponse,
     Transaction,
     UpdateTransactionRequest,
     UpdateTransactionResponse

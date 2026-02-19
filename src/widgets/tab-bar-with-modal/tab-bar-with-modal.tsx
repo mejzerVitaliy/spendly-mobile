@@ -3,6 +3,7 @@ import { TabBar } from '@/shared/ui/tab-bar';
 import { BottomSheet, type BottomSheetRef } from '@/shared/ui';
 import { CreateTransactionForm } from '@/features/create-transaction/manually/ui';
 import { CreateTransactionText } from '@/features/create-transaction/typing/create-transaction-text';
+import { CreateTransactionVoice } from '@/features/create-transaction/voice/create-transaction-voice';
 import { Ionicons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
@@ -28,7 +29,7 @@ const MENU_ITEMS = [
     icon: 'mic-outline' as const,
     label: 'VoiceAI',
     color: '#F97316',
-    disabled: true,
+    disabled: false,
   },
 ] as const;
 
@@ -36,6 +37,7 @@ export function TabBarWithModal(props: BottomTabBarProps) {
   const [menuVisible, setMenuVisible] = useState(false);
   const manualRef = useRef<BottomSheetRef>(null);
   const textRef = useRef<BottomSheetRef>(null);
+  const voiceRef = useRef<BottomSheetRef>(null);
 
   const handleCreateTransaction = () => {
     setMenuVisible(true);
@@ -55,6 +57,11 @@ export function TabBarWithModal(props: BottomTabBarProps) {
     setTimeout(() => textRef.current?.open(), 200);
   };
 
+  const handleVoice = () => {
+    setMenuVisible(false);
+    setTimeout(() => voiceRef.current?.open(), 200);
+  };
+
   const handleManualSuccess = () => {
     manualRef.current?.close();
   };
@@ -63,9 +70,14 @@ export function TabBarWithModal(props: BottomTabBarProps) {
     textRef.current?.close();
   };
 
+  const handleVoiceSuccess = () => {
+    voiceRef.current?.close();
+  };
+
   const handleItemPress = (key: string) => {
     if (key === 'manual') handleManual();
     else if (key === 'text') handleText();
+    else if (key === 'voice') handleVoice();
   };
 
   return (
@@ -118,6 +130,10 @@ export function TabBarWithModal(props: BottomTabBarProps) {
 
       <BottomSheet ref={textRef} enableDynamicSizing snapPoints={[]} keyboardBehavior="extend">
         <CreateTransactionText onSuccess={handleTextSuccess} />
+      </BottomSheet>
+
+      <BottomSheet ref={voiceRef} enableDynamicSizing snapPoints={[]}>        
+        <CreateTransactionVoice onSuccess={handleVoiceSuccess} />
       </BottomSheet>
     </>
   );
