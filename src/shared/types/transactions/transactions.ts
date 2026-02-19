@@ -49,11 +49,22 @@ interface UpdateTransactionResponse
   extends ApiResponse<Transaction> {}
 
 
+interface ParseTextTransactionRequest {
+  text: string
+}
+
+interface ParseTextTransactionResponse
+  extends ApiResponse<Transaction[]> {}
+
 export type {
     CreateTransactionRequest,
     CreateTransactionResponse,
     GetAllTransactionsResponse,
-    GetTransactionByIdResponse, Transaction, UpdateTransactionRequest,
+    GetTransactionByIdResponse,
+    ParseTextTransactionRequest,
+    ParseTextTransactionResponse,
+    Transaction,
+    UpdateTransactionRequest,
     UpdateTransactionResponse
 };
 

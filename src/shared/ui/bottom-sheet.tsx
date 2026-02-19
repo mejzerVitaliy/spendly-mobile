@@ -26,6 +26,7 @@ interface BottomSheetProps {
   maxDynamicContentSize?: number;
   enableOverDrag?: boolean;
   backdropOpacity?: number;
+  keyboardBehavior?: 'extend' | 'fillParent' | 'interactive';
   children: ReactNode;
   trigger?: (controls: {
     open: (index?: number) => void;
@@ -49,6 +50,7 @@ const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProp
       maxDynamicContentSize,
       enableOverDrag,
       backdropOpacity = 0.5,
+      keyboardBehavior,
       children,
       trigger,
     },
@@ -56,20 +58,23 @@ const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProp
   ) => {
     const bottomSheetRef = useRef<BottomSheetModal>(null);
     const snapPoints = useMemo(() => {
+      if (enableDynamicSizing) return undefined;
       if (!snapPointsProp || snapPointsProp.length === 0) return ['100%'];
       return snapPointsProp;
-    }, [snapPointsProp]);
+    }, [snapPointsProp, enableDynamicSizing]);
     const currentIndexRef = useRef<number>(-1);
 
     const openSheet = useCallback(
       (index?: number) => {
         bottomSheetRef.current?.present();
-        const targetIndex = typeof index === 'number' ? index : openIndex;
-        requestAnimationFrame(() => {
-          bottomSheetRef.current?.snapToIndex(targetIndex);
-        });
+        if (!enableDynamicSizing) {
+          const targetIndex = typeof index === 'number' ? index : openIndex;
+          requestAnimationFrame(() => {
+            bottomSheetRef.current?.snapToIndex(targetIndex);
+          });
+        }
       },
-      [openIndex],
+      [openIndex, enableDynamicSizing],
     );
 
     const closeSheet = useCallback(() => bottomSheetRef.current?.dismiss(), []);
@@ -127,6 +132,7 @@ const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProp
         enableDynamicSizing={enableDynamicSizing}
         maxDynamicContentSize={maxDynamicContentSize}
         enableOverDrag={enableOverDrag}
+        keyboardBehavior={keyboardBehavior}
         stackBehavior="push"
         backdropComponent={renderBackdrop}
         backgroundStyle={styles.bottomSheetBackground}

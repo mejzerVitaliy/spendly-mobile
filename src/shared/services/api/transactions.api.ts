@@ -1,4 +1,4 @@
-import { CreateTransactionRequest, CreateTransactionResponse, GetAllTransactionsResponse, GetTransactionByIdResponse, UpdateTransactionRequest, UpdateTransactionResponse } from "@/shared/types";
+import { CreateTransactionRequest, CreateTransactionResponse, GetAllTransactionsResponse, GetTransactionByIdResponse, ParseTextTransactionRequest, ParseTextTransactionResponse, UpdateTransactionRequest, UpdateTransactionResponse } from "@/shared/types";
 import { apiClient } from "./api";
 
 const create = async (request: CreateTransactionRequest): Promise<CreateTransactionResponse> => {
@@ -40,11 +40,17 @@ const remove = async (id: string): Promise<void> => {
   await apiClient.delete(`/transaction/${id}`);
 };
 
+const parseText = async (request: ParseTextTransactionRequest): Promise<ParseTextTransactionResponse> => {
+  const response = await apiClient.post("/transaction/parse-text", request);
+  return response.data;
+};
+
 export const transactionsApi = {
   create,
   getAll,
   getById,
   update,
   remove,
+  parseText,
 };
 

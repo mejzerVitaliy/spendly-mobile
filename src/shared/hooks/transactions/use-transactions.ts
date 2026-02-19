@@ -45,10 +45,22 @@ const useTransactions = () => {
     },
   })
 
+  const parseTextMutation = useMutation({
+    mutationKey: ['transactions', 'parseText'],
+    mutationFn: (text: string) => transactionsApi.parseText({ text }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'], exact: false })
+      queryClient.invalidateQueries({ queryKey: ['reports'], exact: false })
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+      queryClient.invalidateQueries({ queryKey: ['wallets'] })
+    },
+  })
+
   return {
     createMutation,
     updateMutation,
     removeMutation,
+    parseTextMutation,
   }
 }
 

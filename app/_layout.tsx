@@ -7,6 +7,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
+import Toast from 'react-native-toast-message';
+import { toastConfig } from '@/shared/ui/toast-config';
 import '../src/global.css';
 
 SplashScreen.preventAutoHideAsync();
@@ -75,6 +77,7 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <BottomSheetModalProvider>
           <RootNavigator />
+          <Toast config={toastConfig} />
         </BottomSheetModalProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
