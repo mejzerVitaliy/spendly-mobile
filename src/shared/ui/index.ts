@@ -1,4 +1,5 @@
 export * from './badge';
+export * from './confirm-dialog';
 export * from './bottom-sheet';
 export * from './button';
 export * from './card';
@@ -11,6 +12,7 @@ export * from './form-switch';
 export * from './form-wallet-picker';
 export * from './icon-switch';
 export * from './input';
+export * from './numeric-keyboard';
 export * from './separator';
 export * from './settings-header';
 export * from './settings-item';

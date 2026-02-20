@@ -3,7 +3,8 @@ import { Button, Input } from '@/shared/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { LoginFormData, loginSchema } from './schemas';
 
 export function LoginForm() {
@@ -27,7 +28,7 @@ export function LoginForm() {
       router.replace('/');
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || 'Error';
-      Alert.alert('Error', errorMessage);
+      Toast.show({ type: 'error', text1: 'Error', text2: errorMessage });
     }
   };
 

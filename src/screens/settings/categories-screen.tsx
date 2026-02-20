@@ -3,7 +3,8 @@ import { CategoryDto } from '@/shared/types';
 import { Input, Separator, SettingsHeader } from '@/shared/ui';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export function CategoriesScreen() {
@@ -44,7 +45,7 @@ export function CategoriesScreen() {
       next = selectedIds.filter((c) => c !== categoryId);
     } else {
       if (selectedIds.length >= 10) {
-        Alert.alert('Limit reached', 'You can select maximum 10 favorite categories');
+        Toast.show({ type: 'info', text1: 'Limit reached', text2: 'You can select maximum 10 favorite categories' });
         return;
       }
       next = [...selectedIds, categoryId];
@@ -58,7 +59,7 @@ export function CategoriesScreen() {
       setSelectedIds(previous);
       const errorMessage =
         e?.response?.data?.message || 'Error updating favorite categories';
-      Alert.alert('Error', errorMessage);
+      Toast.show({ type: 'error', text1: 'Error', text2: errorMessage });
     }
   };
 

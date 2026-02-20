@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Button, Input, SettingsHeader } from '@/shared/ui';
@@ -24,7 +25,7 @@ export function CreateAccountScreen() {
     if (!isValid) return;
 
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Passwords do not match' });
       return;
     }
 
@@ -41,7 +42,7 @@ export function CreateAccountScreen() {
     } catch (error: any) {
       const message =
         error?.response?.data?.message || 'Something went wrong. Please try again.';
-      Alert.alert('Error', message);
+      Toast.show({ type: 'error', text1: 'Error', text2: message });
     } finally {
       setIsLoading(false);
     }

@@ -21,7 +21,7 @@ export function DataStorageScreen() {
             <Input 
               placeholder="Enter amount"
               value=""
-              keyboardType="decimal-pad"
+              type="number"
             />
           </View>
 

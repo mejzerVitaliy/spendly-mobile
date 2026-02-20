@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { View, Alert } from 'react-native';
+import { View } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useOnboardingStore , useAuthStore } from '@/shared/stores';
@@ -45,7 +46,7 @@ export function OnboardingScreen() {
       
       setCompleted(true);
     } catch {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Something went wrong. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }

@@ -1,15 +1,17 @@
 import { useAuth, useCurrencies, useProfile } from '@/shared/hooks';
-import { Input, Separator, SettingsHeader } from '@/shared/ui';
+import { ConfirmDialog, Input, Separator, SettingsHeader } from '@/shared/ui';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
 
 export function CurrenciesScreen() {
   const { getAllQuery, getFavoritesQuery, updateFavoritesMutation } = useCurrencies();
   const { getMeQuery } = useAuth();
   const { updateSettingsMutation } = useProfile();
   const [search, setSearch] = useState('');
+  const [mainCurrencyTarget, setMainCurrencyTarget] = useState<string | null>(null);
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
 
   const mainCurrencyCode = getMeQuery.data?.data?.mainCurrencyCode ?? 'USD';
@@ -48,7 +50,7 @@ export function CurrenciesScreen() {
       next = selectedCodes.filter((c) => c !== currencyCode);
     } else {
       if (selectedCodes.length >= 5) {
-        Alert.alert('Limit reached', 'You can select maximum 5 favorite currencies');
+        Toast.show({ type: 'info', text1: 'Limit reached', text2: 'You can select maximum 5 favorite currencies' });
         return;
       }
       next = [...selectedCodes, currencyCode];
@@ -62,33 +64,27 @@ export function CurrenciesScreen() {
       setSelectedCodes(previous);
       const errorMessage =
         e?.response?.data?.message || 'Error updating favorite currencies';
-      Alert.alert('Error', errorMessage);
+      Toast.show({ type: 'error', text1: 'Error', text2: errorMessage });
     }
   };
 
-  const handleSetMainCurrency = async (currencyCode: string) => {
+  const handleSetMainCurrency = (currencyCode: string) => {
     if (currencyCode === mainCurrencyCode) return;
+    setMainCurrencyTarget(currencyCode);
+  };
 
-    Alert.alert(
-      'Change Main Currency',
-      `Are you sure you want to change your main currency to ${currencyCode}? All balances and analytics will be converted.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm',
-          onPress: async () => {
-            try {
-              await updateSettingsMutation.mutateAsync({ mainCurrencyCode: currencyCode });
-              Alert.alert('Success', 'Main currency updated successfully');
-            } catch (e: any) {
-              const errorMessage =
-                e?.response?.data?.message || 'Error updating main currency';
-              Alert.alert('Error', errorMessage);
-            }
-          },
-        },
-      ],
-    );
+  const handleMainCurrencyConfirm = async () => {
+    if (!mainCurrencyTarget) return;
+    const code = mainCurrencyTarget;
+    setMainCurrencyTarget(null);
+    try {
+      await updateSettingsMutation.mutateAsync({ mainCurrencyCode: code });
+      Toast.show({ type: 'success', text1: 'Main currency updated', text2: `${code} is now your main currency` });
+    } catch (e: any) {
+      const errorMessage =
+        e?.response?.data?.message || 'Error updating main currency';
+      Toast.show({ type: 'error', text1: 'Error', text2: errorMessage });
+    }
   };
 
   const currencies = getAllQuery.data?.data ?? [];
@@ -205,6 +201,14 @@ export function CurrenciesScreen() {
           )}
         </View>
       </ScrollView>
+      <ConfirmDialog
+        visible={!!mainCurrencyTarget}
+        title="Change Main Currency"
+        message={`Are you sure you want to change your main currency to ${mainCurrencyTarget}? All balances and analytics will be converted.`}
+        confirmText="Confirm"
+        onConfirm={handleMainCurrencyConfirm}
+        onCancel={() => setMainCurrencyTarget(null)}
+      />
     </SafeAreaView>
   );
 }

@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Modal, Pressable, Text, TextInput, View, Alert, ScrollView, FlatList, Dimensions } from 'react-native';
+import { Modal, Pressable, Text, TextInput, View, ScrollView, FlatList, Dimensions } from 'react-native';
+import Toast from 'react-native-toast-message';
+import { NumericKeyboard } from '@/shared/ui';
 import { WalletType } from '@/shared/types';
 import { useCurrencies, useWallets } from '@/shared/hooks';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,12 +28,13 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
   const [initialBalance, setInitialBalance] = useState('');
   const [isCurrencyPickerOpen, setIsCurrencyPickerOpen] = useState(false);
   const [currencySearch, setCurrencySearch] = useState('');
+  const [balanceFocused, setBalanceFocused] = useState(false);
   const insets = useSafeAreaInsets();
   const screenHeight = Dimensions.get('window').height;
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      Alert.alert('Error', 'Please enter a wallet name');
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter a wallet name' });
       return;
     }
 
@@ -44,7 +47,7 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
       });
       handleClose();
     } catch {
-      Alert.alert('Error', 'Failed to create wallet');
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to create wallet' });
     }
   };
 
@@ -125,9 +128,22 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
               onChangeText={setInitialBalance}
               placeholder="0.00"
               placeholderTextColor="#666"
-              keyboardType="decimal-pad"
-              className="bg-card border border-border rounded-xl p-4 text-foreground mb-6"
+              showSoftInputOnFocus={false}
+              onFocus={() => setBalanceFocused(true)}
+              onBlur={() => setBalanceFocused(false)}
+              className="bg-card border border-border rounded-xl p-4 text-foreground mb-2"
             />
+            {balanceFocused && (
+              <NumericKeyboard
+                onKeyPress={(key) => {
+                  if (key === '.' && initialBalance.includes('.')) return;
+                  if (key === '.' && initialBalance === '') { setInitialBalance('0.'); return; }
+                  setInitialBalance(initialBalance + key);
+                }}
+                onDelete={() => setInitialBalance(initialBalance.slice(0, -1))}
+              />
+            )}
+            <View className="mb-4" />
 
             <Pressable
               onPress={handleCreate}

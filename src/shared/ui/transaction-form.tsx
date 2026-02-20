@@ -3,7 +3,9 @@ import { useAuth, useTransactions, useGetTransactionById } from '@/shared/hooks'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
+import { ConfirmDialog } from './confirm-dialog';
 import { z } from 'zod';
 import { FormCategoryPicker } from './form-category-picker';
 import { FormCurrencyPicker } from './form-currency-picker';
@@ -39,6 +41,7 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
   const { createMutation, updateMutation, removeMutation } = useTransactions();
   const { getMeQuery } = useAuth();
   const [menuVisible, setMenuVisible] = useState(false);
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   
   const userMainCurrency = getMeQuery.data?.data?.mainCurrencyCode || 'USD';
 
@@ -97,20 +100,20 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
 
       if (mode === 'create') {
         await createMutation.mutateAsync(payload);
-        Alert.alert('Success', 'Transaction created');
+        Toast.show({ type: 'success', text1: 'Transaction created', text2: 'Your transaction has been added' });
         reset();
       } else if (mode === 'edit' && transaction) {
         await updateMutation.mutateAsync({
           id: transaction.id,
           request: payload,
         });
-        Alert.alert('Success', 'Transaction updated');
+        Toast.show({ type: 'success', text1: 'Transaction updated', text2: 'Changes saved successfully' });
       }
       
       onSuccess?.();
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || `Error ${mode === 'create' ? 'creating' : 'updating'} transaction`;
-      Alert.alert('Error', errorMessage);
+      Toast.show({ type: 'error', text1: 'Error', text2: errorMessage });
     }
   };
 
@@ -128,42 +131,31 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
         description: transaction.description,
         walletId: transaction.walletId,
       });
-      Alert.alert('Success', 'Transaction duplicated');
+      Toast.show({ type: 'success', text1: 'Transaction duplicated', text2: 'A copy has been created' });
       onSuccess?.();
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || 'Error duplicating transaction';
-      Alert.alert('Error', errorMessage);
+      Toast.show({ type: 'error', text1: 'Error', text2: errorMessage });
     }
   };
 
   const handleDelete = () => {
     if (!transaction) return;
-    
     setMenuVisible(false);
-    Alert.alert(
-      'Delete Transaction',
-      'Are you sure you want to delete this transaction?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await removeMutation.mutateAsync({ id: transaction.id });
-              Alert.alert('Success', 'Transaction deleted');
-              onSuccess?.();
-            } catch (error: any) {
-              const errorMessage = error?.response?.data?.message || 'Error deleting transaction';
-              Alert.alert('Error', errorMessage);
-            }
-          },
-        },
-      ]
-    );
+    setDeleteConfirmVisible(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!transaction) return;
+    setDeleteConfirmVisible(false);
+    try {
+      await removeMutation.mutateAsync({ id: transaction.id });
+      Toast.show({ type: 'success', text1: 'Transaction deleted', text2: 'The transaction has been removed' });
+      onSuccess?.();
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || 'Error deleting transaction';
+      Toast.show({ type: 'error', text1: 'Error', text2: errorMessage });
+    }
   };
 
   if (mode === 'edit' && isLoadingTransaction) {
@@ -190,6 +182,16 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
     : (updateMutation.isPending ? 'Updating...' : 'Update transaction');
 
   return (
+    <>
+    <ConfirmDialog
+      visible={deleteConfirmVisible}
+      title="Delete Transaction"
+      message="Are you sure you want to delete this transaction? This action cannot be undone."
+      confirmText="Delete"
+      destructive
+      onConfirm={handleDeleteConfirm}
+      onCancel={() => setDeleteConfirmVisible(false)}
+    />
     <ScrollView className="flex-1 bg-card" showsVerticalScrollIndicator={false}>
       <View className="px-6 pb-6">
         <View className="flex-row justify-between items-center mb-6">
@@ -245,7 +247,7 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
               name="amount"
               label="Amount"
               placeholder="0.00"
-              keyboardType="decimal-pad"
+              numeric
               error={errors.amount?.message}
             />
           </View>
@@ -307,5 +309,6 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
         </Pressable>
       </View>
     </ScrollView>
+    </>
   );
 }

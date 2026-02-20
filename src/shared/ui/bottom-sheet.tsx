@@ -27,6 +27,8 @@ interface BottomSheetProps {
   enableOverDrag?: boolean;
   backdropOpacity?: number;
   keyboardBehavior?: 'extend' | 'fillParent' | 'interactive';
+  keyboardBlurBehavior?: 'none' | 'restore';
+  android_keyboardInputMode?: 'adjustPan' | 'adjustResize';
   children: ReactNode;
   trigger?: (controls: {
     open: (index?: number) => void;
@@ -51,6 +53,8 @@ const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProp
       enableOverDrag,
       backdropOpacity = 0.5,
       keyboardBehavior,
+      keyboardBlurBehavior,
+      android_keyboardInputMode,
       children,
       trigger,
     },
@@ -133,6 +137,8 @@ const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProp
         maxDynamicContentSize={maxDynamicContentSize}
         enableOverDrag={enableOverDrag}
         keyboardBehavior={keyboardBehavior}
+        keyboardBlurBehavior={keyboardBlurBehavior}
+        android_keyboardInputMode={android_keyboardInputMode}
         stackBehavior="push"
         backdropComponent={renderBackdrop}
         backgroundStyle={styles.bottomSheetBackground}

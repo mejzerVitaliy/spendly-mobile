@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
+import { NumericKeyboard } from './numeric-keyboard';
 
 interface InputProps extends Omit<TextInputProps, 'secureTextEntry'> {
   label?: string;
@@ -30,13 +31,28 @@ const Input = ({
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
-  const keyboardType = type === 'email' 
-    ? 'email-address' 
-    : type === 'number' 
-    ? 'numeric' 
+  const isNumeric = type === 'number';
+
+  const keyboardType = type === 'email'
+    ? 'email-address'
     : 'default';
-  
+
   const secureTextEntry = type === 'password' && !isPasswordVisible;
+
+  const handleNumericKey = (key: string) => {
+    const current = value ?? '';
+    if (key === '.' && current.includes('.')) return;
+    if (key === '.' && current === '') {
+      onChangeText?.('0.');
+      return;
+    }
+    onChangeText?.(current + key);
+  };
+
+  const handleNumericDelete = () => {
+    const current = value ?? '';
+    onChangeText?.(current.slice(0, -1));
+  };
 
   const borderColor = error 
     ? 'border-destructive' 
@@ -69,6 +85,7 @@ const Input = ({
           secureTextEntry={secureTextEntry}
           autoCapitalize={type === 'email' ? 'none' : 'sentences'}
           editable={!disabled}
+          showSoftInputOnFocus={isNumeric ? false : undefined}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           {...props}
@@ -103,6 +120,13 @@ const Input = ({
         <Text className="text-muted-foreground text-xs mt-1.5 ml-1">
           {helperText}
         </Text>
+      )}
+
+      {isNumeric && isFocused && (
+        <NumericKeyboard
+          onKeyPress={handleNumericKey}
+          onDelete={handleNumericDelete}
+        />
       )}
     </View>
   );

@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { ScrollView, Text, View, Pressable, RefreshControl, Alert } from 'react-native';
+import { ScrollView, Text, View, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useWallets } from '@/shared/hooks';
 import { WalletDto, WalletType } from '@/shared/types';
+import { ConfirmDialog } from '@/shared/ui';
+import Toast from 'react-native-toast-message';
 import { CreateWalletModal } from './components/create-wallet-modal';
 import { WalletCard } from './components/wallet-card';
 
@@ -18,6 +20,7 @@ export function WalletsScreen() {
   const [showArchived, setShowArchived] = useState(false);
   const { wallets, totalBalance, isLoading, setDefaultMutation, archiveMutation, refetch } = useWallets(showArchived);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+  const [archiveTarget, setArchiveTarget] = useState<WalletDto | null>(null);
 
   const handleSetDefault = async (wallet: WalletDto) => {
     if (wallet.isDefault) return;
@@ -25,34 +28,27 @@ export function WalletsScreen() {
     try {
       await setDefaultMutation.mutateAsync({ walletId: wallet.id });
     } catch {
-      Alert.alert('Error', 'Failed to set default wallet');
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to set default wallet' });
     }
   };
 
-  const handleArchive = async (wallet: WalletDto) => {
+  const handleArchive = (wallet: WalletDto) => {
     if (wallet.isDefault) {
-      Alert.alert('Error', 'Cannot archive default wallet. Set another wallet as default first.');
+      Toast.show({ type: 'error', text1: 'Cannot archive', text2: 'Set another wallet as default first.' });
       return;
     }
+    setArchiveTarget(wallet);
+  };
 
-    Alert.alert(
-      'Archive Wallet',
-      `Are you sure you want to archive "${wallet.name}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Archive',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await archiveMutation.mutateAsync(wallet.id);
-            } catch {
-              Alert.alert('Error', 'Failed to archive wallet');
-            }
-          },
-        },
-      ]
-    );
+  const handleArchiveConfirm = async () => {
+    if (!archiveTarget) return;
+    const wallet = archiveTarget;
+    setArchiveTarget(null);
+    try {
+      await archiveMutation.mutateAsync(wallet.id);
+    } catch {
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to archive wallet' });
+    }
   };
 
   const activeWallets = wallets.filter((w) => !w.isArchived);
@@ -139,6 +135,15 @@ export function WalletsScreen() {
       <CreateWalletModal
         visible={isCreateModalVisible}
         onClose={() => setIsCreateModalVisible(false)}
+      />
+      <ConfirmDialog
+        visible={!!archiveTarget}
+        title="Archive Wallet"
+        message={`Are you sure you want to archive "${archiveTarget?.name}"?`}
+        confirmText="Archive"
+        destructive
+        onConfirm={handleArchiveConfirm}
+        onCancel={() => setArchiveTarget(null)}
       />
     </SafeAreaView>
   );
