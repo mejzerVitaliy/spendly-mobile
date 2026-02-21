@@ -5,40 +5,30 @@ import { TransactionType } from '@/shared/constants';
 interface UseReportsParams {
   startDate?: string;
   endDate?: string;
-  type?: TransactionType
+  type?: TransactionType;
 }
 
 export const useReports = (params?: UseReportsParams) => {
-  const useReportsSummaryQuery = useQuery({
-    queryKey: ['reports', 'summary', params],
-    queryFn: () => reportsApi.getSummary(params),
+  const getSummaryQuery = useQuery({
+    queryKey: ['reports', 'summary', params?.startDate, params?.endDate],
+    queryFn: () => reportsApi.getSummary({ startDate: params?.startDate, endDate: params?.endDate }),
   });
 
-  const getCategoryBarChartQuery = useQuery({
-    queryKey: ['reports', 'categoryBarChart', params],
-    queryFn: () => reportsApi.getCategoryBarChart(params),
+  const getCategoryChartQuery = useQuery({
+    queryKey: ['reports', 'categories', params?.startDate, params?.endDate, params?.type],
+    queryFn: () => reportsApi.getCategoryChart(params),
+    enabled: !!params?.startDate && !!params?.endDate,
   });
 
-  const getCategoryPieChartQuery = useQuery({
-    queryKey: ['reports', 'categoryPieChart', params],
-    queryFn: () => reportsApi.getCategoryPieChart(params),
-  });
-
-  const getIncomesExpensesTrendChartQuery = useQuery({
-    queryKey: ['reports', 'incomesExpensesTrendChart', params?.startDate, params?.endDate],
-    queryFn: () => reportsApi.getIncomesExpensesTrendChart({startDate: params?.startDate, endDate: params?.endDate}),
-  });
-
-  const getBalanceTrendChartQuery = useQuery({
-    queryKey: ['reports', 'balanceTrendChart', params?.startDate, params?.endDate],
-    queryFn: () => reportsApi.getBalanceTrendChart({startDate: params?.startDate, endDate: params?.endDate}),
+  const getCashFlowTrendQuery = useQuery({
+    queryKey: ['reports', 'cashFlowTrend', params?.startDate, params?.endDate],
+    queryFn: () => reportsApi.getCashFlowTrend({ startDate: params?.startDate, endDate: params?.endDate }),
+    enabled: !!params?.startDate && !!params?.endDate,
   });
 
   return {
-    getSummary: useReportsSummaryQuery,
-    getCategoryBarChart: getCategoryBarChartQuery,
-    getCategoryPieChart: getCategoryPieChartQuery,
-    getIncomesExpensesTrendChart: getIncomesExpensesTrendChartQuery,
-    getBalanceTrendChart: getBalanceTrendChartQuery
-  }
+    getSummary: getSummaryQuery,
+    getCategoryChart: getCategoryChartQuery,
+    getCashFlowTrend: getCashFlowTrendQuery,
+  };
 };

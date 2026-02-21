@@ -1,22 +1,16 @@
 import { TransactionType } from "@/shared/constants"
 import { ApiResponse } from "../api"
 
-interface CategoryBarChartItem {
-  value: number
+interface CategoryChartItem {
+  amount: number
+  percentage: number
   label: string
-  frontColor: string
-}
-
-interface CategoryPieChartItem {
-  value: number
   color: string
-  label: string
-  focused?: boolean
 }
 
-interface LineChartItem {
+interface TrendPoint {
   value: number
-  dataPointText?: string
+  date: string
   label: string
 }
 
@@ -25,85 +19,57 @@ interface ReportsSummaryRequest {
   endDate?: string
 }
 
-interface ReportsSummaryResponse 
+interface ReportsSummaryResponse
   extends ApiResponse<{
     totalBalance: number
+    currencyCode: string
     totalIncome: number
     totalExpense: number
+    netChange: number
+    incomeCount: number
+    expenseCount: number
+    totalTransactions: number
+    period: {
+      startDate: string | null
+      endDate: string | null
+      isAllTime: boolean
+    }
   }> {}
 
-interface ReportsCategoryBarChartRequest {
+interface ReportsCategoryChartRequest {
   startDate?: string
   endDate?: string
   type?: TransactionType
 }
 
-interface ReportsCategoryBarChartResponse 
+interface ReportsCategoryChartResponse
   extends ApiResponse<{
-    data: CategoryBarChartItem[]
-    period: {
-      from: string
-      to: string
-    }
-    totalExpenses: number
+    data: CategoryChartItem[]
+    total: number
+    currencyCode: string
+    period: { from: string | null; to: string | null }
   }> {}
 
-interface ReportsCategoryPieChartRequest {
-  startDate?: string
-  endDate?: string
-  type?: TransactionType
-}
-
-interface ReportsCategoryPieChartResponse 
-  extends ApiResponse<{
-    data: CategoryPieChartItem[]
-    period: {
-      from: string
-      to: string
-    }
-    totalExpenses: number
-  }> {}
-
-interface ReportsIncomesExpensesTrendChartRequest {
+interface ReportsCashFlowTrendRequest {
   startDate?: string
   endDate?: string
 }
 
-interface ReportsIncomesExpensesTrendChartResponse 
+interface ReportsCashFlowTrendResponse
   extends ApiResponse<{
-    expenses: LineChartItem[]
-    incomes: LineChartItem[]
-    period: {
-      from: string
-      to: string
-    }
-  }> {}
-
-interface ReportsBalanceTrendChartRequest {
-  startDate?: string
-  endDate?: string
-}
-
-interface ReportsBalanceTrendChartResponse 
-  extends ApiResponse<{
-    data: LineChartItem[]
-    period: {
-      from: string
-      to: string
-    }
+    incomes: TrendPoint[]
+    expenses: TrendPoint[]
+    currencyCode: string
+    period: { from: string; to: string }
   }> {}
 
 export {
-  CategoryBarChartItem,
-  CategoryPieChartItem,
-  ReportsCategoryBarChartRequest,
-  ReportsCategoryBarChartResponse,
-  ReportsCategoryPieChartRequest,
-  ReportsCategoryPieChartResponse,
-  ReportsIncomesExpensesTrendChartRequest,
-  ReportsIncomesExpensesTrendChartResponse,
-  ReportsBalanceTrendChartRequest,
-  ReportsBalanceTrendChartResponse,
+  CategoryChartItem,
+  TrendPoint,
   ReportsSummaryRequest,
-  ReportsSummaryResponse
+  ReportsSummaryResponse,
+  ReportsCategoryChartRequest,
+  ReportsCategoryChartResponse,
+  ReportsCashFlowTrendRequest,
+  ReportsCashFlowTrendResponse,
 }

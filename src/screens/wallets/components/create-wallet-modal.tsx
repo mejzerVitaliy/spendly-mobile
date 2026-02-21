@@ -133,16 +133,16 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
               onBlur={() => setBalanceFocused(false)}
               className="bg-card border border-border rounded-xl p-4 text-foreground mb-2"
             />
-            {balanceFocused && (
-              <NumericKeyboard
-                onKeyPress={(key) => {
-                  if (key === '.' && initialBalance.includes('.')) return;
-                  if (key === '.' && initialBalance === '') { setInitialBalance('0.'); return; }
-                  setInitialBalance(initialBalance + key);
-                }}
-                onDelete={() => setInitialBalance(initialBalance.slice(0, -1))}
-              />
-            )}
+            <NumericKeyboard
+              visible={balanceFocused}
+              onKeyPress={(key) => {
+                if (key === '.' && initialBalance.includes('.')) return;
+                if (key === '.' && initialBalance === '') { setInitialBalance('0.'); return; }
+                setInitialBalance(initialBalance + key);
+              }}
+              onDelete={() => setInitialBalance(initialBalance.slice(0, -1))}
+              onConfirm={() => setBalanceFocused(false)}
+            />
             <View className="mb-4" />
 
             <Pressable

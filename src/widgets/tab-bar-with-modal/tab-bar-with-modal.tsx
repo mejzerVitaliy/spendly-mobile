@@ -35,7 +35,7 @@ const MENU_ITEMS = [
 
 function MenuItems({ onItemPress }: { onItemPress: (key: string) => void; onClose: () => void }) {
   return (
-    <View style={{ position: 'absolute', bottom: '10%', left: '50%', transform: [{ translateX: -120 }], flexDirection: 'row', gap: 8 }}>
+    <View className='absolute bottom-[10%] left-1/2 -translate-x-1/2 flex-row gap-2'>
       {MENU_ITEMS.map((item, idx) => (
         <Pressable
           key={item.key}
@@ -136,7 +136,7 @@ export function TabBarWithModal(props: BottomTabBarProps) {
         )}
       </Modal>
 
-      <BottomSheet ref={manualRef} snapPoints={['100%']}>
+      <BottomSheet ref={manualRef}>
         <CreateTransactionForm onSuccess={handleManualSuccess} />
       </BottomSheet>
 

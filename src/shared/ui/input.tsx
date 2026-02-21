@@ -122,12 +122,12 @@ const Input = ({
         </Text>
       )}
 
-      {isNumeric && isFocused && (
-        <NumericKeyboard
-          onKeyPress={handleNumericKey}
-          onDelete={handleNumericDelete}
-        />
-      )}
+      <NumericKeyboard
+        visible={isNumeric && isFocused}
+        onKeyPress={handleNumericKey}
+        onDelete={handleNumericDelete}
+        onConfirm={() => setIsFocused(false)}
+      />
     </View>
   );
 };

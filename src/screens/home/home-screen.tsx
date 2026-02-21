@@ -41,9 +41,6 @@ export function HomeScreen() {
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView className="flex-1 bg-background">
         <View className="px-5 pt-5">
-          <Text className="text-3xl font-bold text-foreground mb-2">Spendly</Text>
-          <Text className="text-muted-foreground mb-6">Finance management</Text>
-
           <PeriodSelector store="home" />
 
           <TransactionSearch onSearchChange={handleSearchChange} />

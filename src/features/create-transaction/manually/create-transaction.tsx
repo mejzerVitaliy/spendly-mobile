@@ -34,7 +34,7 @@ const CreateTransaction = () => {
       <BottomSheet
         ref={menuRef}
         enableDynamicSizing
-        snapPoints={[]}
+        snapPoints={['100%']}
         onOpenChange={setMenuOpen}
         trigger={({ toggle }) => (
           <Pressable
@@ -107,11 +107,17 @@ const CreateTransaction = () => {
         </View>
       </BottomSheet>
 
-      <BottomSheet ref={manualRef} snapPoints={['100%']}>
+      <BottomSheet ref={manualRef}>
         <CreateTransactionForm onSuccess={handleManualSuccess} />
       </BottomSheet>
 
-      <BottomSheet ref={textRef} snapPoints={['60%']}>
+      <BottomSheet
+        ref={textRef}
+        snapPoints={['60%']}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
+      >
         <CreateTransactionText onSuccess={handleTextSuccess} />
       </BottomSheet>
     </>

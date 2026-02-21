@@ -118,7 +118,7 @@ function CenterButton({ onPress }: { onPress: () => void }) {
   const rotate = useSharedValue(0);
 
   const handlePressIn = () => {
-    scale.value = withSpring(0.85, { damping: 15, stiffness: 200 });
+    scale.value = withSpring(1.15, { damping: 15, stiffness: 200 });
     rotate.value = withTiming(90, { duration: 200 });
   };
 

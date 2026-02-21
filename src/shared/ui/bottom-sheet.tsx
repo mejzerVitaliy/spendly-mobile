@@ -29,6 +29,7 @@ interface BottomSheetProps {
   keyboardBehavior?: 'extend' | 'fillParent' | 'interactive';
   keyboardBlurBehavior?: 'none' | 'restore';
   android_keyboardInputMode?: 'adjustPan' | 'adjustResize';
+  noWrapper?: boolean;
   children: ReactNode;
   trigger?: (controls: {
     open: (index?: number) => void;
@@ -50,35 +51,33 @@ const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProp
       enableHandlePanningGesture,
       enableDynamicSizing,
       maxDynamicContentSize,
-      enableOverDrag,
+      enableOverDrag = false,
       backdropOpacity = 0.5,
       keyboardBehavior,
       keyboardBlurBehavior,
       android_keyboardInputMode,
+      noWrapper = false,
       children,
       trigger,
     },
     ref,
   ) => {
     const bottomSheetRef = useRef<BottomSheetModal>(null);
+    const resolvedEnableDynamicSizing = enableDynamicSizing ?? (!snapPointsProp || snapPointsProp.length === 0 ? true : false);
+
     const snapPoints = useMemo(() => {
-      if (enableDynamicSizing) return undefined;
+      if (resolvedEnableDynamicSizing) return undefined;
       if (!snapPointsProp || snapPointsProp.length === 0) return ['100%'];
       return snapPointsProp;
-    }, [snapPointsProp, enableDynamicSizing]);
+    }, [snapPointsProp, resolvedEnableDynamicSizing]);
     const currentIndexRef = useRef<number>(-1);
 
     const openSheet = useCallback(
       (index?: number) => {
-        bottomSheetRef.current?.present();
-        if (!enableDynamicSizing) {
-          const targetIndex = typeof index === 'number' ? index : openIndex;
-          requestAnimationFrame(() => {
-            bottomSheetRef.current?.snapToIndex(targetIndex);
-          });
-        }
+        const targetIndex = typeof index === 'number' ? index : openIndex;
+        bottomSheetRef.current?.present({ index: targetIndex });
       },
-      [openIndex, enableDynamicSizing],
+      [openIndex],
     );
 
     const closeSheet = useCallback(() => bottomSheetRef.current?.dismiss(), []);
@@ -133,7 +132,7 @@ const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProp
         enablePanDownToClose={enablePanDownToClose}
         enableContentPanningGesture={enableContentPanningGesture}
         enableHandlePanningGesture={enableHandlePanningGesture}
-        enableDynamicSizing={enableDynamicSizing}
+        enableDynamicSizing={resolvedEnableDynamicSizing}
         maxDynamicContentSize={maxDynamicContentSize}
         enableOverDrag={enableOverDrag}
         keyboardBehavior={keyboardBehavior}
@@ -148,9 +147,11 @@ const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProp
           onOpenChange?.(i !== -1);
         }}
       >
-        <BottomSheetView style={styles.contentContainer}>
-          {children}
-        </BottomSheetView>
+        {noWrapper ? children : (
+          <BottomSheetView style={styles.contentContainer}>
+            {children}
+          </BottomSheetView>
+        )}
       </BottomSheetModal>
       </>
     );

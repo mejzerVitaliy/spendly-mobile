@@ -1,15 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Modal,
   Pressable,
-  ScrollView,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
+import { BottomSheet, type BottomSheetRef } from './bottom-sheet';
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 
 export interface PickerItem {
   id: string;
@@ -46,7 +46,7 @@ export function FormPicker<T extends FieldValues>({
   modalTitle = 'Select',
   onSearch,
 }: FormPickerProps<T>) {
-  const [modalVisible, setModalVisible] = useState(false);
+  const sheetRef = useRef<BottomSheetRef>(null);
   const [search, setSearch] = useState('');
 
   const filteredItems = useMemo(() => {
@@ -84,7 +84,7 @@ export function FormPicker<T extends FieldValues>({
 
             <Pressable
               className="flex-row items-center justify-between bg-background border border-border rounded-lg px-4 py-3"
-              onPress={() => setModalVisible(true)}
+              onPress={() => sheetRef.current?.open()}
             >
               {selectedItem ? (
                 <View className="flex-row items-center flex-1">
@@ -114,23 +114,20 @@ export function FormPicker<T extends FieldValues>({
               <Text className="text-destructive text-sm mt-1">{error}</Text>
             )}
 
-            <Modal
-              visible={modalVisible}
-              animationType="slide"
-              presentationStyle="pageSheet"
-              onRequestClose={() => setModalVisible(false)}
+            <BottomSheet
+              ref={sheetRef}
+              snapPoints={['50%']}
+              noWrapper
+              onOpenChange={(open) => { if (!open) setSearch(''); }}
             >
-              <View className="flex-1 bg-background">
-                <View className="flex-row items-center justify-between px-4 py-4 border-b border-border">
-                  <Text className="text-lg font-semibold text-foreground">
+              <BottomSheetScrollView
+                stickyHeaderIndices={[0]}
+                contentContainerStyle={{ paddingBottom: 16 }}
+              >
+                <View className="px-4 pt-2 pb-3 border-b border-border bg-[#111827]">
+                  <Text className="text-lg font-semibold text-foreground mb-3">
                     {modalTitle}
                   </Text>
-                  <Pressable onPress={() => setModalVisible(false)}>
-                    <Ionicons name="close" size={24} color="#6b7280" />
-                  </Pressable>
-                </View>
-
-                <View className="px-4 py-3">
                   <View className="flex-row items-center bg-input border border-border rounded-lg px-3">
                     <Ionicons name="search" size={20} color="#9ca3af" />
                     <TextInput
@@ -149,11 +146,11 @@ export function FormPicker<T extends FieldValues>({
                 </View>
 
                 {isLoading ? (
-                  <View className="flex-1 items-center justify-center">
+                  <View className="py-12 items-center justify-center">
                     <ActivityIndicator size="large" color="#3b82f6" />
                   </View>
                 ) : (
-                  <ScrollView className="flex-1 px-4">
+                  <View className="px-4 pt-2">
                     {filteredItems.map((item) => {
                       const isSelected = value === item.id;
 
@@ -165,7 +162,7 @@ export function FormPicker<T extends FieldValues>({
                           }`}
                           onPress={() => {
                             onChange(item.id);
-                            setModalVisible(false);
+                            sheetRef.current?.close();
                             setSearch('');
                           }}
                         >
@@ -213,10 +210,10 @@ export function FormPicker<T extends FieldValues>({
                         <Text className="text-muted-foreground">No items found</Text>
                       </View>
                     )}
-                  </ScrollView>
+                  </View>
                 )}
-              </View>
-            </Modal>
+              </BottomSheetScrollView>
+            </BottomSheet>
           </View>
         );
       }}

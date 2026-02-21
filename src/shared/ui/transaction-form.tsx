@@ -192,7 +192,7 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
       onConfirm={handleDeleteConfirm}
       onCancel={() => setDeleteConfirmVisible(false)}
     />
-    <ScrollView className="flex-1 bg-card" showsVerticalScrollIndicator={false}>
+    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
       <View className="px-6 pb-6">
         <View className="flex-row justify-between items-center mb-6">
           <Text className="text-2xl font-bold text-foreground">

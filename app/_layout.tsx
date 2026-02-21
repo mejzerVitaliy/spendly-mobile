@@ -17,7 +17,8 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
-      staleTime: 1000 * 60 * 5,
+      staleTime: 0,
+      refetchOnMount: true,
     },
   },
 });
@@ -73,7 +74,7 @@ function RootNavigator() {
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#111827" }}>
+    <GestureHandlerRootView>
       <QueryClientProvider client={queryClient}>
         <BottomSheetModalProvider>
           <RootNavigator />
