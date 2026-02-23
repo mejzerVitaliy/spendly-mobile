@@ -58,7 +58,7 @@ const FormDatePicker = <T extends FieldValues>({
             <>
               <Pressable
                 onPress={() => sheetRef.current?.open()}
-                className="flex-row items-center justify-between border border-border rounded-lg px-4 py-3 bg-background"
+                className="flex-row items-center justify-between border border-border rounded-2xl px-4 py-3 bg-input"
               >
                 <Text className="text-base text-foreground">{formatDate(iso)}</Text>
                 <Ionicons name="calendar-outline" size={18} color="#9ca3af" />

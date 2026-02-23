@@ -1,10 +1,12 @@
 import { useAuthStore } from '@/shared/stores';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Inter_400Regular, useFonts } from '@expo-google-fonts/inter';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { Text, TextInput } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
@@ -27,6 +29,9 @@ function RootNavigator() {
   const router = useRouter();
   const segments = useSegments();
   const [isMounted, setIsMounted] = useState(false);
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+  });
   
   const { isAuthenticated, isLoading, initializeAuth } = useAuthStore();
 
@@ -37,11 +42,29 @@ function RootNavigator() {
   useEffect(() => {
     const init = async () => {
       await initializeAuth();
-      await SplashScreen.hideAsync();
     };
     
     init();
   }, [initializeAuth]);
+
+  useEffect(() => {
+    if (!fontsLoaded || isLoading) return;
+
+    SplashScreen.hideAsync();
+  }, [fontsLoaded, isLoading]);
+
+  useEffect(() => {
+    const TextWithDefaults = Text as unknown as { defaultProps?: { style?: unknown } };
+    TextWithDefaults.defaultProps = TextWithDefaults.defaultProps || {};
+    TextWithDefaults.defaultProps.style = [{ fontFamily: 'Inter_400Regular' }, TextWithDefaults.defaultProps.style];
+
+    const TextInputWithDefaults = TextInput as unknown as { defaultProps?: { style?: unknown } };
+    TextInputWithDefaults.defaultProps = TextInputWithDefaults.defaultProps || {};
+    TextInputWithDefaults.defaultProps.style = [
+      { fontFamily: 'Inter_400Regular' },
+      TextInputWithDefaults.defaultProps.style,
+    ];
+  }, []);
 
   useEffect(() => {
     if (!isMounted || isLoading) return;
@@ -56,7 +79,7 @@ function RootNavigator() {
     }
   }, [isMounted, isAuthenticated, segments, isLoading, router]);
 
-  if (isLoading) {
+  if (isLoading || !fontsLoaded) {
     return null;
   }
 

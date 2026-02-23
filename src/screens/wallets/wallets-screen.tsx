@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { ScrollView, Text, View, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useWallets } from '@/shared/hooks';
 import { WalletDto, WalletType } from '@/shared/types';
 import { ConfirmDialog } from '@/shared/ui';
+import { formatCompact } from '@/shared/utils';
 import Toast from 'react-native-toast-message';
 import { CreateWalletModal } from './components/create-wallet-modal';
+import { ArchivedWalletCard } from './components/archived-wallet-card';
 import { WalletCard } from './components/wallet-card';
 
 const WALLET_TYPE_LABELS: Record<WalletType, string> = {
@@ -18,7 +21,15 @@ const WALLET_TYPE_LABELS: Record<WalletType, string> = {
 
 export function WalletsScreen() {
   const [showArchived, setShowArchived] = useState(false);
-  const { wallets, totalBalance, isLoading, setDefaultMutation, archiveMutation, refetch } = useWallets(showArchived);
+  const {
+    wallets,
+    totalBalance,
+    isLoading,
+    setDefaultMutation,
+    archiveMutation,
+    unarchiveMutation,
+    refetch,
+  } = useWallets(true);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [archiveTarget, setArchiveTarget] = useState<WalletDto | null>(null);
 
@@ -29,6 +40,15 @@ export function WalletsScreen() {
       await setDefaultMutation.mutateAsync({ walletId: wallet.id });
     } catch {
       Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to set default wallet' });
+    }
+  };
+
+  const handleUnarchive = async (wallet: WalletDto) => {
+    try {
+      await unarchiveMutation.mutateAsync(wallet.id);
+      Toast.show({ type: 'success', text1: 'Wallet restored', text2: `"${wallet.name}" moved to active wallets` });
+    } catch {
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to unarchive wallet' });
     }
   };
 
@@ -58,37 +78,43 @@ export function WalletsScreen() {
   const mainCurrency = wallets[0]?.mainCurrencyCode || 'USD';
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "left", "right"]}>
       <ScrollView
         className="flex-1"
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
       >
-        <View className="px-5 pt-4">
-          <Text className="text-3xl font-bold text-foreground mb-2">Wallets</Text>
-          <Text className="text-muted-foreground mb-6">Manage your wallets</Text>
+        <View className="px-5 pt-5 pb-2">
+          <Text className="text-3xl font-bold text-foreground mb-1">Wallets</Text>
+          <Text className="text-muted-foreground mb-5">Manage your cards and balances</Text>
 
-          <View className="bg-card rounded-2xl p-5 mb-6 border border-border">
-            <Text className="text-muted-foreground text-sm mb-1">Total Balance</Text>
-            <Text className="text-3xl font-bold text-foreground">
-              {mainCurrency} {(displayBalance / 100).toFixed(2)}
+          <LinearGradient
+            colors={['#1D4ED8', '#1E3A8A', '#0F172A']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="rounded-3xl p-5 mb-6 border border-blue-400/40 overflow-hidden"
+          >
+            <View className="absolute -right-10 -top-10 w-36 h-36 rounded-full bg-white/10" />
+            <Text className="text-blue-100/90 text-sm mb-1">Total Balance</Text>
+            <Text className="text-4xl font-bold text-white">
+              {formatCompact(displayBalance)} {mainCurrency}
             </Text>
-            <Text className="text-muted-foreground text-sm mt-1">
+            <Text className="text-blue-100/80 text-sm mt-1">
               {activeWallets.length} active wallet{activeWallets.length !== 1 ? 's' : ''}
             </Text>
-          </View>
+          </LinearGradient>
 
           <View className="flex-row justify-between items-center mb-4">
             <Text className="text-lg font-semibold text-foreground">Your Wallets</Text>
             <Pressable
               onPress={() => setIsCreateModalVisible(true)}
-              className="bg-primary px-4 py-2 rounded-lg"
+              className="bg-primary px-4 py-2.5 rounded-2xl"
             >
               <Text className="text-primary-foreground font-medium">+ Add</Text>
             </Pressable>
           </View>
 
           {activeWallets.length === 0 ? (
-            <View className="bg-card rounded-xl p-6 items-center border border-border">
+            <View className="bg-card rounded-2xl p-6 items-center border border-border">
               <Text className="text-muted-foreground text-center">
                 No wallets yet. Create your first wallet!
               </Text>
@@ -118,11 +144,11 @@ export function WalletsScreen() {
 
               {showArchived &&
                 archivedWallets.map((wallet) => (
-                  <WalletCard
+                  <ArchivedWalletCard
                     key={wallet.id}
                     wallet={wallet}
                     typeLabel={WALLET_TYPE_LABELS[wallet.type]}
-                    isArchived
+                    onUnarchive={() => handleUnarchive(wallet)}
                   />
                 ))}
             </View>

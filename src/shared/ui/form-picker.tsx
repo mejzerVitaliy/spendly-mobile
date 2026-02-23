@@ -83,7 +83,7 @@ export function FormPicker<T extends FieldValues>({
             )}
 
             <Pressable
-              className="flex-row items-center justify-between bg-background border border-border rounded-lg px-4 py-3"
+              className="flex-row items-center justify-between bg-input border border-border rounded-2xl px-4 py-3"
               onPress={() => sheetRef.current?.open()}
             >
               {selectedItem ? (
@@ -124,22 +124,22 @@ export function FormPicker<T extends FieldValues>({
                 stickyHeaderIndices={[0]}
                 contentContainerStyle={{ paddingBottom: 16 }}
               >
-                <View className="px-4 pt-2 pb-3 border-b border-border bg-[#111827]">
+                <View className="px-4 pt-2 pb-3 border-b border-slate-700 bg-slate-900/95">
                   <Text className="text-lg font-semibold text-foreground mb-3">
                     {modalTitle}
                   </Text>
-                  <View className="flex-row items-center bg-input border border-border rounded-lg px-3">
-                    <Ionicons name="search" size={20} color="#9ca3af" />
+                  <View className="flex-row items-center bg-slate-800/90 border border-slate-700 rounded-2xl px-3">
+                    <Ionicons name="search" size={20} color="#6B7280" />
                     <TextInput
                       className="flex-1 py-3 px-2 text-foreground"
                       placeholder={searchPlaceholder}
-                      placeholderTextColor="#9ca3af"
+                      placeholderTextColor="#6B7280"
                       value={search}
                       onChangeText={setSearch}
                     />
                     {search.length > 0 && (
                       <Pressable onPress={() => setSearch('')}>
-                        <Ionicons name="close-circle" size={20} color="#9ca3af" />
+                        <Ionicons name="close-circle" size={20} color="#6B7280" />
                       </Pressable>
                     )}
                   </View>
@@ -157,8 +157,10 @@ export function FormPicker<T extends FieldValues>({
                       return (
                         <Pressable
                           key={item.id}
-                          className={`flex-row items-center py-3 px-3 mb-2 rounded-lg ${
-                            isSelected ? 'bg-primary/10' : 'bg-card'
+                          className={`flex-row items-center py-3 px-3 mb-2 rounded-xl border ${
+                            isSelected
+                              ? 'bg-blue-500/20 border-blue-400/40'
+                              : 'bg-slate-800/85 border-slate-700/60'
                           }`}
                           onPress={() => {
                             onChange(item.id);

@@ -7,7 +7,7 @@ import { useHomeStore } from '@/shared/stores';
 import { Transaction } from '@/shared/types';
 import { getDateRangeForPeriod } from '@/shared/utils';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export function HomeScreen() {
@@ -38,7 +38,7 @@ export function HomeScreen() {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "left", "right"]}>
       <ScrollView className="flex-1 bg-background">
         <View className="px-5 pt-5">
           <PeriodSelector store="home" />

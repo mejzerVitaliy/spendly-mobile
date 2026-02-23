@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
 import { NumericKeyboard } from './numeric-keyboard';
 
@@ -30,6 +30,8 @@ const Input = ({
 }: InputProps) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [isNumericKeyboardVisible, setIsNumericKeyboardVisible] = useState(false);
+  const inputRef = useRef<TextInput>(null);
 
   const isNumeric = type === 'number';
 
@@ -68,7 +70,7 @@ const Input = ({
         </Text>
       )}
       
-      <View className={`relative flex-row items-center border-2 ${borderColor} rounded-lg bg-background ${disabled ? 'opacity-50' : ''}`}>
+      <View className={`relative flex-row items-center border ${borderColor} rounded-2xl bg-input ${disabled ? 'opacity-50' : ''}`}>
         {leftIcon && (
           <View className="pl-3">
             {leftIcon}
@@ -76,6 +78,7 @@ const Input = ({
         )}
         
         <TextInput
+          ref={inputRef}
           className={`flex-1 px-4 py-3 text-foreground ${leftIcon ? 'pl-2' : ''} ${type === 'password' || rightIcon ? 'pr-12' : ''}`}
           placeholder={placeholder}
           placeholderTextColor="#64748b"
@@ -86,7 +89,10 @@ const Input = ({
           autoCapitalize={type === 'email' ? 'none' : 'sentences'}
           editable={!disabled}
           showSoftInputOnFocus={isNumeric ? false : undefined}
-          onFocus={() => setIsFocused(true)}
+          onFocus={() => {
+            setIsFocused(true);
+            if (isNumeric) setIsNumericKeyboardVisible(true);
+          }}
           onBlur={() => setIsFocused(false)}
           {...props}
         />
@@ -123,10 +129,13 @@ const Input = ({
       )}
 
       <NumericKeyboard
-        visible={isNumeric && isFocused}
+        visible={isNumeric && isNumericKeyboardVisible}
         onKeyPress={handleNumericKey}
         onDelete={handleNumericDelete}
-        onConfirm={() => setIsFocused(false)}
+        onConfirm={() => {
+          setIsNumericKeyboardVisible(false);
+          inputRef.current?.blur();
+        }}
       />
     </View>
   );

@@ -278,20 +278,7 @@ export function TabBar({ state, descriptors, navigation, onCreateTransaction }: 
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#1F2937',
-    borderTopWidth: 1,
-    borderTopColor: '#374151',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 16,
-      },
-    }),
+    backgroundColor: 'transparent',
   },
   indicator: {
     position: 'absolute',
@@ -310,6 +297,20 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 4,
     height: 70,
+    backgroundColor: '#1F2937',
+    borderTopWidth: 1,
+    borderTopColor: '#374151',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 16,
+      },
+    }),
   },
   tabSection: {
     flexDirection: 'row',

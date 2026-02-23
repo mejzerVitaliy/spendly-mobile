@@ -1,6 +1,7 @@
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import { useRef, useState } from 'react';
-import { Text, TextInput, TextInputProps, View } from 'react-native';
+import { Text, TextInputProps, View } from 'react-native';
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { NumericKeyboard } from './numeric-keyboard';
 
 interface FormInputProps<T extends FieldValues> extends Omit<TextInputProps, 'value' | 'onChangeText'> {
@@ -19,8 +20,8 @@ const FormInput = <T extends FieldValues>({
   numeric = false,
   ...textInputProps
 }: FormInputProps<T>) => {
-  const [isFocused, setIsFocused] = useState(false);
-  const inputRef = useRef<TextInput>(null);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const inputRef = useRef<any>(null);
 
   return (
     <View className="mb-4">
@@ -30,11 +31,11 @@ const FormInput = <T extends FieldValues>({
         name={name}
         render={({ field: { onChange, onBlur, value } }) => (
           <>
-            <TextInput
+            <BottomSheetTextInput
               ref={inputRef}
-              className="border border-input rounded-lg px-4 py-3 text-base text-foreground bg-background"
-              onBlur={() => { onBlur(); setIsFocused(false); }}
-              onFocus={() => setIsFocused(true)}
+              className="border border-input rounded-2xl px-4 py-3 text-base text-foreground bg-input"
+              onBlur={onBlur}
+              onFocus={() => setIsKeyboardVisible(true)}
               onChangeText={onChange}
               value={value?.toString() || ''}
               placeholderTextColor="#64748b"
@@ -42,7 +43,7 @@ const FormInput = <T extends FieldValues>({
               {...textInputProps}
             />
             <NumericKeyboard
-              visible={numeric && isFocused}
+              visible={numeric && isKeyboardVisible}
               onKeyPress={(key) => {
                 const current = value?.toString() || '';
                 if (key === '.' && current.includes('.')) return;
@@ -53,7 +54,10 @@ const FormInput = <T extends FieldValues>({
                 const current = value?.toString() || '';
                 onChange(current.slice(0, -1));
               }}
-              onConfirm={() => inputRef.current?.blur()}
+              onConfirm={() => {
+                setIsKeyboardVisible(false);
+                inputRef.current?.blur();
+              }}
             />
           </>
         )}

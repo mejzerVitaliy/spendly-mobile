@@ -1,5 +1,6 @@
+import { formatCompact } from '@/shared/utils';
 import { CategoryChartItem } from '@/shared/types';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 
@@ -9,19 +10,13 @@ interface CategoryChartProps {
   currencyCode: string;
 }
 
-function formatAmount(amount: number, currencyCode: string): string {
-  const value = amount / 100;
-  if (value >= 1000) return `${currencyCode} ${(value / 1000).toFixed(1)}k`;
-  return `${currencyCode} ${value.toFixed(0)}`;
-}
-
 function BarItem({ item, index, maxAmount }: { item: CategoryChartItem; index: number; maxAmount: number }) {
   const progress = useSharedValue(0);
 
   useEffect(() => {
     progress.value = 0;
     progress.value = withDelay(index * 80, withTiming(item.amount / maxAmount, { duration: 600 }));
-  }, [item.amount, maxAmount]);
+  }, [item.amount, maxAmount, index, progress]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     width: `${progress.value * 100}%`,
@@ -67,7 +62,7 @@ export function CategoryBreakdownChart({ data, total, currencyCode }: CategoryCh
       <View className="mt-2 pt-2 border-t border-border flex-row justify-between">
         <Text className="text-xs text-muted-foreground">Total</Text>
         <Text className="text-xs font-semibold text-foreground">
-          {formatAmount(total, currencyCode)}
+          {currencyCode} {formatCompact(total)}
         </Text>
       </View>
     </View>

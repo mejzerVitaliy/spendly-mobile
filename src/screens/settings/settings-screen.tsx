@@ -7,7 +7,7 @@ export function SettingsScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "left", "right"]}>
       <ScrollView className="flex-1">
         <View className="px-5 py-4">
           <Text className="text-3xl font-bold text-foreground mb-2">Settings</Text>

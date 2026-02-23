@@ -1,10 +1,11 @@
 import { BalanceView } from '@/features/balance-view';
 import { PeriodSelector } from '@/features/period-selector';
 import { CashFlowChart, CategoryBreakdownChart, IncomeExpenseRatioChart } from '@/features/charts';
+import { SegmentedControl } from '@/shared/ui';
 import { useAnalyticsStore } from '@/shared/stores';
 import { useReports } from '@/shared/hooks';
 import { TransactionType } from '@/shared/constants';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
@@ -30,7 +31,7 @@ export const AnalyticsScreen = () => {
   const trendData = getCashFlowTrend.data?.data;
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "left", "right"]}>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="px-5 py-4">
           <Text className="text-3xl font-bold text-foreground mb-6">Analytics</Text>
@@ -78,27 +79,19 @@ export const AnalyticsScreen = () => {
           </ChartCard>
 
           <View className="bg-card rounded-2xl p-4 mb-4">
-            <View className="flex-row items-center justify-between mb-4">
+            <View className="flex-col mb-4 gap-3">
               <Text className="text-base font-semibold text-foreground">
                 {selectedCategoryTransactionType === TransactionType.EXPENSE ? 'Expenses' : 'Income'} by Category
               </Text>
-              <View className="flex-row bg-background rounded-lg overflow-hidden">
-                <Pressable
-                  onPress={() => setSelectedCategoryTransactionType(TransactionType.EXPENSE)}
-                  className={`px-3 py-1.5 ${selectedCategoryTransactionType === TransactionType.EXPENSE ? 'bg-primary' : ''}`}
-                >
-                  <Text className={`text-xs font-medium ${selectedCategoryTransactionType === TransactionType.EXPENSE ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
-                    Expense
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => setSelectedCategoryTransactionType(TransactionType.INCOME)}
-                  className={`px-3 py-1.5 ${selectedCategoryTransactionType === TransactionType.INCOME ? 'bg-primary' : ''}`}
-                >
-                  <Text className={`text-xs font-medium ${selectedCategoryTransactionType === TransactionType.INCOME ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
-                    Income
-                  </Text>
-                </Pressable>
+              <View>
+                <SegmentedControl
+                  value={selectedCategoryTransactionType}
+                  onChange={setSelectedCategoryTransactionType}
+                  options={[
+                    { label: 'Expense', value: TransactionType.EXPENSE },
+                    { label: 'Income', value: TransactionType.INCOME },
+                  ]}
+                />
               </View>
             </View>
 

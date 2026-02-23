@@ -15,7 +15,7 @@ export function Button({
   disabled,
   ...props 
 }: ButtonProps) {
-  const baseClasses = 'rounded-lg items-center justify-center flex-row';
+  const baseClasses = 'rounded-2xl items-center justify-center flex-row';
   
   const sizeClasses = {
     sm: 'px-4 py-2',

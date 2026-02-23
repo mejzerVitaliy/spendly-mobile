@@ -161,9 +161,7 @@ const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProp
 BottomSheet.displayName = 'BottomSheet';
 
 const styles = StyleSheet.create({
-  contentContainer: {
-    flex: 1,
-  },
+  contentContainer: {},
   bottomSheetBackground: {
     backgroundColor: '#111827',
     borderTopLeftRadius: 20,

@@ -1,6 +1,7 @@
 import { useTransactions } from '@/shared/hooks/transactions/use-transactions';
 import { useState } from 'react';
-import { ActivityIndicator, Keyboard, Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Keyboard, Pressable, Text, View } from 'react-native';
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 
@@ -49,9 +50,8 @@ const CreateTransactionText = ({ onSuccess }: CreateTransactionTextProps) => {
       </Text>
 
       <View className="flex-row items-center gap-3">
-        <TextInput
-          style={{ height: 56 }}
-          className="flex-1 bg-card text-foreground text-base rounded-xl px-4 border border-border"
+        <BottomSheetTextInput
+          style={{ height: 56, flex: 1, backgroundColor: 'transparent', fontSize: 16, paddingHorizontal: 16, borderRadius: 12, borderWidth: 1, borderColor: '#374151', color: '#F9FAFB' }}
           placeholder="What did you spend or earn?"
           placeholderTextColor="#6B7280"
           value={text}

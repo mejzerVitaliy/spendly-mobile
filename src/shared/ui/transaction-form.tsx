@@ -60,7 +60,6 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
   } = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
     defaultValues: {
-      amount: 0,
       date: new Date().toISOString(),
       currencyCode: userMainCurrency,
       type: TransactionType.EXPENSE,
@@ -193,7 +192,7 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
       onCancel={() => setDeleteConfirmVisible(false)}
     />
     <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      <View className="px-6 pb-6">
+      <View className="px-5 pb-6">
         <View className="flex-row justify-between items-center mb-6">
           <Text className="text-2xl font-bold text-foreground">
             {mode === 'create' ? 'Create transaction' : 'Edit transaction'}
@@ -299,7 +298,7 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
         <Pressable
           onPress={handleSubmit(onSubmit)}
           disabled={isPending}
-          className={`py-4 rounded-lg mt-4 ${
+          className={`py-4 rounded-2xl mt-4 ${
             isPending ? 'bg-primary/50' : 'bg-primary active:bg-primary/90'
           }`}
         >

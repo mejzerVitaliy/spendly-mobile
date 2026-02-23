@@ -14,6 +14,7 @@ export * from './icon-switch';
 export * from './input';
 export * from './numeric-keyboard';
 export * from './separator';
+export * from './segmented-control';
 export * from './settings-header';
 export * from './settings-item';
 export * from './tab-bar';

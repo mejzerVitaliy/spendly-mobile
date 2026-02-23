@@ -1,3 +1,4 @@
+import { formatCompact } from '@/shared/utils';
 import { useEffect, useState } from 'react';
 import { LayoutChangeEvent, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -6,12 +7,6 @@ interface RatioChartProps {
   totalIncome: number;
   totalExpense: number;
   currencyCode: string;
-}
-
-function formatAmount(amount: number): string {
-  const value = amount / 100;
-  if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
-  return value.toFixed(0);
 }
 
 export function IncomeExpenseRatioChart({ totalIncome, totalExpense, currencyCode }: RatioChartProps) {
@@ -24,7 +19,7 @@ export function IncomeExpenseRatioChart({ totalIncome, totalExpense, currencyCod
   useEffect(() => {
     incomeAnim.value = 0;
     incomeAnim.value = withTiming(incomeRatio, { duration: 700 });
-  }, [totalIncome, totalExpense]);
+  }, [totalIncome, totalExpense, incomeAnim, incomeRatio]);
 
   const incomeStyle = useAnimatedStyle(() => ({
     width: incomeAnim.value * barWidth,
@@ -74,7 +69,7 @@ export function IncomeExpenseRatioChart({ totalIncome, totalExpense, currencyCod
           <View>
             <Text className="text-xs text-muted-foreground">Income</Text>
             <Text className="text-sm font-semibold text-foreground">
-              {currencyCode} {formatAmount(totalIncome)}
+              {currencyCode} {formatCompact(totalIncome)}
             </Text>
           </View>
         </View>
@@ -82,7 +77,7 @@ export function IncomeExpenseRatioChart({ totalIncome, totalExpense, currencyCod
           <View>
             <Text className="text-xs text-muted-foreground text-right">Expense</Text>
             <Text className="text-sm font-semibold text-foreground text-right">
-              {currencyCode} {formatAmount(totalExpense)}
+              {currencyCode} {formatCompact(totalExpense)}
             </Text>
           </View>
           <View className="w-2.5 h-2.5 rounded-full bg-red-500" />

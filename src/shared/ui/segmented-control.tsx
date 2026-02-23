@@ -1,28 +1,25 @@
-import { Control, Controller, FieldValues, Path } from 'react-hook-form';
+import { useEffect, useState } from 'react';
 import { LayoutChangeEvent, Pressable, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { useEffect, useState } from 'react';
 
-interface SwitchOption<T> {
+interface SegmentedOption<T extends string> {
   label: string;
   value: T;
 }
 
-interface FormSwitchProps<T extends FieldValues, V> {
-  control: Control<T>;
-  name: Path<T>;
-  label: string;
-  options: SwitchOption<V>[];
-  error?: string;
+interface SegmentedControlProps<T extends string> {
+  value: T;
+  options: SegmentedOption<T>[];
+  onChange: (value: T) => void;
+  className?: string;
 }
 
-interface AnimatedSwitchProps<V> {
-  value: V;
-  onChange: (value: V) => void;
-  options: SwitchOption<V>[];
-}
-
-function AnimatedSwitch<V extends string>({ value, onChange, options }: AnimatedSwitchProps<V>) {
+export function SegmentedControl<T extends string>({
+  value,
+  options,
+  onChange,
+  className = '',
+}: SegmentedControlProps<T>) {
   const indicatorInset = 3;
   const [containerWidth, setContainerWidth] = useState(0);
   const indicatorX = useSharedValue(0);
@@ -40,7 +37,7 @@ function AnimatedSwitch<V extends string>({ value, onChange, options }: Animated
 
   return (
     <View
-      className="flex-row bg-muted rounded-2xl p-1 relative overflow-hidden"
+      className={`flex-row bg-muted rounded-2xl p-1 relative overflow-hidden ${className}`}
       onLayout={(e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width)}
     >
       {segmentWidth > 0 && (
@@ -51,12 +48,12 @@ function AnimatedSwitch<V extends string>({ value, onChange, options }: Animated
       )}
 
       {options.map((option) => {
-        const isSelected = value === option.value;
+        const isSelected = option.value === value;
         return (
           <Pressable
             key={option.value}
             onPress={() => onChange(option.value)}
-            className="flex-1 py-3 px-4 rounded-xl"
+            className="flex-1 py-2.5 px-3 rounded-xl"
           >
             <Text
               className={`text-center font-medium ${
@@ -71,27 +68,3 @@ function AnimatedSwitch<V extends string>({ value, onChange, options }: Animated
     </View>
   );
 }
-
-const FormSwitch = <T extends FieldValues, V extends string>({
-  control,
-  name,
-  label,
-  options,
-  error,
-}: FormSwitchProps<T, V>) => {
-  return (
-    <View className="mb-4">
-      <Text className="text-sm font-medium text-foreground mb-2">{label}</Text>
-      <Controller
-        control={control}
-        name={name}
-        render={({ field: { onChange, value } }) => (
-          <AnimatedSwitch value={value as V} onChange={onChange} options={options} />
-        )}
-      />
-      {error && <Text className="text-destructive text-xs mt-1">{error}</Text>}
-    </View>
-  );
-};
-
-export { FormSwitch };

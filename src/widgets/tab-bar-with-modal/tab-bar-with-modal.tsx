@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
 import { Modal, Platform, Pressable, Text, View } from 'react-native';
 import { BlurView } from 'expo-blur';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const MENU_ITEMS = [
   {
@@ -37,29 +38,39 @@ function MenuItems({ onItemPress }: { onItemPress: (key: string) => void; onClos
   return (
     <View className='absolute bottom-[10%] left-1/2 -translate-x-1/2 flex-row gap-2'>
       {MENU_ITEMS.map((item, idx) => (
-        <Pressable
+        <Animated.View
           key={item.key}
-          onPress={() => !item.disabled && onItemPress(item.key)}
-          style={{ width: 80, flexDirection: 'column', gap: 4, alignItems: 'center', paddingTop: idx !== 1 ? 28 : 0 }}
+          entering={FadeInDown.delay(idx * 90).duration(320)}
         >
-          <View
+          <Pressable
+            onPress={() => !item.disabled && onItemPress(item.key)}
             style={{
-              width: 68,
-              height: 68,
-              borderRadius: 34,
-              backgroundColor: `${item.color}20`,
+              width: 80,
+              flexDirection: 'column',
+              gap: 4,
               alignItems: 'center',
-              justifyContent: 'center',
+              paddingTop: idx !== 1 ? 28 : 0,
             }}
           >
-            <Ionicons name={item.icon} size={30} color={item.color} />
-          </View>
-          <View style={{ alignItems: 'center' }}>
-            <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>
-              {item.label}
-            </Text>
-          </View>
-        </Pressable>
+            <View
+              style={{
+                width: 68,
+                height: 68,
+                borderRadius: 34,
+                backgroundColor: `${item.color}20`,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Ionicons name={item.icon} size={30} color={item.color} />
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>
+                {item.label}
+              </Text>
+            </View>
+          </Pressable>
+        </Animated.View>
       ))}
     </View>
   );
@@ -140,7 +151,7 @@ export function TabBarWithModal(props: BottomTabBarProps) {
         <CreateTransactionForm onSuccess={handleManualSuccess} />
       </BottomSheet>
 
-      <BottomSheet ref={textRef} enableDynamicSizing snapPoints={[]} keyboardBehavior="interactive" keyboardBlurBehavior="restore" android_keyboardInputMode="adjustResize">
+      <BottomSheet ref={textRef} enableDynamicSizing snapPoints={[]} keyboardBehavior="interactive" keyboardBlurBehavior="restore">
         <CreateTransactionText onSuccess={handleTextSuccess} />
       </BottomSheet>
 
