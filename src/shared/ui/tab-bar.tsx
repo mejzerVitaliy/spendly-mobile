@@ -283,12 +283,13 @@ const styles = StyleSheet.create({
   },
   indicator: {
     position: 'absolute',
-    top: 0,
+    top: 1,
     left: 0,
     width: INDICATOR_WIDTH,
     height: 3,
     backgroundColor: '#8B5CF6',
     borderRadius: 2,
+    zIndex: 5,
   },
   tabBar: {
     flexDirection: 'row',
