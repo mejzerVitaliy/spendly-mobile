@@ -240,14 +240,7 @@ export function TabBar({ state, descriptors, navigation, onCreateTransaction }: 
   const rightTabs = state.routes.slice(2, 4);
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          paddingBottom: insets.bottom,
-        },
-      ]}
-    >
+    <View style={styles.container}>
       <Animated.View style={[styles.indicator, indicatorStyle]} />
       <View style={styles.tabBar}>
         <View
@@ -272,6 +265,7 @@ export function TabBar({ state, descriptors, navigation, onCreateTransaction }: 
           {rightTabs.map((route, index) => renderTabButton(route, index + 2, 'right'))}
         </View>
       </View>
+      <View style={{ height: insets.bottom, backgroundColor: '#1F2937' }} />
     </View>
   );
 }
