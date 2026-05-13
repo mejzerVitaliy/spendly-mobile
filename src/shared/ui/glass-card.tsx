@@ -1,5 +1,4 @@
-import { Text, ViewProps } from 'react-native';
-import { View } from 'react-native';
+import { Text, ViewProps , View } from 'react-native';
 import { GlassView } from './glass-view';
 import { colors } from '@/shared/theme';
 
