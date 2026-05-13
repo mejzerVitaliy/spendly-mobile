@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import { Text, TextInputProps, View } from 'react-native';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { NumericKeyboard } from './numeric-keyboard';
+import { colors } from '@/shared/theme';
 
 interface FormInputProps<T extends FieldValues> extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   control: Control<T>;
@@ -38,26 +39,23 @@ const FormInput = <T extends FieldValues>({
               onFocus={() => setIsKeyboardVisible(true)}
               onChangeText={onChange}
               value={value?.toString() || ''}
-              placeholderTextColor="#64748b"
+              placeholderTextColor={colors.mutedForeground}
               showSoftInputOnFocus={numeric ? false : undefined}
               {...textInputProps}
             />
             <NumericKeyboard
               visible={numeric && isKeyboardVisible}
+              value={value?.toString() || ''}
+              inputRef={inputRef}
               onKeyPress={(key) => {
                 const current = value?.toString() || '';
-                if (key === '.' && current.includes('.')) return;
-                if (key === '.' && current === '') { onChange('0.'); return; }
                 onChange(current + key);
               }}
               onDelete={() => {
                 const current = value?.toString() || '';
                 onChange(current.slice(0, -1));
               }}
-              onConfirm={() => {
-                setIsKeyboardVisible(false);
-                inputRef.current?.blur();
-              }}
+              onClose={() => setIsKeyboardVisible(false)}
             />
           </>
         )}

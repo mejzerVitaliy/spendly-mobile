@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors } from '@/shared/theme';
 
 export function CategoriesScreen() {
   const { getAllQuery, getFavoritesQuery, updateFavoritesMutation } = useCategories();
@@ -91,7 +92,7 @@ export function CategoriesScreen() {
             <Ionicons
               name="checkmark-circle"
               size={24}
-              color="#10b981"
+              color={colors.primary}
             />
           )}
         </Pressable>
@@ -129,7 +130,7 @@ export function CategoriesScreen() {
 
           {(getAllQuery.isLoading || getFavoritesQuery.isLoading) && (
             <View className="py-8 items-center justify-center">
-              <ActivityIndicator size="large" color="#3b82f6" />
+              <ActivityIndicator size="large" color={colors.primary} />
             </View>
           )}
 

@@ -1,8 +1,28 @@
 import { SettingsHeader, Input, Button, Separator } from '@/shared/ui';
 import { useAuthStore } from '@/shared/stores';
 import { useRouter } from 'expo-router';
-import { ScrollView, Text, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
+import { colors } from '@/shared/theme';
+
+function InfoCard({ children }: { children: React.ReactNode }) {
+  if (Platform.OS === 'ios') {
+    return (
+      <View style={styles.infoCard}>
+        <BlurView intensity={30} tint="systemUltraThinMaterialDark" style={StyleSheet.absoluteFillObject} />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 18 }]} />
+        <View style={[StyleSheet.absoluteFillObject, { borderRadius: 18, borderWidth: 1, borderColor: colors.glass.border }]} />
+        <View style={styles.infoCardInner}>{children}</View>
+      </View>
+    );
+  }
+  return (
+    <View style={[styles.infoCard, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
+      <View style={styles.infoCardInner}>{children}</View>
+    </View>
+  );
+}
 
 export function AccountScreen() {
   const { user } = useAuthStore();
@@ -11,24 +31,21 @@ export function AccountScreen() {
 
   if (isGuest) {
     return (
-      <SafeAreaView className="flex-1 bg-background">
-        <ScrollView className="flex-1">
-          <View className="px-5 py-4">
-            <SettingsHeader
-              title="Account"
-              description="You are using a guest account"
-            />
+      <SafeAreaView style={styles.screen}>
+        <ScrollView style={{ flex: 1 }}>
+          <View style={styles.content}>
+            <SettingsHeader title="Account" description="You are using a guest account" />
 
-            <View className="bg-card rounded-xl p-5 border border-border mb-6">
-              <Text className="text-base text-foreground mb-2">
+            <InfoCard>
+              <Text style={styles.infoText}>
                 Create an account to secure your data and access it from any device.
               </Text>
-              <Text className="text-sm text-muted-foreground">
+              <Text style={[styles.infoText, { color: colors.mutedForeground, fontSize: 13, marginTop: 4 }]}>
                 All your current data will be preserved.
               </Text>
-            </View>
+            </InfoCard>
 
-            <View className="gap-3">
+            <View style={{ gap: 12, marginTop: 8 }}>
               <Button
                 title="Create Account"
                 onPress={() => router.push('/settings/create-account' as any)}
@@ -46,21 +63,16 @@ export function AccountScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <ScrollView className="flex-1">
-        <View className="px-5 py-4">
-          <SettingsHeader 
-            title="Account" 
-            description="Manage your personal information"
-          />
+    <SafeAreaView style={styles.screen}>
+      <ScrollView style={{ flex: 1 }}>
+        <View style={styles.content}>
+          <SettingsHeader title="Account" description="Manage your personal information" />
 
-          <Text className="text-xs font-semibold text-muted-foreground uppercase mb-3">
-            Personal Information
-          </Text>
+          <Text style={styles.sectionLabel}>Personal Information</Text>
 
-          <View className="mb-4">
-            <Text className="text-sm font-medium text-foreground mb-2">Email</Text>
-            <Input 
+          <View style={{ marginBottom: 16 }}>
+            <Input
+              label="Email"
               placeholder="Enter your email"
               value={user?.email ?? ''}
               keyboardType="email-address"
@@ -68,22 +80,20 @@ export function AccountScreen() {
             />
           </View>
 
-          <Separator className="my-6" />
+          <Separator style={{ marginVertical: 20 }} />
 
-          <Text className="text-xs font-semibold text-muted-foreground uppercase mb-3">
-            Profile Picture
-          </Text>
+          <Text style={styles.sectionLabel}>Profile Picture</Text>
 
-          <Button 
-            title="Upload Photo" 
+          <Button
+            title="Upload Photo"
             variant="outline"
             onPress={() => {}}
-            className="mb-6"
           />
 
-          <Button 
-            title="Save Changes" 
-            variant="primary"
+          <View style={{ height: 16 }} />
+
+          <Button
+            title="Save Changes"
             onPress={() => {}}
           />
         </View>
@@ -91,3 +101,35 @@ export function AccountScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.mutedForeground,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 12,
+  },
+  infoCard: {
+    borderRadius: 18,
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+  infoCardInner: {
+    padding: 16,
+  },
+  infoText: {
+    fontSize: 14,
+    color: colors.foreground,
+    lineHeight: 20,
+  },
+});

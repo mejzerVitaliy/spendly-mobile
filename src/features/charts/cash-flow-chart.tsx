@@ -1,8 +1,9 @@
 import { TrendPoint } from '@/shared/types';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path, Polyline, Text as SvgText } from 'react-native-svg';
 import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
+import { colors } from '@/shared/theme';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -133,7 +134,7 @@ export function CashFlowChart({ incomes, expenses, currencyCode }: CashFlowChart
 
   return (
     <View onLayout={e => setContainerWidth(e.nativeEvent.layout.width)}>
-      <View className="rounded-2xl overflow-hidden border border-slate-800/70 bg-slate-900/30">
+      <View style={styles.chartContainer}>
         <ScrollView
           ref={scrollRef}
           horizontal
@@ -183,7 +184,7 @@ export function CashFlowChart({ incomes, expenses, currencyCode }: CashFlowChart
                   x={x}
                   y={CHART_HEIGHT - 10}
                   fontSize={9}
-                  fill="#94A3B8"
+                  fill={colors.mutedForeground}
                   textAnchor={textAnchor}
                 >
                   {point.label}
@@ -208,4 +209,14 @@ export function CashFlowChart({ incomes, expenses, currencyCode }: CashFlowChart
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  chartContainer: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+  },
+});
 

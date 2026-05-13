@@ -39,7 +39,7 @@ export function HomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["top", "left", "right"]}>
-      <ScrollView className="flex-1 bg-background">
+      <ScrollView className="flex-1 bg-background" contentContainerStyle={{ paddingBottom: 24 }}>
         <View className="px-5 pt-5">
           <PeriodSelector store="home" />
 

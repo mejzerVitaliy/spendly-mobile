@@ -2,13 +2,15 @@ import { useAnalyticsStore, useHomeStore } from '@/shared/stores';
 import { formatPeriodLabel, getDateRangeForPeriod, navigatePeriod } from '@/shared/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { LayoutChangeEvent, Pressable, Text, View } from 'react-native';
+import { LayoutChangeEvent, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
+import { colors } from '@/shared/theme';
 
 interface PeriodSelectorProps {
   store?: 'analytics' | 'home';
@@ -22,27 +24,24 @@ const PERIODS = [
 
 type PeriodKey = (typeof PERIODS)[number]['key'];
 
-interface PeriodTabProps {
-  label: string;
-  isActive: boolean;
-  onPress: () => void;
-}
-
-function PeriodTab({ label, isActive, onPress }: PeriodTabProps) {
-  const opacity = useSharedValue(isActive ? 1 : 0.5);
+function PeriodTab({ label, isActive, onPress }: { label: string; isActive: boolean; onPress: () => void }) {
+  const opacity = useSharedValue(isActive ? 1 : 0.45);
 
   useEffect(() => {
-    opacity.value = withTiming(isActive ? 1 : 0.5, { duration: 180 });
+    opacity.value = withTiming(isActive ? 1 : 0.45, { duration: 180 });
   }, [isActive, opacity]);
 
   const labelStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   return (
-    <Pressable
-      className="flex-1 py-2 items-center justify-center"
-      onPress={onPress}
-    >
-      <Animated.Text className="text-sm font-semibold text-foreground" style={labelStyle}>
+    <Pressable style={{ flex: 1, paddingVertical: 10, alignItems: 'center' }} onPress={onPress}>
+      <Animated.Text
+        style={[
+          styles.periodLabel,
+          { color: isActive ? colors.foreground : colors.mutedForeground },
+          labelStyle,
+        ]}
+      >
         {label}
       </Animated.Text>
     </Pressable>
@@ -70,11 +69,8 @@ export const PeriodSelector = ({ store = 'analytics' }: PeriodSelectorProps) => 
     if (containerWidth === 0) return;
     const idx = PERIODS.findIndex((p) => p.key === periodType);
     if (idx === -1) return;
-
     const segmentWidth = containerWidth / PERIODS.length;
-    const x = idx * segmentWidth;
-
-    indicatorX.value = withSpring(x, { damping: 20, stiffness: 200 });
+    indicatorX.value = withSpring(idx * segmentWidth, { damping: 20, stiffness: 200 });
     indicatorWidth.value = withSpring(segmentWidth, { damping: 20, stiffness: 200 });
   }, [periodType, containerWidth, indicatorX, indicatorWidth]);
 
@@ -88,37 +84,60 @@ export const PeriodSelector = ({ store = 'analytics' }: PeriodSelectorProps) => 
   };
 
   return (
-    <View className="mb-4">
-      <View className="flex-row items-center justify-between mb-3">
+    <View style={styles.wrapper}>
+      {/* Navigation row */}
+      <View style={styles.navRow}>
         <Pressable
           onPress={() => handleNavigate('prev')}
           hitSlop={8}
-          className="w-10 h-10 items-center justify-center rounded-full bg-card active:bg-muted"
+          style={({ pressed }) => [styles.navBtn, { opacity: pressed ? 0.6 : 1 }]}
         >
-          <Ionicons name="chevron-back" size={18} color="#9CA3AF" />
+          {Platform.OS === 'ios' ? (
+            <>
+              <BlurView intensity={30} tint="systemUltraThinMaterialDark" style={StyleSheet.absoluteFillObject} />
+              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 22 }]} />
+              <Ionicons name="chevron-back" size={18} color={colors.mutedForeground} />
+            </>
+          ) : (
+            <>
+              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.secondary, borderRadius: 22 }]} />
+              <Ionicons name="chevron-back" size={18} color={colors.mutedForeground} />
+            </>
+          )}
         </Pressable>
 
-        <Text className="text-base font-semibold text-foreground">
-          {formatPeriodLabel(currentDate, periodType)}
-        </Text>
+        <Text style={styles.periodTitle}>{formatPeriodLabel(currentDate, periodType)}</Text>
 
         <Pressable
           onPress={() => handleNavigate('next')}
           hitSlop={8}
-          className="w-10 h-10 items-center justify-center rounded-full bg-card active:bg-muted"
+          style={({ pressed }) => [styles.navBtn, { opacity: pressed ? 0.6 : 1 }]}
         >
-          <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+          {Platform.OS === 'ios' ? (
+            <>
+              <BlurView intensity={30} tint="systemUltraThinMaterialDark" style={StyleSheet.absoluteFillObject} />
+              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 22 }]} />
+              <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
+            </>
+          ) : (
+            <>
+              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.secondary, borderRadius: 22 }]} />
+              <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
+            </>
+          )}
         </Pressable>
       </View>
 
+      {/* Segmented tabs */}
       <View
-        className="flex-row bg-muted rounded-2xl p-1 relative overflow-hidden"
+        style={styles.tabsContainer}
         onLayout={(e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width)}
       >
-        <Animated.View
-          className="absolute top-1 bottom-1 bg-card rounded-2xl"
-          style={indicatorStyle}
-        />
+        {Platform.OS === 'ios' && (
+          <BlurView intensity={30} tint="systemUltraThinMaterialDark" style={StyleSheet.absoluteFillObject} />
+        )}
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.muted, borderRadius: 18 }]} />
+        <Animated.View style={[styles.indicator, indicatorStyle]} />
         {PERIODS.map((period) => (
           <PeriodTab
             key={period.key}
@@ -131,3 +150,50 @@ export const PeriodSelector = ({ store = 'analytics' }: PeriodSelectorProps) => 
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  wrapper: {
+    marginBottom: 16,
+  },
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  navBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  periodTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.foreground,
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    borderRadius: 18,
+    padding: 4,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  indicator: {
+    position: 'absolute',
+    top: 4,
+    bottom: 4,
+    borderRadius: 14,
+    backgroundColor: colors.glass.backgroundStrong,
+    borderWidth: 1,
+    borderColor: colors.glass.border,
+  },
+  periodLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+});

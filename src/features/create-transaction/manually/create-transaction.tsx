@@ -3,6 +3,7 @@ import { Text, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CreateTransactionForm } from './ui';
 import { CreateTransactionText } from '../typing/create-transaction-text';
+import { colors } from '@/shared/theme';
 import { useRef, useState } from 'react';
 
 const CreateTransaction = () => {
@@ -59,7 +60,7 @@ const CreateTransaction = () => {
             onPress={handleManual}
           >
             <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center mr-3">
-              <Ionicons name="create-outline" size={20} color="#6366F1" />
+              <Ionicons name="create-outline" size={20} color={colors.primary} />
             </View>
             <View className="flex-1">
               <Text className="text-base font-medium text-foreground">

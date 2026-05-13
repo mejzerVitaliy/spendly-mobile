@@ -1,40 +1,53 @@
-import { useAuth, useReports, useWallets } from '@/shared/hooks'
-import { formatCompact } from '@/shared/utils'
-import { Ionicons } from '@expo/vector-icons'
-import { useEffect } from 'react'
-import { Text, View } from 'react-native'
+import { useAuth, useReports, useWallets } from '@/shared/hooks';
+import { formatCompact } from '@/shared/utils';
+import { Ionicons } from '@expo/vector-icons';
+import { useEffect } from 'react';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
   withSequence,
   withTiming,
-} from 'react-native-reanimated'
+} from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors } from '@/shared/theme';
 
 interface BalanceViewProps {
-  startDate?: string
-  endDate?: string
+  startDate?: string;
+  endDate?: string;
 }
 
-function SkeletonBlock({ className }: { className?: string }) {
-  const opacity = useSharedValue(0.4)
+function SkeletonBlock({ width, height }: { width: number | string; height: number }) {
+  const opacity = useSharedValue(0.3);
 
   useEffect(() => {
     opacity.value = withRepeat(
       withSequence(
-        withTiming(0.8, { duration: 700 }),
-        withTiming(0.4, { duration: 700 }),
+        withTiming(0.7, { duration: 700 }),
+        withTiming(0.3, { duration: 700 }),
       ),
       -1,
       false,
-    )
-  }, [opacity])
+    );
+  }, [opacity]);
 
-  const style = useAnimatedStyle(() => ({ opacity: opacity.value }))
+  const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   return (
-    <Animated.View className={`bg-muted rounded-lg ${className}`} style={style} />
-  )
+    <Animated.View
+      style={[
+        style,
+        {
+          width,
+          height,
+          borderRadius: 8,
+          backgroundColor: colors.muted,
+        },
+      ]}
+    />
+  );
 }
 
 function StatCard({
@@ -45,102 +58,144 @@ function StatCard({
   color,
   isLoading,
 }: {
-  label: string
-  amount: number
-  currency: string
-  icon: keyof typeof Ionicons.glyphMap
-  color: string
-  isLoading: boolean
+  label: string;
+  amount: number;
+  currency: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  color: string;
+  isLoading: boolean;
 }) {
-  const opacity = useSharedValue(0)
+  const opacity = useSharedValue(0);
 
   useEffect(() => {
     if (!isLoading) {
-      opacity.value = withTiming(1, { duration: 400 })
+      opacity.value = withTiming(1, { duration: 400 });
     } else {
-      opacity.value = 0
+      opacity.value = 0;
     }
-  }, [isLoading, opacity])
+  }, [isLoading, opacity]);
 
-  const style = useAnimatedStyle(() => ({ opacity: opacity.value }))
+  const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
-  return (
-    <View className="flex-1 bg-card rounded-2xl p-4 border border-border">
-      <View className="flex-row items-center gap-2 mb-2">
-        <View
-          className="w-7 h-7 rounded-full items-center justify-center"
-          style={{ backgroundColor: `${color}20` }}
-        >
+  const content = (
+    <>
+      <View style={styles.statIconRow}>
+        <View style={[styles.statIconWrap, { backgroundColor: `${color}18` }]}>
           <Ionicons name={icon} size={14} color={color} />
         </View>
-        <Text className="text-xs font-medium text-muted-foreground">{label}</Text>
+        <Text style={styles.statLabel}>{label}</Text>
       </View>
       {isLoading ? (
-        <SkeletonBlock className="h-6 w-24 mt-1" />
+        <SkeletonBlock width={96} height={22} />
       ) : (
-        <Animated.Text
-          className="text-lg font-bold"
-          style={[{ color }, style]}
-        >
+        <Animated.Text style={[styles.statAmount, { color }, animStyle]}>
           {formatCompact(amount)}{' '}
-          <Text className="text-sm font-medium text-muted-foreground">{currency}</Text>
+          <Text style={styles.statCurrency}>{currency}</Text>
         </Animated.Text>
       )}
+    </>
+  );
+
+  if (Platform.OS === 'ios') {
+    return (
+      <BlurView
+        intensity={35}
+        tint="systemUltraThinMaterialDark"
+        style={styles.statCard}
+      >
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 18 }]} />
+        <View
+          style={[StyleSheet.absoluteFillObject, {
+            borderRadius: 18,
+            borderWidth: 1,
+            borderColor: colors.glass.border,
+          }]}
+        />
+        <View style={styles.statContent}>{content}</View>
+      </BlurView>
+    );
+  }
+
+  return (
+    <View style={[styles.statCard, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
+      <View style={styles.statContent}>{content}</View>
     </View>
-  )
+  );
 }
 
 const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
-  const { getSummary } = useReports({ startDate, endDate })
-  const { totalBalance: walletTotalBalance, isLoading: isWalletsLoading } = useWallets()
-  const { getMeQuery } = useAuth()
+  const { getSummary } = useReports({ startDate, endDate });
+  const { totalBalance: walletTotalBalance, isLoading: isWalletsLoading } = useWallets();
+  const { getMeQuery } = useAuth();
 
-  const isLoading = getSummary.isLoading || isWalletsLoading
+  const isLoading = getSummary.isLoading || isWalletsLoading;
+  const data = getSummary?.data?.data;
+  const totalBalance = walletTotalBalance?.totalBalance ?? 0;
+  const totalIncome = data?.totalIncome ?? 0;
+  const totalExpenses = data?.totalExpense ?? 0;
+  const mainCurrencyCode = getMeQuery?.data?.data?.mainCurrencyCode ?? 'USD';
 
-  const data = getSummary?.data?.data
-  const totalBalance = walletTotalBalance?.totalBalance ?? 0
-  const totalIncome = data?.totalIncome ?? 0
-  const totalExpenses = data?.totalExpense ?? 0
-  const mainCurrencyCode = getMeQuery?.data?.data?.mainCurrencyCode ?? 'USD'
-
-  const balanceOpacity = useSharedValue(0)
+  const balanceOpacity = useSharedValue(0);
 
   useEffect(() => {
     if (!isLoading) {
-      balanceOpacity.value = withTiming(1, { duration: 500 })
+      balanceOpacity.value = withTiming(1, { duration: 500 });
     } else {
-      balanceOpacity.value = 0
+      balanceOpacity.value = 0;
     }
-  }, [isLoading, balanceOpacity])
+  }, [isLoading, balanceOpacity]);
 
-  const balanceStyle = useAnimatedStyle(() => ({ opacity: balanceOpacity.value }))
+  const balanceStyle = useAnimatedStyle(() => ({ opacity: balanceOpacity.value }));
+
+  const balanceCard = (
+    <>
+      <Text style={styles.balanceLabel}>Total Balance</Text>
+      {isLoading ? (
+        <SkeletonBlock width={200} height={44} />
+      ) : (
+        <Animated.Text style={[styles.balanceAmount, balanceStyle]}>
+          {formatCompact(totalBalance)}{' '}
+          <Text style={styles.balanceCurrency}>{mainCurrencyCode}</Text>
+        </Animated.Text>
+      )}
+    </>
+  );
 
   return (
-    <View className="mb-4">
-      <View className="bg-card rounded-2xl p-5 mb-3 border border-border">
-        <Text className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-widest">
-          Total Balance
-        </Text>
-        {isLoading ? (
-          <SkeletonBlock className="h-10 w-48 mt-1" />
-        ) : (
-          <Animated.Text
-            className="text-4xl font-bold text-primary"
-            style={balanceStyle}
-          >
-            {formatCompact(totalBalance)}{' '}
-            <Text className="text-xl font-semibold text-muted-foreground">{mainCurrencyCode}</Text>
-          </Animated.Text>
-        )}
-      </View>
+    <View style={styles.container}>
+      {/* Main balance card with glass */}
+      {Platform.OS === 'ios' ? (
+        <BlurView
+          intensity={45}
+          tint="systemUltraThinMaterialDark"
+          style={styles.mainCard}
+        >
+          <LinearGradient
+            colors={['rgba(34,211,238,0.06)', 'transparent']}
+            style={StyleSheet.absoluteFillObject}
+          />
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 22 }]} />
+          <View style={[StyleSheet.absoluteFillObject, { borderRadius: 22, borderWidth: 1, borderColor: colors.glass.border }]} />
+          <View style={styles.mainCardContent}>{balanceCard}</View>
+        </BlurView>
+      ) : (
+        <View style={[styles.mainCard, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }]}>
+          <LinearGradient
+            colors={['rgba(34,211,238,0.04)', 'transparent']}
+            style={[StyleSheet.absoluteFillObject, { borderRadius: 22 }]}
+          />
+          <View style={styles.mainCardContent}>{balanceCard}</View>
+        </View>
+      )}
 
-      <View className="flex-row gap-3">
+      {/* Stat row */}
+      <View style={styles.statRow}>
         <StatCard
           label="Income"
           amount={totalIncome}
           currency={mainCurrencyCode}
           icon="arrow-down-circle"
-          color="#22C55E"
+          color={colors.success}
           isLoading={isLoading}
         />
         <StatCard
@@ -148,12 +203,85 @@ const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
           amount={totalExpenses}
           currency={mainCurrencyCode}
           icon="arrow-up-circle"
-          color="#EF4444"
+          color={colors.destructive}
           isLoading={isLoading}
         />
       </View>
     </View>
-  )
-}
+  );
+};
 
-export { BalanceView }
+export { BalanceView };
+
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 16,
+  },
+  mainCard: {
+    borderRadius: 22,
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+  mainCardContent: {
+    padding: 20,
+  },
+  balanceLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.mutedForeground,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+  },
+  balanceAmount: {
+    fontSize: 40,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  balanceCurrency: {
+    fontSize: 20,
+    fontWeight: '500',
+    color: colors.mutedForeground,
+  },
+  statRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    borderRadius: 18,
+    overflow: 'hidden',
+  },
+  statContent: {
+    padding: 14,
+  },
+  statIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  statIconWrap: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.mutedForeground,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  statAmount: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  statCurrency: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.mutedForeground,
+  },
+});

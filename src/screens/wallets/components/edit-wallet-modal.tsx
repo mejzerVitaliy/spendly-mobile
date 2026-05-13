@@ -1,18 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BottomSheet, FormCurrencyPicker, NumericKeyboard } from '@/shared/ui';
-import { WalletType } from '@/shared/types';
+import { BottomSheet } from '@/shared/ui';
+import { WalletDto, WalletType } from '@/shared/types';
 import { useWallets } from '@/shared/hooks';
-import { useAuthStore } from '@/shared/stores';
-import { useForm } from 'react-hook-form';
 import { colors } from '@/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 
-interface CreateWalletModalProps {
+interface EditWalletModalProps {
   visible: boolean;
+  wallet: WalletDto | null;
   onClose: () => void;
 }
 
@@ -24,58 +23,39 @@ const WALLET_TYPES: { value: WalletType; label: string; icon: keyof typeof Ionic
   { value: 'CUSTOM', label: 'Custom', icon: 'wallet-outline' },
 ];
 
-export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) {
-  const { createMutation } = useWallets();
+export function EditWalletModal({ visible, wallet, onClose }: EditWalletModalProps) {
+  const { updateMutation } = useWallets();
   const insets = useSafeAreaInsets();
-  const userMainCurrency = useAuthStore((state) => state.user?.mainCurrencyCode) ?? 'USD';
-  const { control, watch, setValue } = useForm<{ currencyCode: string }>({
-    defaultValues: { currencyCode: userMainCurrency },
-  });
-
   const [name, setName] = useState('');
   const [type, setType] = useState<WalletType>('CASH');
-  const [initialBalance, setInitialBalance] = useState('');
-  const [balanceKeyboardVisible, setBalanceKeyboardVisible] = useState(false);
-  const balanceInputRef = useRef<TextInput>(null);
-  const currencyCode = watch('currencyCode');
 
   useEffect(() => {
-    setValue('currencyCode', userMainCurrency);
-  }, [userMainCurrency, setValue]);
+    if (wallet) {
+      setName(wallet.name);
+      setType(wallet.type);
+    }
+  }, [wallet]);
 
-  const resetFormState = () => {
-    setName('');
-    setValue('currencyCode', userMainCurrency);
-    setType('CASH');
-    setInitialBalance('');
-    setBalanceKeyboardVisible(false);
-  };
-
-  const handleCreate = async () => {
+  const handleSave = async () => {
+    if (!wallet) return;
     if (!name.trim()) {
       Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter a wallet name' });
       return;
     }
     try {
-      await createMutation.mutateAsync({
-        name: name.trim(),
-        currencyCode,
-        type,
-        initialBalance: initialBalance ? Math.round(parseFloat(initialBalance) * 100) : 0,
-      });
-      resetFormState();
+      await updateMutation.mutateAsync({ id: wallet.id, request: { name: name.trim(), type } });
+      Toast.show({ type: 'success', text1: 'Saved', text2: 'Wallet updated successfully' });
       onClose();
     } catch {
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to create wallet' });
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to update wallet' });
     }
   };
 
   return (
     <BottomSheet
       open={visible}
-      onOpenChange={(open) => {
-        if (!open) { resetFormState(); onClose(); }
-      }}
+      onOpenChange={(open) => { if (!open) onClose(); }}
+      snapPoints={['75%']}
       noWrapper
       keyboardBehavior="interactive"
       android_keyboardInputMode="adjustResize"
@@ -83,20 +63,15 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
       <BottomSheetScrollView
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.container, { paddingBottom: Math.max(16, insets.bottom + 16) }]}
+        contentContainerStyle={[styles.container, { paddingBottom: Math.max(32, insets.bottom + 24) }]}
       >
-        {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>New Wallet</Text>
-          <Pressable
-            onPress={() => { resetFormState(); onClose(); }}
-            style={styles.closeBtn}
-          >
+          <Text style={styles.title}>Edit Wallet</Text>
+          <Pressable onPress={onClose} style={styles.closeBtn}>
             <Ionicons name="close" size={18} color={colors.mutedForeground} />
           </Pressable>
         </View>
 
-        {/* Name */}
         <Text style={styles.label}>Wallet Name</Text>
         <TextInput
           value={name}
@@ -104,12 +79,9 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
           placeholder="e.g. Main Card"
           placeholderTextColor={colors.mutedForeground}
           style={styles.textInput}
+          returnKeyType="done"
         />
 
-        {/* Currency */}
-        <FormCurrencyPicker control={control} name="currencyCode" label="Currency" />
-
-        {/* Type */}
         <Text style={styles.label}>Type</Text>
         <View style={styles.typeRow}>
           {WALLET_TYPES.map((wt) => (
@@ -128,54 +100,25 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
                 size={18}
                 color={type === wt.value ? colors.primary : colors.mutedForeground}
               />
-              <Text
-                style={[
-                  styles.typeBtnText,
-                  { color: type === wt.value ? colors.primary : colors.foreground },
-                ]}
-              >
+              <Text style={[styles.typeBtnText, { color: type === wt.value ? colors.primary : colors.foreground }]}>
                 {wt.label}
               </Text>
             </Pressable>
           ))}
         </View>
 
-        {/* Initial balance */}
-        <Text style={styles.label}>
-          Initial Balance{' '}
-          <Text style={{ color: colors.mutedForeground }}>(optional)</Text>
-        </Text>
-        <TextInput
-          ref={balanceInputRef}
-          value={initialBalance}
-          onChangeText={setInitialBalance}
-          placeholder="0.00"
-          placeholderTextColor={colors.mutedForeground}
-          showSoftInputOnFocus={false}
-          onFocus={() => setBalanceKeyboardVisible(true)}
-          style={[styles.textInput, { marginBottom: 0 }]}
-        />
-        <NumericKeyboard
-          visible={balanceKeyboardVisible}
-          value={initialBalance}
-          inputRef={balanceInputRef}
-          onKeyPress={(key) => setInitialBalance(prev => prev + key)}
-          onDelete={() => setInitialBalance(prev => prev.slice(0, -1))}
-          onClose={() => setBalanceKeyboardVisible(false)}
-        />
-        <View style={{ height: 24 }} />
-
-        {/* Submit */}
         <Pressable
-          onPress={handleCreate}
-          disabled={createMutation.isPending}
-          className="bg-primary active:opacity-80 p-4 rounded-2xl items-center"
+          onPress={handleSave}
+          disabled={updateMutation.isPending}
+          style={({ pressed }) => [
+            styles.submitBtn,
+            { opacity: updateMutation.isPending || pressed ? 0.7 : 1 },
+          ]}
         >
           <Text style={styles.submitText}>
-            {createMutation.isPending ? 'Creating...' : 'Create Wallet'}
+            {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
           </Text>
         </Pressable>
-        <View style={{ height: 16 }} />
       </BottomSheetScrollView>
     </BottomSheet>
   );
@@ -185,7 +128,7 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
     paddingTop: 6,
-    paddingBottom: 16,
+    paddingBottom: 32,
   },
   header: {
     flexDirection: 'row',
@@ -231,7 +174,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 24,
+    marginBottom: 32,
   },
   typeBtn: {
     flexDirection: 'row',

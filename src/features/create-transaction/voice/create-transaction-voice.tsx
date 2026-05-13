@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { colors } from '@/shared/theme';
 import Toast from 'react-native-toast-message';
 
 interface CreateTransactionVoiceProps {
@@ -131,12 +132,12 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
               width: 96,
               height: 96,
               borderRadius: 48,
-              backgroundColor: 'rgba(139,92,246,0.15)',
+              backgroundColor: colors.primary + '26',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <ActivityIndicator size="large" color="#8B5CF6" />
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
           <Text className="text-muted-foreground text-sm">Processing...</Text>
         </View>

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
+import { colors } from '@/shared/theme';
 
 export function CurrenciesScreen() {
   const { getAllQuery, getFavoritesQuery, updateFavoritesMutation } = useCurrencies();
@@ -110,7 +111,7 @@ export function CurrenciesScreen() {
 
           {(getAllQuery.isLoading || getFavoritesQuery.isLoading) && (
             <View className="py-8 items-center justify-center">
-              <ActivityIndicator size="large" color="#3b82f6" />
+              <ActivityIndicator size="large" color={colors.primary} />
             </View>
           )}
 
@@ -189,7 +190,7 @@ export function CurrenciesScreen() {
                         <Ionicons
                           name="checkmark-circle"
                           size={24}
-                          color="#10b981"
+                          color={colors.primary}
                         />
                       )}
                     </Pressable>

@@ -3,6 +3,8 @@ export * from './confirm-dialog';
 export * from './bottom-sheet';
 export * from './button';
 export * from './card';
+export * from './glass-view';
+export * from './glass-card';
 export * from './form-category-picker';
 export * from './form-currency-picker';
 export * from './form-date-picker';

@@ -31,13 +31,13 @@ export function SettingsItem({
             <Ionicons name={icon} size={24} color="#64748b" />
           </View>
         )}
-        
+
         <View className="flex-1">
           <Text className="text-base font-semibold text-foreground">
             {title}
           </Text>
         </View>
-        
+
         {showChevron && !disabled && (
           <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
         )}

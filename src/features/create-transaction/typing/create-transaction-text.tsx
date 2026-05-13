@@ -4,6 +4,7 @@ import { ActivityIndicator, Keyboard, Pressable, Text, View } from 'react-native
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
+import { colors } from '@/shared/theme';
 
 interface CreateTransactionTextProps {
   onSuccess?: () => void;
@@ -51,9 +52,9 @@ const CreateTransactionText = ({ onSuccess }: CreateTransactionTextProps) => {
 
       <View className="flex-row items-center gap-3">
         <BottomSheetTextInput
-          style={{ height: 56, flex: 1, backgroundColor: 'transparent', fontSize: 16, paddingHorizontal: 16, borderRadius: 12, borderWidth: 1, borderColor: '#374151', color: '#F9FAFB' }}
+          style={{ height: 56, flex: 1, backgroundColor: 'transparent', fontSize: 16, paddingHorizontal: 16, borderRadius: 12, borderWidth: 1, borderColor: colors.border, color: colors.foreground }}
           placeholder="What did you spend or earn?"
-          placeholderTextColor="#6B7280"
+          placeholderTextColor={colors.mutedForeground}
           value={text}
           onChangeText={setText}
           editable={!parseTextMutation.isPending}

@@ -6,12 +6,12 @@ interface BadgeProps extends ViewProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-export function Badge({ 
-  children, 
+export function Badge({
+  children,
   variant = 'default',
   size = 'md',
-  className = '', 
-  ...props 
+  className = '',
+  ...props
 }: BadgeProps) {
   const variantClasses = {
     default: 'bg-secondary',
@@ -20,7 +20,7 @@ export function Badge({
     destructive: 'bg-destructive',
     success: 'bg-success',
     warning: 'bg-warning',
-    outline: 'bg-transparent border-2 border-border',
+    outline: 'bg-transparent border border-border',
   }[variant];
 
   const textClasses = {
@@ -41,13 +41,13 @@ export function Badge({
 
   const textSizeClasses = {
     sm: 'text-xs',
-    md: 'text-sm',
-    lg: 'text-base',
+    md: 'text-xs',
+    lg: 'text-sm',
   }[size];
 
   return (
-    <View 
-      className={`rounded-full inline-flex items-center justify-center ${sizeClasses} ${variantClasses} ${className}`}
+    <View
+      className={`rounded-full items-center justify-center ${sizeClasses} ${variantClasses} ${className}`}
       {...props}
     >
       <Text className={`${textClasses} ${textSizeClasses} font-semibold`}>

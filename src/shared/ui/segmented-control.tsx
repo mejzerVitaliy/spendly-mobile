@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { LayoutChangeEvent, Pressable, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { colors } from '@/shared/theme';
+import { GlassView } from './glass-view';
 
 interface SegmentedOption<T extends string> {
   label: string;
@@ -24,7 +26,7 @@ export function SegmentedControl<T extends string>({
   const [containerWidth, setContainerWidth] = useState(0);
   const indicatorX = useSharedValue(0);
 
-  const activeIndex = Math.max(0, options.findIndex((option) => option.value === value));
+  const activeIndex = Math.max(0, options.findIndex((o) => o.value === value));
   const segmentWidth = containerWidth > 0 ? containerWidth / Math.max(options.length, 1) : 0;
 
   useEffect(() => {
@@ -37,13 +39,31 @@ export function SegmentedControl<T extends string>({
 
   return (
     <View
-      className={`flex-row bg-muted rounded-2xl p-1 relative overflow-hidden ${className}`}
+      style={{
+        flexDirection: 'row',
+        backgroundColor: colors.muted,
+        borderRadius: 20,
+        padding: 4,
+        position: 'relative',
+        overflow: 'hidden',
+      }}
       onLayout={(e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width)}
     >
       {segmentWidth > 0 && (
         <Animated.View
-          className="absolute top-1 bottom-1 rounded-xl bg-card"
-          style={[{ width: Math.max(segmentWidth - indicatorInset * 2, 0) }, indicatorStyle]}
+          style={[
+            {
+              position: 'absolute',
+              top: 4,
+              bottom: 4,
+              borderRadius: 16,
+              backgroundColor: colors.glass.backgroundStrong,
+              borderWidth: 1,
+              borderColor: colors.glass.border,
+              width: Math.max(segmentWidth - indicatorInset * 2, 0),
+            },
+            indicatorStyle,
+          ]}
         />
       )}
 
@@ -53,12 +73,15 @@ export function SegmentedControl<T extends string>({
           <Pressable
             key={option.value}
             onPress={() => onChange(option.value)}
-            className="flex-1 py-2.5 px-3 rounded-xl"
+            style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 16 }}
           >
             <Text
-              className={`text-center font-medium ${
-                isSelected ? 'text-foreground' : 'text-muted-foreground'
-              }`}
+              style={{
+                textAlign: 'center',
+                fontWeight: '600',
+                fontSize: 13,
+                color: isSelected ? colors.foreground : colors.mutedForeground,
+              }}
             >
               {option.label}
             </Text>

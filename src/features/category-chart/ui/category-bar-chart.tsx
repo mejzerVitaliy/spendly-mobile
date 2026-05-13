@@ -4,6 +4,7 @@ import { CategoryBarChartItem } from '@/shared/types'
 import React from 'react'
 import { ActivityIndicator, Text, View } from 'react-native'
 import { BarChart } from 'react-native-gifted-charts'
+import { colors } from '@/shared/theme'
 
 interface CategoryBarChartProps {
   startDate?: string
@@ -15,7 +16,7 @@ const CategoryBarChart = ({ startDate, endDate, type }: CategoryBarChartProps) =
   const { getCategoryBarChart } = useReports({ startDate, endDate, type })
 
   if (getCategoryBarChart.isLoading) {
-    return <ActivityIndicator size="large" color="#3b82f6" />
+    return <ActivityIndicator size="large" color={colors.primary} />
   }
 
   if (getCategoryBarChart.isError) {
@@ -53,7 +54,7 @@ const CategoryBarChart = ({ startDate, endDate, type }: CategoryBarChartProps) =
           xAxisThickness={0}
           showYAxisIndices={false}
           yAxisTextStyle={{
-            color: '#9ca3af',
+            color: colors.mutedForeground,
             fontSize: 10,
             fontWeight: '500',
           }}
@@ -63,7 +64,7 @@ const CategoryBarChart = ({ startDate, endDate, type }: CategoryBarChartProps) =
           yAxisLabelWidth={50}
           yAxisLabelPrefix='$'
           xAxisLabelTextStyle={{
-            color: '#9ca3af',
+            color: colors.mutedForeground,
             fontSize: 8,
             fontWeight: '500',
             transform: [{ rotate: '20deg' }],

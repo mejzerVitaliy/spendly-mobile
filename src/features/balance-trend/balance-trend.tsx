@@ -4,6 +4,7 @@ import { LineChart } from "react-native-gifted-charts";
 
 import { useReports } from "@/shared/hooks";
 import { Card } from "@/shared/ui";
+import { colors } from "@/shared/theme";
 
 interface BalanceTrendProps {
   startDate?: string;
@@ -43,7 +44,7 @@ const BalanceTrend = ({ startDate, endDate }: BalanceTrendProps) => {
   }, [chartData]);
 
   if (getBalanceTrendChart.isLoading) {
-    return <ActivityIndicator size="large" color="#3b82f6" />;
+    return <ActivityIndicator size="large" color={colors.primary} />;
   }
 
   if (getBalanceTrendChart.isError) {
@@ -110,7 +111,7 @@ const BalanceTrend = ({ startDate, endDate }: BalanceTrendProps) => {
         yAxisLabelWidth={50}
         yAxisLabelContainerStyle={{ width: 44 }}
         yAxisTextStyle={{
-          color: "#9ca3af",
+          color: colors.mutedForeground,
           fontSize: 10,
           fontWeight: "500",
         }}

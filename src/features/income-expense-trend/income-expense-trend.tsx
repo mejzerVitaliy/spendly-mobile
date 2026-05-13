@@ -3,6 +3,7 @@ import { Card } from "@/shared/ui";
 import React from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
+import { colors } from "@/shared/theme";
 
 interface IncomeExpenseTrendProps {
   startDate?: string;
@@ -13,7 +14,7 @@ const IncomeExpenseTrend = (props: IncomeExpenseTrendProps) => {
   const { getIncomesExpensesTrendChart } = useReports({ ...props });
 
   if (getIncomesExpensesTrendChart.isLoading) {
-    return <ActivityIndicator size="large" color="#3b82f6" />;
+    return <ActivityIndicator size="large" color={colors.primary} />;
   }
 
   if (getIncomesExpensesTrendChart.isError) {
@@ -73,7 +74,7 @@ const IncomeExpenseTrend = (props: IncomeExpenseTrendProps) => {
           textFontSize={13}
           labelsExtraHeight={10}
           yAxisTextStyle={{
-            color: '#9ca3af',
+            color: colors.mutedForeground,
             fontSize: 10,
             fontWeight: '500',
           }}

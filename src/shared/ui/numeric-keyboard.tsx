@@ -1,98 +1,195 @@
+import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect } from 'react';
-import { Dimensions, Modal, Pressable, Text, View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Dimensions, Modal, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface NumericKeyboardProps {
   visible: boolean;
+  value?: string;
+  inputRef?: React.RefObject<TextInput | any>;
   onKeyPress: (key: string) => void;
   onDelete: () => void;
-  onConfirm: () => void;
+  onClose: () => void;
 }
+
+// Grid layout:
+// [1] [2] [3]
+// [4] [5] [6]
+// [7] [8] [9]
+// [⌫] [0] [✓]
 
 const NUMBER_ROWS = [
   ['1', '2', '3'],
   ['4', '5', '6'],
   ['7', '8', '9'],
-];
+] as const;
 
-function KeyboardContent({
+export function NumericKeyboard({
+  visible,
+  value,
+  inputRef,
   onKeyPress,
   onDelete,
-}: Pick<NumericKeyboardProps, 'onKeyPress' | 'onDelete'>) {
+  onClose,
+}: NumericKeyboardProps) {
   const insets = useSafeAreaInsets();
-  const keyboardHeight = Dimensions.get('window').height * 0.35 + insets.bottom;
-  const translateY = useSharedValue(keyboardHeight);
+  const screenHeight = Dimensions.get('window').height;
+  const kbHeight = Math.max(320, screenHeight * 0.44) + (insets.bottom ?? 0);
+
+  const kbHeightRef = useRef(kbHeight);
+  kbHeightRef.current = kbHeight;
+
+  // Keep latest inputRef accessible from the stable afterClose callback.
+  const inputRefHolder = useRef(inputRef);
+  inputRefHolder.current = inputRef;
+
+  const translateY = useSharedValue(kbHeight);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  // Called on JS thread after the slide-down animation finishes.
+  // blur() lives here — NOT in handleClose — so it fires after the modal is gone
+  // and cannot race with onFocus events that would reopen the keyboard.
+  const afterClose = useCallback(() => {
+    inputRefHolder.current?.current?.blur();
+    setModalVisible(false);
+  }, []);
 
   useEffect(() => {
-    translateY.value = withTiming(0, { duration: 250 });
-  }, [translateY]);
+    if (visible) {
+      translateY.value = kbHeightRef.current;
+      setModalVisible(true);
+      translateY.value = withTiming(0, {
+        duration: 320,
+        easing: Easing.out(Easing.cubic),
+      });
+    } else {
+      translateY.value = withTiming(
+        kbHeightRef.current,
+        { duration: 260, easing: Easing.in(Easing.cubic) },
+        () => { runOnJS(afterClose)(); },
+      );
+    }
+  }, [visible, translateY, afterClose]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
   }));
 
+  // Just tell the parent to update its state. Blur/modal-hide happens in afterClose.
+  const handleClose = () => onClose();
+
   return (
-    <Animated.View
-      className="absolute left-0 right-0 bg-slate-900 border-t border-slate-800 pt-2 px-2"
-      style={[
-        {
-          bottom: 0,
-          height: keyboardHeight,
-          paddingBottom: insets.bottom,
-        },
-        animatedStyle,
-      ]}
-    >
-      {NUMBER_ROWS.map((row, rowIdx) => (
-        <View key={rowIdx} className="flex-1 flex-row gap-1.5 mb-1.5">
-          {row.map((key) => (
-            <Pressable
-              key={key}
-              onPress={() => onKeyPress(key)}
-              className="flex-1 items-center justify-center rounded-xl bg-muted active:opacity-60"
-            >
-              <Text className="text-foreground text-2xl font-medium">{key}</Text>
-            </Pressable>
-          ))}
+    <Modal visible={modalVisible} transparent animationType="none" statusBarTranslucent>
+      {/* Dimmed backdrop — tap to close */}
+      <Pressable className="flex-1 bg-black/30" onPress={handleClose} />
+
+      {/* Keyboard panel */}
+      <Animated.View
+        style={[
+          {
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: kbHeight,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            overflow: 'hidden',
+          },
+          animatedStyle,
+        ]}
+      >
+        {/* Liquid glass — iOS blur layer */}
+        {Platform.OS === 'ios' && (
+          <BlurView
+            intensity={72}
+            tint="systemUltraThinMaterialDark"
+            className="absolute inset-0"
+          />
+        )}
+
+        {/* Dark overlay (ios: semi, android: solid) */}
+        <View
+          className="absolute inset-0"
+          style={{
+            backgroundColor:
+              Platform.OS === 'ios' ? 'rgba(8,8,8,0.62)' : '#0D0D0D',
+          }}
+        />
+
+        {/* Top shine border */}
+        <View className="h-px bg-white/10" />
+
+        {/* Value display */}
+        <View className="px-5 py-3 items-start">
+          <Text className="text-[28px] font-bold text-foreground tracking-wide">
+            {value || '0'}
+          </Text>
         </View>
-      ))}
 
-      <View className="flex-1 flex-row gap-1.5">
-        <Pressable
-          onPress={() => onKeyPress('.')}
-          className="flex-1 items-center justify-center rounded-xl bg-muted active:opacity-60"
-        >
-          <Text className="text-foreground text-2xl font-medium">.</Text>
-        </Pressable>
+        {/* Separator */}
+        <View className="mx-3 h-px bg-white/[0.06] mb-1.5" />
 
-        <Pressable
-          onPress={() => onKeyPress('0')}
-          className="flex-1 items-center justify-center rounded-xl bg-muted active:opacity-60"
-        >
-          <Text className="text-foreground text-2xl font-medium">0</Text>
-        </Pressable>
+        {/* Keys area — fills remaining height */}
+        <View className="flex-1 px-3 pb-0 gap-2">
 
-        <Pressable
-          onPress={onDelete}
-          className="flex-1 items-center justify-center rounded-xl bg-muted active:opacity-60"
-        >
-          <Ionicons name="backspace-outline" size={24} color="#9CA3AF" />
-        </Pressable>
-      </View>
-    </Animated.View>
-  );
-}
+          {/* Rows 1–9 */}
+          {NUMBER_ROWS.map((row, rowIndex) => (
+            <View key={rowIndex} className="flex-1 flex-row gap-2">
+              {row.map((digit) => (
+                <Pressable
+                  key={digit}
+                  onPress={() => onKeyPress(digit)}
+                  className="flex-1 items-center justify-center rounded-[16px] bg-white/[0.08] border border-white/[0.09] active:bg-white/20 active:border-white/25"
+                >
+                  <Text className="text-[22px] font-medium text-foreground">
+                    {digit}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          ))}
 
-export function NumericKeyboard({ visible, onKeyPress, onDelete, onConfirm }: NumericKeyboardProps) {
-  return (
-    <Modal visible={visible} transparent animationType="none" statusBarTranslucent>
-      <Pressable className="flex-1" onPress={onConfirm} />
-      <KeyboardContent
-        onKeyPress={onKeyPress}
-        onDelete={onDelete}
-      />
+          {/* Bottom row: ⌫ · 0 · ✓ */}
+          <View className="flex-1 flex-row gap-2">
+
+            {/* Backspace */}
+            <Pressable
+              onPress={onDelete}
+              className="flex-1 items-center justify-center rounded-[16px] bg-white/[0.05] border border-white/[0.06] active:bg-white/[0.16] active:border-white/20"
+            >
+              <Ionicons name="backspace-outline" size={22} color="#F2F2F2" />
+            </Pressable>
+
+            {/* 0 */}
+            <Pressable
+              onPress={() => onKeyPress('0')}
+              className="flex-1 items-center justify-center rounded-[16px] bg-white/[0.08] border border-white/[0.09] active:bg-white/20 active:border-white/25"
+            >
+              <Text className="text-[22px] font-medium text-foreground">0</Text>
+            </Pressable>
+
+            {/* Confirm ✓ */}
+            <Pressable
+              onPress={handleClose}
+              className="flex-1 items-center justify-center rounded-[16px] bg-primary active:opacity-70"
+            >
+              <Ionicons name="checkmark" size={26} color="#080808" />
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Safe area spacer */}
+        <View style={{ height: Math.max(insets.bottom, 10) }} />
+      </Animated.View>
     </Modal>
   );
 }

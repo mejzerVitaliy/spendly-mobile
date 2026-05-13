@@ -4,6 +4,7 @@ import { CategoryPieChartItem } from '@/shared/types'
 import React from 'react'
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
 import { PieChart } from 'react-native-gifted-charts'
+import { colors } from '@/shared/theme'
 
 interface CategoryPieChartProps {
   startDate?: string
@@ -15,7 +16,7 @@ const CategoryPieChart = ({ startDate, endDate, type }: CategoryPieChartProps) =
   const { getCategoryPieChart } = useReports({ startDate, endDate, type })
 
   if (getCategoryPieChart.isLoading) {
-    return <ActivityIndicator size="large" color="#3b82f6" />
+    return <ActivityIndicator size="large" color={colors.primary} />
   }
 
   if (getCategoryPieChart.isError) {
@@ -70,7 +71,7 @@ const CategoryPieChart = ({ startDate, endDate, type }: CategoryPieChartProps) =
           donut
           radius={100}
           innerRadius={60}
-          innerCircleColor="#1B0642"
+          innerCircleColor={colors.background}
           showValuesAsLabels
           fontWeight="bold"
         />

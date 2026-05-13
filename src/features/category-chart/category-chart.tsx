@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons'
 import React from 'react'
 import { Pressable, Text, View } from 'react-native'
 import { CategoryBarChart, CategoryPieChart } from './ui'
+import { colors } from '@/shared/theme'
 
 interface CategoryChartProps {
   startDate?: string
@@ -38,7 +39,7 @@ const CategoryChart = (props: CategoryChartProps) => {
           <MaterialCommunityIcons 
             name="swap-vertical" 
             size={20} 
-            color="#6b7280"
+            color={colors.mutedForeground}
           />
         </Pressable>
 
