@@ -41,8 +41,8 @@ export function OnboardingLoginScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <View className="flex-1 px-6 pt-8">
-        <Text className="text-2xl font-bold text-foreground mb-2">
-          Welcome back
+        <Text className="text-3xl font-bold text-foreground mb-2">
+          Welcome back!
         </Text>
         <Text className="text-base text-muted-foreground mb-8">
           Login with your existing account

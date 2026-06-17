@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BottomSheet, FormCurrencyPicker, NumericKeyboard } from '@/shared/ui';
+import { BottomSheet, FormCurrencyPicker, NumericKeyboard, useNumericKeyboard } from '@/shared/ui';
 import { WalletType } from '@/shared/types';
 import { useWallets } from '@/shared/hooks';
 import { useAuthStore } from '@/shared/stores';
@@ -35,8 +35,7 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
   const [name, setName] = useState('');
   const [type, setType] = useState<WalletType>('CASH');
   const [initialBalance, setInitialBalance] = useState('');
-  const [balanceKeyboardVisible, setBalanceKeyboardVisible] = useState(false);
-  const balanceInputRef = useRef<TextInput>(null);
+  const balanceKb = useNumericKeyboard();
   const currencyCode = watch('currencyCode');
 
   useEffect(() => {
@@ -48,7 +47,7 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
     setValue('currencyCode', userMainCurrency);
     setType('CASH');
     setInitialBalance('');
-    setBalanceKeyboardVisible(false);
+    balanceKb.close();
   };
 
   const handleCreate = async () => {
@@ -145,23 +144,21 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
           Initial Balance{' '}
           <Text style={{ color: colors.mutedForeground }}>(optional)</Text>
         </Text>
-        <TextInput
-          ref={balanceInputRef}
-          value={initialBalance}
-          onChangeText={setInitialBalance}
-          placeholder="0.00"
-          placeholderTextColor={colors.mutedForeground}
-          showSoftInputOnFocus={false}
-          onFocus={() => setBalanceKeyboardVisible(true)}
-          style={[styles.textInput, { marginBottom: 0 }]}
-        />
+        <Pressable
+          onPress={balanceKb.open}
+          style={[styles.textInput, { marginBottom: 0, justifyContent: 'center' }]}
+        >
+          <Text style={{ fontSize: 16, color: initialBalance ? colors.foreground : colors.mutedForeground }}>
+            {initialBalance || '0.00'}
+          </Text>
+        </Pressable>
         <NumericKeyboard
-          visible={balanceKeyboardVisible}
+          visible={balanceKb.visible}
           value={initialBalance}
-          inputRef={balanceInputRef}
           onKeyPress={(key) => setInitialBalance(prev => prev + key)}
           onDelete={() => setInitialBalance(prev => prev.slice(0, -1))}
-          onClose={() => setBalanceKeyboardVisible(false)}
+          onClose={balanceKb.close}
+          onClosed={balanceKb.onClosed}
         />
         <View style={{ height: 24 }} />
 
@@ -245,12 +242,6 @@ const styles = StyleSheet.create({
   typeBtnText: {
     fontSize: 13,
     fontWeight: '600',
-  },
-  submitBtn: {
-    backgroundColor: colors.primary,
-    paddingVertical: 17,
-    borderRadius: 18,
-    alignItems: 'center',
   },
   submitText: {
     fontSize: 16,

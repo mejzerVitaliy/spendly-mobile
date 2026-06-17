@@ -1,6 +1,8 @@
-import { useRef, useState } from 'react';
-import { Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { NumericKeyboard } from './numeric-keyboard';
+import { useNumericKeyboard } from './use-numeric-keyboard';
 import { colors } from '@/shared/theme';
 
 interface InputProps extends Omit<TextInputProps, 'secureTextEntry'> {
@@ -31,8 +33,8 @@ const Input = ({
 }: InputProps) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [isNumericKeyboardVisible, setIsNumericKeyboardVisible] = useState(false);
-  const inputRef = useRef<TextInput>(null);
+
+  const kb = useNumericKeyboard();
 
   const isNumeric = type === 'number';
   const keyboardType = type === 'email' ? 'email-address' : 'default';
@@ -71,7 +73,7 @@ const Input = ({
           flexDirection: 'row',
           alignItems: 'center',
           borderWidth: 1,
-          borderColor,
+          borderColor: isNumeric ? (error ? colors.destructive : colors.border) : borderColor,
           borderRadius: 16,
           backgroundColor: colors.input,
           opacity: disabled ? 0.5 : 1,
@@ -79,33 +81,45 @@ const Input = ({
       >
         {leftIcon && <View style={{ paddingLeft: 12 }}>{leftIcon}</View>}
 
-        <TextInput
-          ref={inputRef}
-          style={{
-            flex: 1,
-            paddingHorizontal: 16,
-            paddingVertical: 14,
-            fontSize: 15,
-            color: colors.foreground,
-            paddingLeft: leftIcon ? 8 : 16,
-            paddingRight: type === 'password' || rightIcon ? 48 : 16,
-          }}
-          placeholder={placeholder}
-          placeholderTextColor={colors.mutedForeground}
-          value={value}
-          onChangeText={onChangeText}
-          keyboardType={keyboardType}
-          secureTextEntry={secureTextEntry}
-          autoCapitalize={type === 'email' ? 'none' : 'sentences'}
-          editable={!disabled}
-          showSoftInputOnFocus={isNumeric ? false : undefined}
-          onFocus={() => {
-            setIsFocused(true);
-            if (isNumeric) setIsNumericKeyboardVisible(true);
-          }}
-          onBlur={() => setIsFocused(false)}
-          {...props}
-        />
+        {isNumeric ? (
+          // Pressable display — no TextInput involved, no focus/onFocus events
+          <Pressable
+            onPress={disabled ? undefined : kb.open}
+            style={{
+              flex: 1,
+              paddingHorizontal: leftIcon ? 8 : 16,
+              paddingVertical: 14,
+              paddingRight: rightIcon ? 48 : 16,
+            }}
+          >
+            <Text style={{ fontSize: 15, color: value ? colors.foreground : colors.mutedForeground }}>
+              {value || placeholder || ''}
+            </Text>
+          </Pressable>
+        ) : (
+          <TextInput
+            style={{
+              flex: 1,
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              fontSize: 15,
+              color: colors.foreground,
+              paddingLeft: leftIcon ? 8 : 16,
+              paddingRight: type === 'password' || rightIcon ? 48 : 16,
+            }}
+            placeholder={placeholder}
+            placeholderTextColor={colors.mutedForeground}
+            value={value}
+            onChangeText={onChangeText}
+            keyboardType={keyboardType}
+            secureTextEntry={secureTextEntry}
+            autoCapitalize={type === 'email' ? 'none' : 'sentences'}
+            editable={!disabled}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            {...props}
+          />
+        )}
 
         {type === 'password' && (
           <TouchableOpacity
@@ -113,9 +127,11 @@ const Input = ({
             onPress={() => setIsPasswordVisible(!isPasswordVisible)}
             disabled={disabled}
           >
-            <Text style={{ color: colors.mutedForeground, fontSize: 16 }}>
-              {isPasswordVisible ? '🙈' : '👁️'}
-            </Text>
+            <Ionicons
+              name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+              size={20}
+              color={colors.mutedForeground}
+            />
           </TouchableOpacity>
         )}
 
@@ -136,14 +152,16 @@ const Input = ({
         </Text>
       )}
 
-      <NumericKeyboard
-        visible={isNumeric && isNumericKeyboardVisible}
-        value={value}
-        inputRef={inputRef}
-        onKeyPress={handleNumericKey}
-        onDelete={handleNumericDelete}
-        onClose={() => setIsNumericKeyboardVisible(false)}
-      />
+      {isNumeric && (
+        <NumericKeyboard
+          visible={kb.visible}
+          value={value}
+          onKeyPress={handleNumericKey}
+          onDelete={handleNumericDelete}
+          onClose={kb.close}
+          onClosed={kb.onClosed}
+        />
+      )}
     </View>
   );
 };

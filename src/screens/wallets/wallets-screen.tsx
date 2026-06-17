@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { BottomSheetView } from '@gorhom/bottom-sheet';
 import { useWallets } from '@/shared/hooks';
 import { WalletDto, WalletType } from '@/shared/types';
-import { ConfirmDialog } from '@/shared/ui';
+import { BottomSheet, ConfirmDialog } from '@/shared/ui';
 import { formatCompact } from '@/shared/utils';
 import Toast from 'react-native-toast-message';
 import { CreateWalletModal, EditWalletModal } from './components';
@@ -26,84 +27,94 @@ const WALLET_TYPE_LABELS: Record<WalletType, string> = {
 function WalletActionSheet({
   wallet,
   onEdit,
+  onSetDefault,
   onArchive,
   onClose,
 }: {
   wallet: WalletDto | null;
   onEdit: () => void;
+  onSetDefault: () => void;
   onArchive: () => void;
   onClose: () => void;
 }) {
   return (
-    <Modal
-      visible={!!wallet}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-      statusBarTranslucent
+    <BottomSheet
+      open={!!wallet}
+      onOpenChange={(open) => { if (!open) onClose(); }}
+      noWrapper
     >
-      <View style={sheetStyles.overlay}>
-        <Pressable style={sheetStyles.backdrop} onPress={onClose} />
-        <View style={sheetStyles.sheet}>
-        {Platform.OS === 'ios' && (
-          <BlurView intensity={55} tint="systemUltraThinMaterialDark" style={StyleSheet.absoluteFillObject} />
-        )}
-        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: Platform.OS === 'ios' ? 'rgba(10,10,10,0.6)' : colors.card }]} />
-        <View style={[StyleSheet.absoluteFillObject, { borderTopLeftRadius: 24, borderTopRightRadius: 24, borderWidth: 1, borderColor: colors.glass.border, borderBottomWidth: 0 }]} />
+      <BottomSheetView>
+        <View className="px-4 pt-1 pb-10 gap-2.5">
 
-        <View style={sheetStyles.inner}>
-          <View style={sheetStyles.handle} />
-
-          <View style={sheetStyles.walletInfo}>
-            <Text style={sheetStyles.walletLabel}>
+          {/* Wallet info */}
+          <View className="px-1 pb-4 border-b border-white/10 mb-1">
+            <Text className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">
               {WALLET_TYPE_LABELS[wallet?.type ?? 'CUSTOM']}
             </Text>
-            <Text style={sheetStyles.walletName}>{wallet?.name}</Text>
+            <Text className="text-[20px] font-bold text-foreground">{wallet?.name}</Text>
           </View>
 
+          {/* Edit Wallet */}
           <Pressable
             onPress={onEdit}
-            style={({ pressed }) => [sheetStyles.action, pressed && sheetStyles.actionPressed]}
+            className="flex-row items-center gap-3.5 py-[15px] px-4 rounded-[18px] bg-card border border-white/10 active:opacity-65"
           >
-            <View style={[sheetStyles.actionIcon, { backgroundColor: `${colors.primary}18` }]}>
+            <View className="w-10 h-10 rounded-[13px] items-center justify-center bg-primary/[0.1]">
               <Ionicons name="pencil-outline" size={20} color={colors.primary} />
             </View>
-            <Text style={sheetStyles.actionText}>Edit Wallet</Text>
+            <Text className="flex-1 text-[15px] font-semibold text-foreground">Edit Wallet</Text>
             <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />
           </Pressable>
 
+          {/* Set as Default */}
+          <Pressable
+            onPress={wallet?.isDefault ? undefined : onSetDefault}
+            className={`flex-row items-center gap-3.5 py-[15px] px-4 rounded-[18px] bg-card border border-white/10 ${wallet?.isDefault ? 'opacity-60' : 'active:opacity-65'}`}
+          >
+            <View className="w-10 h-10 rounded-[13px] items-center justify-center" style={{ backgroundColor: 'rgba(251,191,36,0.15)' }}>
+              <Ionicons name={wallet?.isDefault ? 'star' : 'star-outline'} size={20} color="#FBBF24" />
+            </View>
+            <View className="flex-1">
+              <Text className={`text-[15px] font-semibold ${wallet?.isDefault ? 'text-muted-foreground' : 'text-foreground'}`}>
+                {wallet?.isDefault ? 'Already Default' : 'Set as Default'}
+              </Text>
+              {wallet?.isDefault && (
+                <Text className="text-[11px] text-muted-foreground mt-0.5">This is your active default wallet</Text>
+              )}
+            </View>
+            {!wallet?.isDefault && <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />}
+          </Pressable>
+
+          {/* Archive */}
           <Pressable
             onPress={wallet?.isDefault ? undefined : onArchive}
-            style={({ pressed }) => [
-              sheetStyles.action,
-              wallet?.isDefault && sheetStyles.actionDisabled,
-              !wallet?.isDefault && pressed && sheetStyles.actionPressed,
-            ]}
+            className={`flex-row items-center gap-3.5 py-[15px] px-4 rounded-[18px] bg-card border border-white/10 ${wallet?.isDefault ? 'opacity-60' : 'active:opacity-65'}`}
           >
-            <View style={[sheetStyles.actionIcon, { backgroundColor: `${colors.destructive}15`, opacity: wallet?.isDefault ? 0.4 : 1 }]}>
+            <View className="w-10 h-10 rounded-[13px] items-center justify-center" style={{ backgroundColor: 'rgba(220,38,38,0.12)' }}>
               <Ionicons name="archive-outline" size={20} color={colors.destructive} />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[sheetStyles.actionText, { color: wallet?.isDefault ? colors.mutedForeground : colors.destructive }]}>
+            <View className="flex-1">
+              <Text className={`text-[15px] font-semibold ${wallet?.isDefault ? 'text-muted-foreground' : 'text-destructive'}`}>
                 Archive Wallet
               </Text>
               {wallet?.isDefault && (
-                <Text style={sheetStyles.actionHint}>Set another wallet as default first</Text>
+                <Text className="text-[11px] text-muted-foreground mt-0.5">Set another wallet as default first</Text>
               )}
             </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />
+            {!wallet?.isDefault && <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />}
           </Pressable>
 
+          {/* Cancel */}
           <Pressable
             onPress={onClose}
-            style={({ pressed }) => [sheetStyles.cancelBtn, pressed && { opacity: 0.7 }]}
+            className="py-[15px] rounded-[18px] items-center bg-card border border-white/[0.08] active:opacity-70 mt-1"
           >
-            <Text style={sheetStyles.cancelText}>Cancel</Text>
+            <Text className="text-[15px] font-semibold text-muted-foreground">Cancel</Text>
           </Pressable>
+
         </View>
-        </View>
-      </View>
-    </Modal>
+      </BottomSheetView>
+    </BottomSheet>
   );
 }
 
@@ -115,6 +126,7 @@ export function WalletsScreen() {
     isLoading,
     archiveMutation,
     unarchiveMutation,
+    setDefaultMutation,
     refetch,
   } = useWallets(true);
 
@@ -123,7 +135,7 @@ export function WalletsScreen() {
   const [editTarget, setEditTarget] = useState<WalletDto | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<WalletDto | null>(null);
 
-  const handleLongPress = (wallet: WalletDto) => {
+  const openActionSheet = (wallet: WalletDto) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setActionSheetWallet(wallet);
   };
@@ -134,16 +146,22 @@ export function WalletsScreen() {
     setTimeout(() => setEditTarget(wallet), 150);
   };
 
+  const handleSetDefaultFromSheet = async () => {
+    const wallet = actionSheetWallet;
+    setActionSheetWallet(null);
+    if (!wallet || wallet.isDefault) return;
+    try {
+      await setDefaultMutation.mutateAsync({ walletId: wallet.id });
+      Toast.show({ type: 'success', text1: 'Default updated', text2: `"${wallet.name}" is now your default wallet` });
+    } catch {
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to set default wallet' });
+    }
+  };
+
   const handleArchiveFromSheet = () => {
     const wallet = actionSheetWallet;
     setActionSheetWallet(null);
-    setTimeout(() => {
-      if (wallet?.isDefault) {
-        Toast.show({ type: 'error', text1: 'Cannot archive', text2: 'Set another wallet as default first.' });
-        return;
-      }
-      setArchiveTarget(wallet);
-    }, 150);
+    setTimeout(() => setArchiveTarget(wallet), 150);
   };
 
   const handleUnarchive = async (wallet: WalletDto) => {
@@ -244,7 +262,8 @@ export function WalletsScreen() {
                 key={wallet.id}
                 wallet={wallet}
                 typeLabel={WALLET_TYPE_LABELS[wallet.type]}
-                onLongPress={() => handleLongPress(wallet)}
+                onLongPress={() => openActionSheet(wallet)}
+                onActionPress={() => openActionSheet(wallet)}
               />
             ))
           )}
@@ -285,6 +304,7 @@ export function WalletsScreen() {
       <WalletActionSheet
         wallet={actionSheetWallet}
         onEdit={handleEditFromSheet}
+        onSetDefault={handleSetDefaultFromSheet}
         onArchive={handleArchiveFromSheet}
         onClose={() => setActionSheetWallet(null)}
       />
@@ -453,100 +473,3 @@ const styles = StyleSheet.create({
   },
 });
 
-const sheetStyles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-  },
-  sheet: {
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    overflow: 'hidden',
-  },
-  inner: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 40,
-    gap: 10,
-  },
-  handle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    alignSelf: 'center',
-    marginBottom: 20,
-  },
-  walletInfo: {
-    paddingHorizontal: 4,
-    paddingBottom: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    marginBottom: 2,
-  },
-  walletLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: colors.mutedForeground,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 3,
-  },
-  walletName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.foreground,
-  },
-  action: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    paddingVertical: 15,
-    paddingHorizontal: 16,
-    borderRadius: 18,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  actionPressed: {
-    opacity: 0.65,
-  },
-  actionDisabled: {
-    opacity: 0.7,
-  },
-  actionHint: {
-    fontSize: 11,
-    color: colors.mutedForeground,
-    marginTop: 2,
-  },
-  actionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 13,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.foreground,
-  },
-  cancelBtn: {
-    marginTop: 2,
-    paddingVertical: 15,
-    borderRadius: 18,
-    alignItems: 'center',
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-  },
-  cancelText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.mutedForeground,
-  },
-});

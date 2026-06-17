@@ -25,12 +25,9 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const dialogContent = (
     <View
+      className="w-full rounded-3xl p-6 border"
       style={{
-        width: '100%',
         backgroundColor: colors.card,
-        borderRadius: 24,
-        padding: 24,
-        borderWidth: 1,
         borderColor: colors.glass.border,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 20 },
@@ -39,65 +36,26 @@ export function ConfirmDialog({
         elevation: 20,
       }}
     >
-      <Text
-        style={{
-          color: colors.foreground,
-          fontSize: 18,
-          fontWeight: '700',
-          marginBottom: 8,
-        }}
-      >
-        {title}
-      </Text>
-      <Text
-        style={{
-          color: colors.mutedForeground,
-          fontSize: 14,
-          lineHeight: 20,
-          marginBottom: 24,
-        }}
-      >
-        {message}
-      </Text>
+      <Text className="text-[18px] font-bold text-foreground mb-2">{title}</Text>
+      <Text className="text-[14px] text-muted-foreground leading-5 mb-6">{message}</Text>
 
-      <View style={{ flexDirection: 'row', gap: 12 }}>
+      <View className="flex-row gap-3">
         <Pressable
           onPress={onCancel}
-          style={({ pressed }) => ({
-            flex: 1,
-            paddingVertical: 13,
-            borderRadius: 14,
-            alignItems: 'center',
-            backgroundColor: pressed ? colors.border : colors.secondary,
-            borderWidth: 1,
-            borderColor: colors.border,
-          })}
+          className="flex-1 py-[13px] rounded-2xl items-center border active:opacity-70"
+          style={{ backgroundColor: colors.secondary, borderColor: colors.border }}
         >
-          <Text style={{ color: colors.mutedForeground, fontWeight: '600', fontSize: 15 }}>
-            {cancelText}
-          </Text>
+          <Text className="text-[15px] font-semibold text-muted-foreground">{cancelText}</Text>
         </Pressable>
 
         <Pressable
           onPress={onConfirm}
-          style={({ pressed }) => ({
-            flex: 1,
-            paddingVertical: 13,
-            borderRadius: 14,
-            alignItems: 'center',
-            backgroundColor: destructive
-              ? pressed ? '#dc2626' : colors.destructive
-              : pressed
-              ? '#1CBFD6'
-              : colors.primary,
-          })}
+          className="flex-1 py-[13px] rounded-2xl items-center active:opacity-75"
+          style={{ backgroundColor: destructive ? colors.destructive : colors.primary }}
         >
           <Text
-            style={{
-              color: destructive ? colors.destructiveForeground : colors.primaryForeground,
-              fontWeight: '700',
-              fontSize: 15,
-            }}
+            className="text-[15px] font-bold"
+            style={{ color: destructive ? colors.destructiveForeground : colors.primaryForeground }}
           >
             {confirmText}
           </Text>
@@ -112,25 +70,15 @@ export function ConfirmDialog({
         <BlurView
           intensity={40}
           tint="systemUltraThinMaterialDark"
-          style={{
-            flex: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingHorizontal: 24,
-            backgroundColor: colors.overlayLight,
-          }}
+          className="flex-1 items-center justify-center px-6"
+          style={{ backgroundColor: colors.overlayLight }}
         >
           {dialogContent}
         </BlurView>
       ) : (
         <View
-          style={{
-            flex: 1,
-            backgroundColor: colors.overlay,
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingHorizontal: 24,
-          }}
+          className="flex-1 items-center justify-center px-6"
+          style={{ backgroundColor: colors.overlay }}
         >
           {dialogContent}
         </View>

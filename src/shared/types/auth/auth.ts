@@ -88,14 +88,29 @@ interface GetMeResponse
 interface UpdateSettingsRequest {
   mainCurrencyCode: string;
 }
-
 interface UpdateSettingsResponse extends ApiResponse<null> {}
+
+interface UpdateEmailRequest {
+  email: string;
+}
+interface UpdateEmailResponse extends ApiResponse<null> {}
+
+interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+interface ChangePasswordResponse extends ApiResponse<null> {}
+
+interface DeleteAccountResponse extends ApiResponse<null> {}
 
 export {
   AuthStore, GetMeResponse, GuestRequest, GuestResponse,
   LoginRequest, LoginResponse, RefreshResponse,
   RegisterRequest, RegisterResponse,
   UpdateSettingsRequest, UpdateSettingsResponse,
+  UpdateEmailRequest, UpdateEmailResponse,
+  ChangePasswordRequest, ChangePasswordResponse,
+  DeleteAccountResponse,
   UpgradeGuestRequest, UpgradeGuestResponse,
   User, UserType, VerifyTwoFactorRequest
 };

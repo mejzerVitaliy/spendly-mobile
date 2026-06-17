@@ -13,6 +13,7 @@ interface WalletCardProps {
   typeLabel: string;
   isArchived?: boolean;
   onLongPress?: () => void;
+  onActionPress?: () => void;
 }
 
 const WALLET_TYPE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -23,7 +24,7 @@ const WALLET_TYPE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   CUSTOM: 'wallet-outline',
 };
 
-export function WalletCard({ wallet, typeLabel, isArchived, onLongPress }: WalletCardProps) {
+export function WalletCard({ wallet, typeLabel, isArchived, onLongPress, onActionPress }: WalletCardProps) {
   const formattedBalance = formatCompact(wallet.currentBalance);
   const hasConvertedBalance = wallet.convertedBalance !== undefined && wallet.mainCurrencyCode;
   const formattedConvertedBalance = hasConvertedBalance ? formatCompact(wallet.convertedBalance!) : null;
@@ -96,9 +97,13 @@ export function WalletCard({ wallet, typeLabel, isArchived, onLongPress }: Walle
                 </View>
               )}
               {!isArchived && (
-                <View style={styles.holdHint}>
+                <Pressable
+                  onPress={onActionPress}
+                  hitSlop={10}
+                  className="w-[30px] h-[30px] rounded-full bg-white/[0.07] border border-white/10 items-center justify-center active:opacity-50"
+                >
                   <Ionicons name="ellipsis-horizontal" size={14} color={colors.mutedForeground} />
-                </View>
+                </Pressable>
               )}
             </View>
           </View>
@@ -194,16 +199,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: colors.primary,
-  },
-  holdHint: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: 'rgba(255,255,255,0.07)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   balanceDivider: {
     height: 1,

@@ -5,10 +5,12 @@ import { SegmentedControl } from '@/shared/ui';
 import { useAnalyticsStore } from '@/shared/stores';
 import { useReports } from '@/shared/hooks';
 import { TransactionType } from '@/shared/constants';
-import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { colors } from '@/shared/theme';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import { colors } from '@/shared/theme';
+import { useQueryClient } from '@tanstack/react-query';
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   if (Platform.OS === 'ios') {
@@ -32,6 +34,9 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 }
 
 export const AnalyticsScreen = () => {
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+
   const { startDate, endDate, selectedCategoryTransactionType, setSelectedCategoryTransactionType } =
     useAnalyticsStore();
 
@@ -45,9 +50,30 @@ export const AnalyticsScreen = () => {
   const categoryData = getCategoryChart.data?.data;
   const trendData = getCashFlowTrend.data?.data;
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([
+      queryClient.refetchQueries({ queryKey: ['user'], type: 'all' }),
+      queryClient.refetchQueries({ queryKey: ['wallets'], type: 'all' }),
+      queryClient.refetchQueries({ queryKey: ['reports'], type: 'all' }),
+    ]);
+    setRefreshing(false);
+  }, [queryClient]);
+
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
+      >
         <View style={styles.content}>
           <Text style={styles.pageTitle}>Analytics</Text>
 

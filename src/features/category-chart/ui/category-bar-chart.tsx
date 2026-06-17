@@ -1,6 +1,6 @@
 import { TransactionType } from '@/shared/constants'
 import { useReports } from '@/shared/hooks'
-import { CategoryBarChartItem } from '@/shared/types'
+import { CategoryBarChartItem, CategoryChartItem } from '@/shared/types'
 import React from 'react'
 import { ActivityIndicator, Text, View } from 'react-native'
 import { BarChart } from 'react-native-gifted-charts'
@@ -13,13 +13,13 @@ interface CategoryBarChartProps {
 }
 
 const CategoryBarChart = ({ startDate, endDate, type }: CategoryBarChartProps) => {
-  const { getCategoryBarChart } = useReports({ startDate, endDate, type })
+  const { getCategoryChart } = useReports({ startDate, endDate, type })
 
-  if (getCategoryBarChart.isLoading) {
+  if (getCategoryChart.isLoading) {
     return <ActivityIndicator size="large" color={colors.primary} />
   }
 
-  if (getCategoryBarChart.isError) {
+  if (getCategoryChart.isError) {
     return (
       <Text className="text-md font-medium text-center text-destructive mb-2">
         Failed to load expenses by category
@@ -27,7 +27,7 @@ const CategoryBarChart = ({ startDate, endDate, type }: CategoryBarChartProps) =
     )
   }
 
-  const chartData = getCategoryBarChart.data?.data?.data
+  const chartData = getCategoryChart.data?.data?.data
 
   if (!chartData || chartData.length === 0) {
     return (
@@ -37,7 +37,7 @@ const CategoryBarChart = ({ startDate, endDate, type }: CategoryBarChartProps) =
     )
   }
 
-  const maxValue = Math.max(...chartData.map(item => item.value || 0), 0)
+  const maxValue = Math.max(...chartData.map((item: CategoryChartItem) => item.value || 0), 0)
 
   return (
       <View className="mt-2 w-full max-w-full">

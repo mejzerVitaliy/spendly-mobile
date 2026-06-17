@@ -2,11 +2,14 @@ import { TransactionType } from "@/shared/constants"
 import { ApiResponse } from "../api"
 
 interface CategoryChartItem {
-  amount: number
+  value: number
   percentage: number
   label: string
   color: string
 }
+
+type CategoryBarChartItem = CategoryChartItem
+type CategoryPieChartItem = CategoryChartItem
 
 interface TrendPoint {
   value: number
@@ -65,6 +68,8 @@ interface ReportsCashFlowTrendResponse
 
 export {
   CategoryChartItem,
+  CategoryBarChartItem,
+  CategoryPieChartItem,
   TrendPoint,
   ReportsSummaryRequest,
   ReportsSummaryResponse,

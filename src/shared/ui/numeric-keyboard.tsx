@@ -1,7 +1,7 @@
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Dimensions, Modal, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { Dimensions, Modal, Platform, Pressable, Text, View } from 'react-native';
 import Animated, {
   Easing,
   runOnJS,
@@ -14,18 +14,22 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 interface NumericKeyboardProps {
   visible: boolean;
   value?: string;
-  inputRef?: React.RefObject<TextInput | any>;
   onKeyPress: (key: string) => void;
   onDelete: () => void;
   onClose: () => void;
+  /**
+   * Called after the close animation completes.
+   * Use useNumericKeyboard().onClosed here — it blurs the input and
+   * releases the guard that prevents onFocus from reopening the keyboard.
+   */
+  onClosed?: () => void;
 }
 
-// Grid layout:
+// Grid:
 // [1] [2] [3]
 // [4] [5] [6]
 // [7] [8] [9]
 // [⌫] [0] [✓]
-
 const NUMBER_ROWS = [
   ['1', '2', '3'],
   ['4', '5', '6'],
@@ -35,10 +39,10 @@ const NUMBER_ROWS = [
 export function NumericKeyboard({
   visible,
   value,
-  inputRef,
   onKeyPress,
   onDelete,
   onClose,
+  onClosed,
 }: NumericKeyboardProps) {
   const insets = useSafeAreaInsets();
   const screenHeight = Dimensions.get('window').height;
@@ -47,23 +51,22 @@ export function NumericKeyboard({
   const kbHeightRef = useRef(kbHeight);
   kbHeightRef.current = kbHeight;
 
-  // Keep latest inputRef accessible from the stable afterClose callback.
-  const inputRefHolder = useRef(inputRef);
-  inputRefHolder.current = inputRef;
-
   const translateY = useSharedValue(kbHeight);
   const [modalVisible, setModalVisible] = useState(false);
 
-  // Called on JS thread after the slide-down animation finishes.
-  // blur() lives here — NOT in handleClose — so it fires after the modal is gone
-  // and cannot race with onFocus events that would reopen the keyboard.
+  // Prevents the backdrop / ✓ button from firing onClose a second time
+  // while the slide-down animation is already in progress.
+  const closingRef = useRef(false);
+
   const afterClose = useCallback(() => {
-    inputRefHolder.current?.current?.blur();
+    closingRef.current = false;
     setModalVisible(false);
-  }, []);
+    onClosed?.();
+  }, [onClosed]);
 
   useEffect(() => {
     if (visible) {
+      closingRef.current = false;
       translateY.value = kbHeightRef.current;
       setModalVisible(true);
       translateY.value = withTiming(0, {
@@ -71,20 +74,27 @@ export function NumericKeyboard({
         easing: Easing.out(Easing.cubic),
       });
     } else {
+      // Guard against the effect firing on initial mount (visible=false, modal not open)
+      if (!modalVisible) return;
+      closingRef.current = true;
       translateY.value = withTiming(
         kbHeightRef.current,
         { duration: 260, easing: Easing.in(Easing.cubic) },
         () => { runOnJS(afterClose)(); },
       );
     }
-  }, [visible, translateY, afterClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
   }));
 
-  // Just tell the parent to update its state. Blur/modal-hide happens in afterClose.
-  const handleClose = () => onClose();
+  const handleClose = () => {
+    if (!closingRef.current) {
+      onClose();
+    }
+  };
 
   return (
     <Modal visible={modalVisible} transparent animationType="none" statusBarTranslucent>
@@ -107,7 +117,7 @@ export function NumericKeyboard({
           animatedStyle,
         ]}
       >
-        {/* Liquid glass — iOS blur layer */}
+        {/* iOS blur layer */}
         {Platform.OS === 'ios' && (
           <BlurView
             intensity={72}
@@ -116,7 +126,7 @@ export function NumericKeyboard({
           />
         )}
 
-        {/* Dark overlay (ios: semi, android: solid) */}
+        {/* Dark overlay (ios: semi-transparent, android: solid) */}
         <View
           className="absolute inset-0"
           style={{
@@ -138,8 +148,8 @@ export function NumericKeyboard({
         {/* Separator */}
         <View className="mx-3 h-px bg-white/[0.06] mb-1.5" />
 
-        {/* Keys area — fills remaining height */}
-        <View className="flex-1 px-3 pb-0 gap-2">
+        {/* Keys — fill remaining height */}
+        <View className="flex-1 px-3 gap-2">
 
           {/* Rows 1–9 */}
           {NUMBER_ROWS.map((row, rowIndex) => (
@@ -187,7 +197,7 @@ export function NumericKeyboard({
           </View>
         </View>
 
-        {/* Safe area spacer */}
+        {/* Safe-area spacer */}
         <View style={{ height: Math.max(insets.bottom, 10) }} />
       </Animated.View>
     </Modal>

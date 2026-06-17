@@ -19,7 +19,7 @@ interface BalanceViewProps {
   endDate?: string;
 }
 
-function SkeletonBlock({ width, height }: { width: number | string; height: number }) {
+function SkeletonBlock({ width, height }: { width: number; height: number }) {
   const opacity = useSharedValue(0.3);
 
   useEffect(() => {

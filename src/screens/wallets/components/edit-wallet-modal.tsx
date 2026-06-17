@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheet } from '@/shared/ui';
 import { WalletDto, WalletType } from '@/shared/types';
@@ -55,7 +55,6 @@ export function EditWalletModal({ visible, wallet, onClose }: EditWalletModalPro
     <BottomSheet
       open={visible}
       onOpenChange={(open) => { if (!open) onClose(); }}
-      snapPoints={['75%']}
       noWrapper
       keyboardBehavior="interactive"
       android_keyboardInputMode="adjustResize"
@@ -63,141 +62,91 @@ export function EditWalletModal({ visible, wallet, onClose }: EditWalletModalPro
       <BottomSheetScrollView
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.container, { paddingBottom: Math.max(32, insets.bottom + 24) }]}
+        contentContainerStyle={{ paddingBottom: Math.max(32, insets.bottom + 24) }}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Edit Wallet</Text>
-          <Pressable onPress={onClose} style={styles.closeBtn}>
-            <Ionicons name="close" size={18} color={colors.mutedForeground} />
-          </Pressable>
-        </View>
+        <View className="px-5 pt-1.5">
 
-        <Text style={styles.label}>Wallet Name</Text>
-        <TextInput
-          value={name}
-          onChangeText={setName}
-          placeholder="e.g. Main Card"
-          placeholderTextColor={colors.mutedForeground}
-          style={styles.textInput}
-          returnKeyType="done"
-        />
-
-        <Text style={styles.label}>Type</Text>
-        <View style={styles.typeRow}>
-          {WALLET_TYPES.map((wt) => (
+          {/* Header */}
+          <View className="flex-row justify-between items-center mb-7">
+            <Text className="text-[20px] font-bold text-foreground">Edit Wallet</Text>
             <Pressable
-              key={wt.value}
-              onPress={() => setType(wt.value)}
-              style={[
-                styles.typeBtn,
-                type === wt.value
-                  ? { backgroundColor: 'rgba(34,211,238,0.12)', borderColor: 'rgba(34,211,238,0.3)' }
-                  : { backgroundColor: colors.secondary, borderColor: colors.border },
-              ]}
+              onPress={onClose}
+              className="w-8 h-8 rounded-full bg-secondary border border-white/10 items-center justify-center active:opacity-70"
             >
-              <Ionicons
-                name={wt.icon}
-                size={18}
-                color={type === wt.value ? colors.primary : colors.mutedForeground}
-              />
-              <Text style={[styles.typeBtnText, { color: type === wt.value ? colors.primary : colors.foreground }]}>
-                {wt.label}
-              </Text>
+              <Ionicons name="close" size={18} color={colors.mutedForeground} />
             </Pressable>
-          ))}
-        </View>
+          </View>
 
-        <Pressable
-          onPress={handleSave}
-          disabled={updateMutation.isPending}
-          style={({ pressed }) => [
-            styles.submitBtn,
-            { opacity: updateMutation.isPending || pressed ? 0.7 : 1 },
-          ]}
-        >
-          <Text style={styles.submitText}>
-            {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+          {/* Name */}
+          <Text className="text-[12px] font-semibold text-muted-foreground uppercase tracking-widest mb-2.5">
+            Wallet Name
           </Text>
-        </Pressable>
+          <BottomSheetTextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="e.g. Main Card"
+            placeholderTextColor={colors.mutedForeground}
+            returnKeyType="done"
+            style={{
+              backgroundColor: colors.input,
+              borderWidth: 1,
+              borderColor: 'rgba(255,255,255,0.1)',
+              borderRadius: 14,
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              fontSize: 16,
+              color: colors.foreground,
+              marginBottom: 24,
+            }}
+          />
+
+          {/* Type */}
+          <Text className="text-[12px] font-semibold text-muted-foreground uppercase tracking-widest mb-2.5">
+            Type
+          </Text>
+          <View className="flex-row flex-wrap gap-2 mb-8">
+            {WALLET_TYPES.map((wt) => {
+              const active = type === wt.value;
+              return (
+                <Pressable
+                  key={wt.value}
+                  onPress={() => setType(wt.value)}
+                  className="flex-row items-center gap-[7px] px-3.5 py-2.5 rounded-2xl border active:opacity-75"
+                  style={{
+                    backgroundColor: active ? 'rgba(34,211,238,0.12)' : colors.secondary,
+                    borderColor: active ? 'rgba(34,211,238,0.3)' : colors.border,
+                  }}
+                >
+                  <Ionicons
+                    name={wt.icon}
+                    size={18}
+                    color={active ? colors.primary : colors.mutedForeground}
+                  />
+                  <Text
+                    className="text-[13px] font-semibold"
+                    style={{ color: active ? colors.primary : colors.foreground }}
+                  >
+                    {wt.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {/* Save button */}
+          <Pressable
+            onPress={handleSave}
+            disabled={updateMutation.isPending}
+            className="bg-primary rounded-[18px] items-center py-[17px] active:opacity-75"
+            style={{ opacity: updateMutation.isPending ? 0.7 : 1 }}
+          >
+            <Text className="text-[16px] font-bold text-primary-foreground">
+              {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+            </Text>
+          </Pressable>
+
+        </View>
       </BottomSheetScrollView>
     </BottomSheet>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 6,
-    paddingBottom: 32,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 28,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.foreground,
-  },
-  closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.secondary,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.mutedForeground,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: 10,
-  },
-  textInput: {
-    backgroundColor: colors.input,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: colors.foreground,
-    marginBottom: 24,
-  },
-  typeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 32,
-  },
-  typeBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 14,
-    borderWidth: 1,
-  },
-  typeBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  submitBtn: {
-    backgroundColor: colors.primary,
-    paddingVertical: 17,
-    borderRadius: 18,
-    alignItems: 'center',
-  },
-  submitText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.primaryForeground,
-  },
-});

@@ -13,13 +13,13 @@ interface CategoryPieChartProps {
 }
 
 const CategoryPieChart = ({ startDate, endDate, type }: CategoryPieChartProps) => {
-  const { getCategoryPieChart } = useReports({ startDate, endDate, type })
+  const { getCategoryChart } = useReports({ startDate, endDate, type })
 
-  if (getCategoryPieChart.isLoading) {
+  if (getCategoryChart.isLoading) {
     return <ActivityIndicator size="large" color={colors.primary} />
   }
 
-  if (getCategoryPieChart.isError) {
+  if (getCategoryChart.isError) {
     return (
       <Text className="text-md font-medium text-center text-destructive mb-2">
         Failed to load expenses by category
@@ -27,7 +27,7 @@ const CategoryPieChart = ({ startDate, endDate, type }: CategoryPieChartProps) =
     )
   }
 
-  const chartData = getCategoryPieChart.data?.data?.data
+  const chartData = getCategoryChart.data?.data?.data
 
   if (!chartData || chartData.length === 0) {
     return (
@@ -37,7 +37,7 @@ const CategoryPieChart = ({ startDate, endDate, type }: CategoryPieChartProps) =
     )
   }
 
-  const totalValue = chartData.reduce((sum, item) => sum + (item.value || 0), 0)
+  const totalValue = chartData.reduce((sum: number, item: CategoryPieChartItem) => sum + (item.value || 0), 0)
 
   const renderLegendItem = (item: CategoryPieChartItem) => {
     const percentage = totalValue > 0 ? ((item.value / totalValue) * 100).toFixed(1) : '0.0'

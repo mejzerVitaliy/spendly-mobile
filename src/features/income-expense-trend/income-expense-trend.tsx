@@ -11,13 +11,13 @@ interface IncomeExpenseTrendProps {
 }
 
 const IncomeExpenseTrend = (props: IncomeExpenseTrendProps) => {
-  const { getIncomesExpensesTrendChart } = useReports({ ...props });
+  const { getCashFlowTrend } = useReports({ ...props });
 
-  if (getIncomesExpensesTrendChart.isLoading) {
+  if (getCashFlowTrend.isLoading) {
     return <ActivityIndicator size="large" color={colors.primary} />;
   }
 
-  if (getIncomesExpensesTrendChart.isError) {
+  if (getCashFlowTrend.isError) {
     return (
       <Text className="text-md font-medium text-center text-destructive mb-2">
         Failed to load expenses by category
@@ -25,8 +25,8 @@ const IncomeExpenseTrend = (props: IncomeExpenseTrendProps) => {
     );
   }
 
-  const expensesLine = getIncomesExpensesTrendChart.data?.data?.expenses;
-  const incomesLine = getIncomesExpensesTrendChart.data?.data?.incomes;
+  const expensesLine = getCashFlowTrend.data?.data?.expenses;
+  const incomesLine = getCashFlowTrend.data?.data?.incomes;
 
   if (!expensesLine || !incomesLine || expensesLine.length === 0 || incomesLine.length === 0) {
     return (
