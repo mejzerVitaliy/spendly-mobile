@@ -1,4 +1,5 @@
 import { ActivityIndicator, Pressable, PressableProps, Text } from 'react-native';
+import { colors } from '@/shared/theme';
 
 interface ButtonProps extends PressableProps {
   title: string;
@@ -7,30 +8,30 @@ interface ButtonProps extends PressableProps {
   isLoading?: boolean;
 }
 
-export function Button({ 
-  title, 
-  variant = 'primary', 
+export function Button({
+  title,
+  variant = 'primary',
   size = 'md',
   isLoading = false,
   disabled,
-  ...props 
+  ...props
 }: ButtonProps) {
   const baseClasses = 'rounded-2xl items-center justify-center flex-row';
-  
+
   const sizeClasses = {
     sm: 'px-4 py-2',
-    md: 'px-6 py-3',
+    md: 'px-6 py-3.5',
     lg: 'px-8 py-4',
   }[size];
 
   const variantClasses = {
-    primary: 'bg-primary active:opacity-90',
-    secondary: 'bg-secondary active:opacity-90',
-    destructive: 'bg-destructive active:opacity-90',
-    outline: 'bg-transparent border-2 border-border active:bg-accent',
-    ghost: 'bg-transparent active:bg-accent',
-    success: 'bg-success active:opacity-90',
-    warning: 'bg-warning active:opacity-90',
+    primary: 'bg-primary active:opacity-80',
+    secondary: 'bg-secondary active:opacity-80',
+    destructive: 'bg-destructive active:opacity-80',
+    outline: 'bg-transparent border border-border active:bg-glass',
+    ghost: 'bg-transparent active:bg-glass',
+    success: 'bg-success active:opacity-80',
+    warning: 'bg-warning active:opacity-80',
   }[variant];
 
   const textClasses = {
@@ -51,22 +52,23 @@ export function Button({
 
   const isDisabled = disabled || isLoading;
 
+  const spinnerColor =
+    variant === 'outline' || variant === 'ghost'
+      ? colors.foreground
+      : variant === 'primary'
+      ? colors.primaryForeground
+      : colors.foreground;
+
   return (
-    <Pressable 
-      className={`${baseClasses} ${sizeClasses} ${variantClasses} ${isDisabled ? 'opacity-50' : ''}`}
+    <Pressable
+      className={`${baseClasses} ${sizeClasses} ${variantClasses} ${isDisabled ? 'opacity-40' : ''}`}
       disabled={isDisabled}
       {...props}
     >
       {isLoading && (
-        <ActivityIndicator 
-          size="small" 
-          color={variant === 'outline' || variant === 'ghost' ? '#0f172a' : '#ffffff'} 
-          className="mr-2"
-        />
+        <ActivityIndicator size="small" color={spinnerColor} className="mr-2" />
       )}
-      <Text className={`${textClasses} ${textSizeClasses}`}>
-        {title}
-      </Text>
+      <Text className={`${textClasses} ${textSizeClasses}`}>{title}</Text>
     </Pressable>
   );
 }

@@ -3,6 +3,7 @@ import { Card } from "@/shared/ui";
 import React from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
+import { colors } from "@/shared/theme";
 
 interface IncomeExpenseTrendProps {
   startDate?: string;
@@ -10,13 +11,13 @@ interface IncomeExpenseTrendProps {
 }
 
 const IncomeExpenseTrend = (props: IncomeExpenseTrendProps) => {
-  const { getIncomesExpensesTrendChart } = useReports({ ...props });
+  const { getCashFlowTrend } = useReports({ ...props });
 
-  if (getIncomesExpensesTrendChart.isLoading) {
-    return <ActivityIndicator size="large" color="#3b82f6" />;
+  if (getCashFlowTrend.isLoading) {
+    return <ActivityIndicator size="large" color={colors.primary} />;
   }
 
-  if (getIncomesExpensesTrendChart.isError) {
+  if (getCashFlowTrend.isError) {
     return (
       <Text className="text-md font-medium text-center text-destructive mb-2">
         Failed to load expenses by category
@@ -24,8 +25,8 @@ const IncomeExpenseTrend = (props: IncomeExpenseTrendProps) => {
     );
   }
 
-  const expensesLine = getIncomesExpensesTrendChart.data?.data?.expenses;
-  const incomesLine = getIncomesExpensesTrendChart.data?.data?.incomes;
+  const expensesLine = getCashFlowTrend.data?.data?.expenses;
+  const incomesLine = getCashFlowTrend.data?.data?.incomes;
 
   if (!expensesLine || !incomesLine || expensesLine.length === 0 || incomesLine.length === 0) {
     return (
@@ -73,7 +74,7 @@ const IncomeExpenseTrend = (props: IncomeExpenseTrendProps) => {
           textFontSize={13}
           labelsExtraHeight={10}
           yAxisTextStyle={{
-            color: '#9ca3af',
+            color: colors.mutedForeground,
             fontSize: 10,
             fontWeight: '500',
           }}

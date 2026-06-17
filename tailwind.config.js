@@ -8,22 +8,21 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        border: "#1F2937",
-        input: "#1F2937",
-        ring: "#3B82F6",
+        border: "#262626",
+        input: "#161616",
+        ring: "rgba(34,211,238,0.4)",
 
-        background: "#0C0516",
-        foreground: "#E5E7EB",
+        background: "#080808",
+        foreground: "#F2F2F2",
 
         primary: {
-          DEFAULT: "#977DFF",
-          foreground: "#FFFFFF",
-          hover: "#2563EB",
+          DEFAULT: "#22D3EE",
+          foreground: "#080808",
         },
 
         secondary: {
-          DEFAULT: "#321F54",
-          foreground: "#fff",
+          DEFAULT: "#1A1A1A",
+          foreground: "#D4D4D4",
         },
 
         destructive: {
@@ -32,33 +31,40 @@ module.exports = {
         },
 
         muted: {
-          DEFAULT: "#1F2937",
-          foreground: "#9CA3AF",
+          DEFAULT: "#1C1C1C",
+          foreground: "#737373",
         },
 
         accent: {
-          DEFAULT: "#2563EB",
-          foreground: "#FFFFFF",
+          DEFAULT: "#22D3EE",
+          foreground: "#080808",
         },
 
         card: {
-          DEFAULT: "#1B0642",
-          foreground: "#E5E7EB",
+          DEFAULT: "#111111",
+          foreground: "#F2F2F2",
         },
 
         success: {
           DEFAULT: "#22C55E",
-          foreground: "#052E16",
+          foreground: "#FFFFFF",
         },
 
         warning: {
           DEFAULT: "#EAB308",
-          foreground: "#422006",
+          foreground: "#000000",
         },
 
         info: {
           DEFAULT: "#0EA5E9",
-          foreground: "#082F49",
+          foreground: "#FFFFFF",
+        },
+
+        glass: {
+          DEFAULT: "rgba(255,255,255,0.05)",
+          medium: "rgba(255,255,255,0.08)",
+          strong: "rgba(255,255,255,0.12)",
+          border: "rgba(255,255,255,0.08)",
         },
       },
       borderRadius: {
@@ -70,4 +76,3 @@ module.exports = {
   },
   plugins: [],
 }
-

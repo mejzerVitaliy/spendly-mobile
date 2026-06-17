@@ -15,8 +15,8 @@ function BarItem({ item, index, maxAmount }: { item: CategoryChartItem; index: n
 
   useEffect(() => {
     progress.value = 0;
-    progress.value = withDelay(index * 80, withTiming(item.amount / maxAmount, { duration: 600 }));
-  }, [item.amount, maxAmount, index, progress]);
+    progress.value = withDelay(index * 80, withTiming(item.value / maxAmount, { duration: 600 }));
+  }, [item.value, maxAmount, index, progress]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     width: `${progress.value * 100}%`,
@@ -52,7 +52,7 @@ export function CategoryBreakdownChart({ data, total, currencyCode }: CategoryCh
     );
   }
 
-  const maxAmount = Math.max(...data.map(d => d.amount));
+  const maxAmount = Math.max(...data.map(d => d.value));
 
   return (
     <View>

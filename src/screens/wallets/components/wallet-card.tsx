@@ -1,33 +1,36 @@
 import { formatCompact } from '@/shared/utils';
 import { WalletDto } from '@/shared/types';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { useEffect } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { colors } from '@/shared/theme';
+import { Ionicons } from '@expo/vector-icons';
 
 interface WalletCardProps {
   wallet: WalletDto;
   typeLabel: string;
   isArchived?: boolean;
-  onSetDefault?: () => void;
-  onArchive?: () => void;
+  onLongPress?: () => void;
+  onActionPress?: () => void;
 }
 
-export function WalletCard({
-  wallet,
-  typeLabel,
-  isArchived,
-  onSetDefault,
-  onArchive,
-}: WalletCardProps) {
+const WALLET_TYPE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
+  CASH: 'cash-outline',
+  DEBIT_CARD: 'card-outline',
+  CREDIT_CARD: 'card',
+  SAVINGS: 'save-outline',
+  CUSTOM: 'wallet-outline',
+};
+
+export function WalletCard({ wallet, typeLabel, isArchived, onLongPress, onActionPress }: WalletCardProps) {
   const formattedBalance = formatCompact(wallet.currentBalance);
   const hasConvertedBalance = wallet.convertedBalance !== undefined && wallet.mainCurrencyCode;
-  const formattedConvertedBalance = hasConvertedBalance
-    ? formatCompact(wallet.convertedBalance!)
-    : null;
+  const formattedConvertedBalance = hasConvertedBalance ? formatCompact(wallet.convertedBalance!) : null;
 
   const opacity = useSharedValue(0);
-  const translateY = useSharedValue(8);
+  const translateY = useSharedValue(10);
 
   useEffect(() => {
     opacity.value = withTiming(1, { duration: 280 });
@@ -39,68 +42,186 @@ export function WalletCard({
     transform: [{ translateY: translateY.value }],
   }));
 
-  const gradientColors = wallet.isDefault
-    ? (['#2563EB', '#1D4ED8', '#0F172A'] as const)
-    : (['#1E293B', '#0F172A', '#020617'] as const);
+  const icon = WALLET_TYPE_ICONS[wallet.type] ?? 'wallet-outline';
 
   return (
-    <Animated.View style={cardAnimStyle}>
-      <LinearGradient
-        colors={gradientColors}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        className={`rounded-3xl p-5 mb-4 border overflow-hidden ${
-          wallet.isDefault ? 'border-blue-400/60' : 'border-slate-700/80'
-        } ${isArchived ? 'opacity-60' : ''}`}
+    <Animated.View style={[cardAnimStyle, { marginBottom: 16, borderRadius: 24, overflow: 'hidden' }]}>
+      <Pressable
+        onLongPress={onLongPress}
+        delayLongPress={350}
+        style={({ pressed }) => [styles.card, isArchived && { opacity: 0.55 }, pressed && styles.cardPressed]}
       >
-        <View className="absolute -right-8 -top-10 w-36 h-36 rounded-full bg-white/10" />
+        {Platform.OS === 'ios' ? (
+          <BlurView intensity={40} tint="systemUltraThinMaterialDark" style={StyleSheet.absoluteFillObject} />
+        ) : null}
 
-        <View className="flex-row items-start justify-between mb-6">
-          <View>
-            <Text className="text-slate-200/90 text-xs uppercase tracking-widest">{typeLabel}</Text>
-            <Text className="text-white text-xl font-semibold mt-1">{wallet.name}</Text>
-          </View>
-          {wallet.isDefault && (
-            <View className="bg-white/15 px-3 py-1 rounded-full">
-              <Text className="text-white text-xs font-semibold">Default</Text>
+        <LinearGradient
+          colors={
+            wallet.isDefault
+              ? ['rgba(34,211,238,0.12)', 'rgba(34,211,238,0.03)', 'rgba(8,8,8,0.0)']
+              : ['rgba(255,255,255,0.05)', 'transparent']
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+
+        <View
+          style={[
+            StyleSheet.absoluteFillObject,
+            {
+              borderRadius: 24,
+              borderWidth: 1,
+              borderColor: wallet.isDefault ? 'rgba(34,211,238,0.3)' : colors.glass.border,
+            },
+          ]}
+        />
+
+        <View style={styles.decorCircle} />
+
+        <View style={styles.cardInner}>
+          <View style={styles.cardHeader}>
+            <View style={styles.cardTitleRow}>
+              <View style={[styles.iconBadge, { backgroundColor: wallet.isDefault ? 'rgba(34,211,238,0.15)' : colors.glass.background }]}>
+                <Ionicons name={icon} size={18} color={wallet.isDefault ? colors.primary : colors.mutedForeground} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.walletType} numberOfLines={1}>{typeLabel}</Text>
+                <Text style={styles.walletName} numberOfLines={1}>{wallet.name}</Text>
+              </View>
             </View>
-          )}
-        </View>
+            <View style={styles.badges}>
+              {wallet.isDefault && (
+                <View style={styles.defaultBadge}>
+                  <Text style={styles.defaultText}>Default</Text>
+                </View>
+              )}
+              {!isArchived && (
+                <Pressable
+                  onPress={onActionPress}
+                  hitSlop={10}
+                  className="w-[30px] h-[30px] rounded-full bg-white/[0.07] border border-white/10 items-center justify-center active:opacity-50"
+                >
+                  <Ionicons name="ellipsis-horizontal" size={14} color={colors.mutedForeground} />
+                </Pressable>
+              )}
+            </View>
+          </View>
 
-        <View className="flex-row items-end justify-between">
-          <View>
-            <Text className="text-white text-2xl font-bold">
-              {formattedBalance} {wallet.currencyCode}
+          <View style={styles.balanceDivider} />
+          <View style={styles.balanceRow}>
+            <Text style={styles.balanceAmount}>
+              {formattedBalance}{' '}
+              <Text style={styles.balanceCurrency}>{wallet.currencyCode}</Text>
             </Text>
             {hasConvertedBalance && wallet.currencyCode !== wallet.mainCurrencyCode && (
-              <Text className="text-slate-300 text-sm mt-1">
+              <Text style={styles.convertedBalance}>
                 ≈ {formattedConvertedBalance} {wallet.mainCurrencyCode}
               </Text>
             )}
           </View>
         </View>
-
-        {!isArchived && !wallet.isDefault && (onSetDefault || onArchive) && (
-          <View className="flex-row gap-2 mt-4 pt-4 border-t border-white/15">
-            {onSetDefault && (
-              <Pressable
-                onPress={onSetDefault}
-                className="flex-1 bg-white/15 py-2.5 rounded-2xl items-center"
-              >
-                <Text className="text-white text-sm font-medium">Set Default</Text>
-              </Pressable>
-            )}
-            {onArchive && (
-              <Pressable
-                onPress={onArchive}
-                className="flex-1 bg-red-500/20 py-2.5 rounded-2xl items-center"
-              >
-                <Text className="text-red-200 text-sm font-medium">Archive</Text>
-              </Pressable>
-            )}
-          </View>
-        )}
-      </LinearGradient>
+      </Pressable>
     </Animated.View>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    backgroundColor: Platform.OS === 'ios' ? 'rgba(14,14,14,0.4)' : colors.card,
+  },
+  cardPressed: {
+    opacity: 0.82,
+  },
+  cardInner: {
+    padding: 20,
+  },
+  decorCircle: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 18,
+  },
+  cardTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+    marginRight: 10,
+  },
+  iconBadge: {
+    width: 42,
+    height: 42,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  walletType: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: colors.mutedForeground,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
+  walletName: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.foreground,
+  },
+  badges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  defaultBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    backgroundColor: 'rgba(34,211,238,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(34,211,238,0.3)',
+  },
+  defaultText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  balanceDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    marginBottom: 14,
+  },
+  balanceRow: {
+    gap: 2,
+  },
+  balanceAmount: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.foreground,
+    letterSpacing: -0.5,
+  },
+  balanceCurrency: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.mutedForeground,
+  },
+  convertedBalance: {
+    fontSize: 12,
+    color: colors.mutedForeground,
+    marginTop: 2,
+  },
+});

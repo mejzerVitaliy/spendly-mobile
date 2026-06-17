@@ -1,4 +1,6 @@
-import { Modal, Pressable, Text, View } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { Modal, Platform, Pressable, Text, View } from 'react-native';
+import { colors } from '@/shared/theme';
 
 interface ConfirmDialogProps {
   visible: boolean;
@@ -21,85 +23,66 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  return (
-    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent>
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: 'rgba(0,0,0,0.6)',
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingHorizontal: 24,
-        }}
-      >
-        <View
-          style={{
-            width: '100%',
-            backgroundColor: '#1a1033',
-            borderRadius: 20,
-            padding: 24,
-            borderWidth: 1,
-            borderColor: 'rgba(139,92,246,0.2)',
-          }}
+  const dialogContent = (
+    <View
+      className="w-full rounded-3xl p-6 border"
+      style={{
+        backgroundColor: colors.card,
+        borderColor: colors.glass.border,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 20 },
+        shadowOpacity: 0.6,
+        shadowRadius: 40,
+        elevation: 20,
+      }}
+    >
+      <Text className="text-[18px] font-bold text-foreground mb-2">{title}</Text>
+      <Text className="text-[14px] text-muted-foreground leading-5 mb-6">{message}</Text>
+
+      <View className="flex-row gap-3">
+        <Pressable
+          onPress={onCancel}
+          className="flex-1 py-[13px] rounded-2xl items-center border active:opacity-70"
+          style={{ backgroundColor: colors.secondary, borderColor: colors.border }}
+        >
+          <Text className="text-[15px] font-semibold text-muted-foreground">{cancelText}</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={onConfirm}
+          className="flex-1 py-[13px] rounded-2xl items-center active:opacity-75"
+          style={{ backgroundColor: destructive ? colors.destructive : colors.primary }}
         >
           <Text
-            style={{
-              color: '#F9FAFB',
-              fontSize: 18,
-              fontWeight: '700',
-              marginBottom: 8,
-            }}
+            className="text-[15px] font-bold"
+            style={{ color: destructive ? colors.destructiveForeground : colors.primaryForeground }}
           >
-            {title}
+            {confirmText}
           </Text>
-          <Text
-            style={{
-              color: '#9CA3AF',
-              fontSize: 14,
-              lineHeight: 20,
-              marginBottom: 24,
-            }}
-          >
-            {message}
-          </Text>
-
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <Pressable
-              onPress={onCancel}
-              style={({ pressed }) => ({
-                flex: 1,
-                paddingVertical: 12,
-                borderRadius: 12,
-                alignItems: 'center',
-                backgroundColor: pressed ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.05)',
-                borderWidth: 1,
-                borderColor: 'rgba(255,255,255,0.1)',
-              })}
-            >
-              <Text style={{ color: '#9CA3AF', fontWeight: '600', fontSize: 15 }}>
-                {cancelText}
-              </Text>
-            </Pressable>
-
-            <Pressable
-              onPress={onConfirm}
-              style={({ pressed }) => ({
-                flex: 1,
-                paddingVertical: 12,
-                borderRadius: 12,
-                alignItems: 'center',
-                backgroundColor: destructive
-                  ? pressed ? '#dc2626' : '#EF4444'
-                  : pressed ? '#7c3aed' : '#8B5CF6',
-              })}
-            >
-              <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 15 }}>
-                {confirmText}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+        </Pressable>
       </View>
+    </View>
+  );
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent>
+      {Platform.OS === 'ios' ? (
+        <BlurView
+          intensity={40}
+          tint="systemUltraThinMaterialDark"
+          className="flex-1 items-center justify-center px-6"
+          style={{ backgroundColor: colors.overlayLight }}
+        >
+          {dialogContent}
+        </BlurView>
+      ) : (
+        <View
+          className="flex-1 items-center justify-center px-6"
+          style={{ backgroundColor: colors.overlay }}
+        >
+          {dialogContent}
+        </View>
+      )}
     </Modal>
   );
 }

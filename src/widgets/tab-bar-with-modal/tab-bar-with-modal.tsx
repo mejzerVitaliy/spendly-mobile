@@ -6,73 +6,122 @@ import { CreateTransactionText } from '@/features/create-transaction/typing/crea
 import { CreateTransactionVoice } from '@/features/create-transaction/voice/create-transaction-voice';
 import { Ionicons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
-import { Modal, Platform, Pressable, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, Text, View, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  FadeInUp,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
+import { colors } from '@/shared/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const MENU_ITEMS = [
   {
     key: 'manual',
     icon: 'create-outline' as const,
     label: 'Manual',
-    color: '#8B5CF6',
-    disabled: false,
+    accentColor: colors.primary,
+    gradientColors: ['rgba(34,211,238,0.15)', 'rgba(34,211,238,0.05)'] as const,
   },
   {
     key: 'text',
     icon: 'sparkles' as const,
-    label: 'TextAI',
-    color: '#10B981',
-    disabled: false,
+    label: 'Text AI',
+    accentColor: colors.success,
+    gradientColors: ['rgba(34,197,94,0.15)', 'rgba(34,197,94,0.05)'] as const,
   },
   {
     key: 'voice',
     icon: 'mic-outline' as const,
-    label: 'VoiceAI',
-    color: '#F97316',
-    disabled: false,
+    label: 'Voice AI',
+    accentColor: '#F97316',
+    gradientColors: ['rgba(249,115,22,0.15)', 'rgba(249,115,22,0.05)'] as const,
   },
 ] as const;
 
-function MenuItems({ onItemPress }: { onItemPress: (key: string) => void; onClose: () => void }) {
+function MenuItem({
+  item,
+  idx,
+  onPress,
+}: {
+  item: (typeof MENU_ITEMS)[number];
+  idx: number;
+  onPress: () => void;
+}) {
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(1);
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.88, { damping: 14, stiffness: 200 });
+    opacity.value = withTiming(0.75, { duration: 100 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 12, stiffness: 180 });
+    opacity.value = withTiming(1, { duration: 150 });
+  };
+
   return (
-    <View className='absolute bottom-[10%] left-1/2 -translate-x-1/2 flex-row gap-2'>
-      {MENU_ITEMS.map((item, idx) => (
-        <Animated.View
-          key={item.key}
-          entering={FadeInDown.delay(idx * 90).duration(320)}
-        >
-          <Pressable
-            onPress={() => !item.disabled && onItemPress(item.key)}
-            style={{
-              width: 80,
-              flexDirection: 'column',
-              gap: 4,
-              alignItems: 'center',
-              paddingTop: idx !== 1 ? 28 : 0,
-            }}
+    <Animated.View
+      entering={FadeInUp.delay(idx * 70).duration(280).springify()}
+      style={[styles.menuItem, { marginTop: idx === 1 ? 0 : 32 }]}
+    >
+      <AnimatedPressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        style={[styles.menuButton, animStyle]}
+      >
+        {Platform.OS === 'ios' ? (
+          <BlurView
+            intensity={40}
+            tint="systemUltraThinMaterialDark"
+            style={styles.menuButtonBlur}
           >
-            <View
-              style={{
-                width: 68,
-                height: 68,
-                borderRadius: 34,
-                backgroundColor: `${item.color}20`,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Ionicons name={item.icon} size={30} color={item.color} />
+            <LinearGradient
+              colors={item.gradientColors}
+              style={StyleSheet.absoluteFillObject}
+            />
+            <View style={[styles.menuButtonInner, { borderColor: `${item.accentColor}30` }]}>
+              <Ionicons name={item.icon} size={28} color={item.accentColor} />
             </View>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>
-                {item.label}
-              </Text>
-            </View>
-          </Pressable>
-        </Animated.View>
-      ))}
-    </View>
+          </BlurView>
+        ) : (
+          <View
+            style={[
+              styles.menuButtonBlur,
+              { backgroundColor: `${item.accentColor}12`, borderColor: `${item.accentColor}25`, borderWidth: 1 },
+            ]}
+          >
+            <Ionicons name={item.icon} size={28} color={item.accentColor} />
+          </View>
+        )}
+        <Text style={styles.menuLabel}>{item.label}</Text>
+      </AnimatedPressable>
+    </Animated.View>
+  );
+}
+
+function MenuItems({ onItemPress }: { onItemPress: (key: string) => void }) {
+  return (
+    <Animated.View entering={FadeIn.duration(200)} style={styles.menuContainer}>
+      <View style={styles.menuRow}>
+        {MENU_ITEMS.map((item, idx) => (
+          <MenuItem key={item.key} item={item} idx={idx} onPress={() => onItemPress(item.key)} />
+        ))}
+      </View>
+    </Animated.View>
   );
 }
 
@@ -82,82 +131,105 @@ export function TabBarWithModal(props: BottomTabBarProps) {
   const textRef = useRef<BottomSheetRef>(null);
   const voiceRef = useRef<BottomSheetRef>(null);
 
-  const handleCreateTransaction = () => {
-    setMenuVisible(true);
-  };
-
-  const handleMenuClose = () => {
-    setMenuVisible(false);
-  };
-
-  const handleManual = () => {
-    setMenuVisible(false);
-    setTimeout(() => manualRef.current?.open(), 200);
-  };
-
-  const handleText = () => {
-    setMenuVisible(false);
-    setTimeout(() => textRef.current?.open(), 200);
-  };
-
-  const handleVoice = () => {
-    setMenuVisible(false);
-    setTimeout(() => voiceRef.current?.open(), 200);
-  };
-
-  const handleManualSuccess = () => {
-    manualRef.current?.close();
-  };
-
-  const handleTextSuccess = () => {
-    textRef.current?.close();
-  };
-
-  const handleVoiceSuccess = () => {
-    voiceRef.current?.close();
-  };
-
   const handleItemPress = (key: string) => {
-    if (key === 'manual') handleManual();
-    else if (key === 'text') handleText();
-    else if (key === 'voice') handleVoice();
+    setMenuVisible(false);
+    setTimeout(() => {
+      if (key === 'manual') manualRef.current?.open();
+      else if (key === 'text') textRef.current?.open();
+      else if (key === 'voice') voiceRef.current?.open();
+    }, 180);
   };
 
   return (
     <>
-      <TabBar {...props} onCreateTransaction={handleCreateTransaction} />
+      <TabBar {...props} onCreateTransaction={() => setMenuVisible(true)} />
 
       <Modal
         visible={menuVisible}
         transparent
         animationType="fade"
-        onRequestClose={handleMenuClose}
+        onRequestClose={() => setMenuVisible(false)}
         statusBarTranslucent
       >
         {Platform.OS === 'ios' ? (
-          <BlurView intensity={60} tint="dark" style={{ flex: 1 }}>
-            <Pressable style={{ flex: 1 }} onPress={handleMenuClose} />
-            <MenuItems onItemPress={handleItemPress} onClose={handleMenuClose} />
+          <BlurView intensity={50} tint="systemUltraThinMaterialDark" style={styles.backdrop}>
+            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(8,8,8,0.5)' }]} />
+            <Pressable style={StyleSheet.absoluteFillObject} onPress={() => setMenuVisible(false)} />
+            <MenuItems onItemPress={handleItemPress} />
           </BlurView>
         ) : (
-          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)' }}>
-            <Pressable style={{ flex: 1 }} onPress={handleMenuClose} />
-            <MenuItems onItemPress={handleItemPress} onClose={handleMenuClose} />
+          <View style={[styles.backdrop, { backgroundColor: 'rgba(8,8,8,0.82)' }]}>
+            <Pressable style={StyleSheet.absoluteFillObject} onPress={() => setMenuVisible(false)} />
+            <MenuItems onItemPress={handleItemPress} />
           </View>
         )}
       </Modal>
 
       <BottomSheet ref={manualRef}>
-        <CreateTransactionForm onSuccess={handleManualSuccess} />
+        <CreateTransactionForm onSuccess={() => manualRef.current?.close()} />
       </BottomSheet>
 
-      <BottomSheet ref={textRef} enableDynamicSizing snapPoints={[]} keyboardBehavior="interactive" keyboardBlurBehavior="restore">
-        <CreateTransactionText onSuccess={handleTextSuccess} />
+      <BottomSheet
+        ref={textRef}
+        enableDynamicSizing
+        snapPoints={[]}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+      >
+        <CreateTransactionText onSuccess={() => textRef.current?.close()} />
       </BottomSheet>
 
-      <BottomSheet ref={voiceRef} enableDynamicSizing snapPoints={[]}>        
-        <CreateTransactionVoice onSuccess={handleVoiceSuccess} />
+      <BottomSheet ref={voiceRef} enableDynamicSizing snapPoints={[]}>
+        <CreateTransactionVoice onSuccess={() => voiceRef.current?.close()} />
       </BottomSheet>
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+  },
+  menuContainer: {
+    position: 'absolute',
+    bottom: '14%',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  menuRow: {
+    flexDirection: 'row',
+    gap: 16,
+    alignItems: 'flex-end',
+  },
+  menuItem: {
+    alignItems: 'center',
+  },
+  menuButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuButtonBlur: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  menuButtonInner: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 36,
+    borderWidth: 1,
+  },
+  menuLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.foreground,
+    marginTop: 6,
+    textAlign: 'center',
+    width: 80,
+  },
+});

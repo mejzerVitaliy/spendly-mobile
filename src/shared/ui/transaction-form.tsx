@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { colors } from '@/shared/theme';
 import { ConfirmDialog } from './confirm-dialog';
 import { z } from 'zod';
 import { FormCategoryPicker } from './form-category-picker';
@@ -160,7 +161,7 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
   if (mode === 'edit' && isLoadingTransaction) {
     return (
       <View className="flex-1 bg-card items-center justify-center py-20">
-        <ActivityIndicator size="large" color="#3b82f6" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }

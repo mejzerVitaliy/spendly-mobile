@@ -1,6 +1,9 @@
-import { useRef, useState } from 'react';
-import { Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { NumericKeyboard } from './numeric-keyboard';
+import { useNumericKeyboard } from './use-numeric-keyboard';
+import { colors } from '@/shared/theme';
 
 interface InputProps extends Omit<TextInputProps, 'secureTextEntry'> {
   label?: string;
@@ -30,24 +33,17 @@ const Input = ({
 }: InputProps) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [isNumericKeyboardVisible, setIsNumericKeyboardVisible] = useState(false);
-  const inputRef = useRef<TextInput>(null);
+
+  const kb = useNumericKeyboard();
 
   const isNumeric = type === 'number';
-
-  const keyboardType = type === 'email'
-    ? 'email-address'
-    : 'default';
-
+  const keyboardType = type === 'email' ? 'email-address' : 'default';
   const secureTextEntry = type === 'password' && !isPasswordVisible;
 
   const handleNumericKey = (key: string) => {
     const current = value ?? '';
     if (key === '.' && current.includes('.')) return;
-    if (key === '.' && current === '') {
-      onChangeText?.('0.');
-      return;
-    }
+    if (key === '.' && current === '') { onChangeText?.('0.'); return; }
     onChangeText?.(current + key);
   };
 
@@ -56,87 +52,116 @@ const Input = ({
     onChangeText?.(current.slice(0, -1));
   };
 
-  const borderColor = error 
-    ? 'border-destructive' 
-    : isFocused 
-    ? 'border-ring' 
-    : 'border-input';
+  const borderColor = error
+    ? colors.destructive
+    : isFocused
+    ? colors.primary
+    : colors.border;
 
   return (
     <View className="w-full">
       {label && (
-        <Text className="text-sm font-medium text-foreground mb-2">
+        <Text
+          style={{ fontSize: 13, fontWeight: '500', color: colors.foreground, marginBottom: 8 }}
+        >
           {label}
         </Text>
       )}
-      
-      <View className={`relative flex-row items-center border ${borderColor} rounded-2xl bg-input ${disabled ? 'opacity-50' : ''}`}>
-        {leftIcon && (
-          <View className="pl-3">
-            {leftIcon}
-          </View>
+
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          borderWidth: 1,
+          borderColor: isNumeric ? (error ? colors.destructive : colors.border) : borderColor,
+          borderRadius: 16,
+          backgroundColor: colors.input,
+          opacity: disabled ? 0.5 : 1,
+        }}
+      >
+        {leftIcon && <View style={{ paddingLeft: 12 }}>{leftIcon}</View>}
+
+        {isNumeric ? (
+          // Pressable display — no TextInput involved, no focus/onFocus events
+          <Pressable
+            onPress={disabled ? undefined : kb.open}
+            style={{
+              flex: 1,
+              paddingHorizontal: leftIcon ? 8 : 16,
+              paddingVertical: 14,
+              paddingRight: rightIcon ? 48 : 16,
+            }}
+          >
+            <Text style={{ fontSize: 15, color: value ? colors.foreground : colors.mutedForeground }}>
+              {value || placeholder || ''}
+            </Text>
+          </Pressable>
+        ) : (
+          <TextInput
+            style={{
+              flex: 1,
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              fontSize: 15,
+              color: colors.foreground,
+              paddingLeft: leftIcon ? 8 : 16,
+              paddingRight: type === 'password' || rightIcon ? 48 : 16,
+            }}
+            placeholder={placeholder}
+            placeholderTextColor={colors.mutedForeground}
+            value={value}
+            onChangeText={onChangeText}
+            keyboardType={keyboardType}
+            secureTextEntry={secureTextEntry}
+            autoCapitalize={type === 'email' ? 'none' : 'sentences'}
+            editable={!disabled}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            {...props}
+          />
         )}
-        
-        <TextInput
-          ref={inputRef}
-          className={`flex-1 px-4 py-3 text-foreground ${leftIcon ? 'pl-2' : ''} ${type === 'password' || rightIcon ? 'pr-12' : ''}`}
-          placeholder={placeholder}
-          placeholderTextColor="#64748b"
-          value={value}
-          onChangeText={onChangeText}
-          keyboardType={keyboardType}
-          secureTextEntry={secureTextEntry}
-          autoCapitalize={type === 'email' ? 'none' : 'sentences'}
-          editable={!disabled}
-          showSoftInputOnFocus={isNumeric ? false : undefined}
-          onFocus={() => {
-            setIsFocused(true);
-            if (isNumeric) setIsNumericKeyboardVisible(true);
-          }}
-          onBlur={() => setIsFocused(false)}
-          {...props}
-        />
-        
+
         {type === 'password' && (
           <TouchableOpacity
-            className="absolute right-3 p-2"
+            style={{ position: 'absolute', right: 12, padding: 8 }}
             onPress={() => setIsPasswordVisible(!isPasswordVisible)}
             disabled={disabled}
           >
-            <Text className="text-muted-foreground text-base">
-              {isPasswordVisible ? '🙈' : '👁️'}
-            </Text>
+            <Ionicons
+              name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+              size={20}
+              color={colors.mutedForeground}
+            />
           </TouchableOpacity>
         )}
-        
+
         {rightIcon && type !== 'password' && (
-          <View className="pr-3">
-            {rightIcon}
-          </View>
+          <View style={{ paddingRight: 12 }}>{rightIcon}</View>
         )}
       </View>
-      
+
       {error && (
-        <Text className="text-destructive text-xs mt-1.5 ml-1">
+        <Text style={{ color: colors.destructive, fontSize: 12, marginTop: 6, marginLeft: 4 }}>
           {error}
         </Text>
       )}
-      
+
       {helperText && !error && (
-        <Text className="text-muted-foreground text-xs mt-1.5 ml-1">
+        <Text style={{ color: colors.mutedForeground, fontSize: 12, marginTop: 6, marginLeft: 4 }}>
           {helperText}
         </Text>
       )}
 
-      <NumericKeyboard
-        visible={isNumeric && isNumericKeyboardVisible}
-        onKeyPress={handleNumericKey}
-        onDelete={handleNumericDelete}
-        onConfirm={() => {
-          setIsNumericKeyboardVisible(false);
-          inputRef.current?.blur();
-        }}
-      />
+      {isNumeric && (
+        <NumericKeyboard
+          visible={kb.visible}
+          value={value}
+          onKeyPress={handleNumericKey}
+          onDelete={handleNumericDelete}
+          onClose={kb.close}
+          onClosed={kb.onClosed}
+        />
+      )}
     </View>
   );
 };

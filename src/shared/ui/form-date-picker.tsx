@@ -3,6 +3,7 @@ import { Calendar } from 'react-native-calendars';
 import { useRef } from 'react';
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import { Pressable, Text, View } from 'react-native';
+import { colors } from '@/shared/theme';
 import { BottomSheet, type BottomSheetRef } from './bottom-sheet';
 
 interface FormDatePickerProps<T extends FieldValues> {
@@ -50,7 +51,7 @@ const FormDatePicker = <T extends FieldValues>({
           const markedDates = {
             [selectedDate]: {
               selected: true,
-              selectedColor: '#3b82f6',
+              selectedColor: colors.primary,
             },
           };
 
@@ -61,7 +62,7 @@ const FormDatePicker = <T extends FieldValues>({
                 className="flex-row items-center justify-between border border-border rounded-2xl px-4 py-3 bg-input"
               >
                 <Text className="text-base text-foreground">{formatDate(iso)}</Text>
-                <Ionicons name="calendar-outline" size={18} color="#9ca3af" />
+                <Ionicons name="calendar-outline" size={18} color={colors.mutedForeground} />
               </Pressable>
 
               <BottomSheet ref={sheetRef} snapPoints={['50%']}>
@@ -77,11 +78,13 @@ const FormDatePicker = <T extends FieldValues>({
                     theme={{
                       backgroundColor: 'transparent',
                       calendarBackground: 'transparent',
-                      monthTextColor: '#e5e7eb',
-                      dayTextColor: '#e5e7eb',
-                      textDisabledColor: '#6b7280',
-                      todayTextColor: '#60a5fa',
-                      arrowColor: '#9ca3af',
+                      monthTextColor: colors.foreground,
+                      dayTextColor: colors.foreground,
+                      textDisabledColor: colors.mutedForeground,
+                      todayTextColor: colors.primary,
+                      arrowColor: colors.mutedForeground,
+                      selectedDayBackgroundColor: colors.primary,
+                      selectedDayTextColor: colors.background,
                     }}
                   />
                 </View>

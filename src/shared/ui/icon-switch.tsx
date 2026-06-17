@@ -54,7 +54,7 @@ function IconSwitch<T>({ value, options, onChange, size = 20 }: IconSwitchProps<
             <MaterialCommunityIcons
               name={option.icon}
               size={size}
-              color={isActive ? '#E5E7EB' : '#9CA3AF'}
+              color={isActive ? '#F2F2F2' : '#737373'}
             />
           </Pressable>
         );

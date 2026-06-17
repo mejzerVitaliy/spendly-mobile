@@ -1,21 +1,26 @@
 import { View, ViewProps } from 'react-native';
+import { colors } from '@/shared/theme';
 
 interface SeparatorProps extends ViewProps {
   orientation?: 'horizontal' | 'vertical';
 }
 
-export function Separator({ 
+export function Separator({
   orientation = 'horizontal',
-  className = '', 
-  ...props 
+  style,
+  ...props
 }: SeparatorProps) {
-  const orientationClasses = orientation === 'horizontal'
-    ? 'h-px w-full'
-    : 'w-px h-full';
-
   return (
-    <View 
-      className={`bg-border my-3 ${orientationClasses} ${className}`}
+    <View
+      style={[
+        {
+          backgroundColor: colors.border,
+          ...(orientation === 'horizontal'
+            ? { height: 1, width: '100%', marginVertical: 12 }
+            : { width: 1, height: '100%', marginHorizontal: 12 }),
+        },
+        style,
+      ]}
       {...props}
     />
   );

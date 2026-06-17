@@ -6,15 +6,19 @@ import { TransactionsList } from '@/features/transactions-list';
 import { useHomeStore } from '@/shared/stores';
 import { Transaction } from '@/shared/types';
 import { getDateRangeForPeriod } from '@/shared/utils';
+import { colors } from '@/shared/theme';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function HomeScreen() {
   const editTransactionRef = useRef<EditTransactionRef>(null);
+  const queryClient = useQueryClient();
   const { periodType, currentDate, startDate, endDate, setDateRange } = useHomeStore();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const { startDate: start, endDate: end } = getDateRangeForPeriod(currentDate, periodType);
@@ -25,9 +29,19 @@ export function HomeScreen() {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
     }, 300);
-
     return () => clearTimeout(timer);
   }, [search]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([
+      queryClient.refetchQueries({ queryKey: ['user'], type: 'all' }),
+      queryClient.refetchQueries({ queryKey: ['wallets'], type: 'all' }),
+      queryClient.refetchQueries({ queryKey: ['transactions'], type: 'all' }),
+      queryClient.refetchQueries({ queryKey: ['reports'], type: 'all' }),
+    ]);
+    setRefreshing(false);
+  }, [queryClient]);
 
   const handleTransactionPress = (transaction: Transaction) => {
     editTransactionRef.current?.open(transaction.id);
@@ -38,16 +52,24 @@ export function HomeScreen() {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={["top", "left", "right"]}>
-      <ScrollView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
+      <ScrollView
+        className="flex-1 bg-background"
+        contentContainerStyle={{ paddingBottom: 24 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
+      >
         <View className="px-5 pt-5">
           <PeriodSelector store="home" />
-
           <TransactionSearch onSearchChange={handleSearchChange} />
-
           <BalanceView startDate={startDate} endDate={endDate} />
-          
-          <TransactionsList 
+          <TransactionsList
             onTransactionPress={handleTransactionPress}
             startDate={startDate}
             endDate={endDate}

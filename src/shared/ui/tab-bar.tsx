@@ -7,6 +7,7 @@ import {
   Text,
   LayoutChangeEvent,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useAnimatedStyle,
@@ -17,6 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
+import { colors } from '@/shared/theme';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const AnimatedText = Animated.createAnimatedComponent(Text);
@@ -103,10 +105,10 @@ function TabButton({
         <Ionicons
           name={getIconName()}
           size={22}
-          color={isFocused ? '#8B5CF6' : '#FFFFFF'}
+          color={isFocused ? colors.primary : colors.foreground}
         />
       </Animated.View>
-      <AnimatedText style={[styles.tabLabel, animatedTextStyle, { color: isFocused ? '#8B5CF6' : '#9CA3AF' }]}>
+      <AnimatedText style={[styles.tabLabel, animatedTextStyle, { color: isFocused ? colors.primary : colors.mutedForeground }]}>
         {label}
       </AnimatedText>
     </Pressable>
@@ -145,12 +147,12 @@ function CenterButton({ onPress }: { onPress: () => void }) {
         style={[styles.centerButton, animatedStyle]}
       >
         <LinearGradient
-          colors={['#8B5CF6', '#7C3AED']}
+          colors={['#38E8FF', '#22D3EE', '#0EA5C9']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.gradientButton}
         >
-          <Ionicons name="add" size={32} color="#FFFFFF" />
+          <Ionicons name="add" size={32} color="#080808" />
         </LinearGradient>
       </AnimatedPressable>
     </View>
@@ -251,6 +253,13 @@ export function TabBar({ state, descriptors, navigation, onCreateTransaction }: 
           },
         ]}
       >
+        <BlurView
+          intensity={Platform.OS === 'ios' ? 60 : 80}
+          tint="systemUltraThinMaterialDark"
+          style={StyleSheet.absoluteFillObject}
+        />
+        <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(8,8,8,1)' }]} />
+
         <View
           style={styles.tabSection}
           onLayout={(e) => {
@@ -287,7 +296,7 @@ const styles = StyleSheet.create({
     left: 0,
     width: INDICATOR_WIDTH,
     height: 3,
-    backgroundColor: '#8B5CF6',
+    backgroundColor: colors.primary,
     borderRadius: 2,
     zIndex: 5,
   },
@@ -298,9 +307,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingTop: 8,
     height: 70,
-    backgroundColor: '#1F2937',
+    backgroundColor: 'transparent',
     borderTopWidth: 1,
-    borderTopColor: '#374151',
+    borderTopColor: colors.border,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -347,7 +356,7 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     ...Platform.select({
       ios: {
-        shadowColor: '#8B5CF6',
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.5,
         shadowRadius: 16,

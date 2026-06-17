@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -49,9 +49,9 @@ export function CreateAccountScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background px-5 py-4">
       <SettingsHeader title="Create Account" />
-      <ScrollView className="flex-1 px-5" keyboardShouldPersistTaps="handled">
+      <View className="flex-1">
         <Text className="text-muted-foreground mb-6">
           Link your account with email and password to access it from any device.
         </Text>
@@ -80,7 +80,7 @@ export function CreateAccountScreen() {
           />
         </View>
 
-        <View className="mt-8">
+        <View className="mt-auto">
           <Button
             title="Create Account"
             onPress={handleSubmit}
@@ -88,7 +88,7 @@ export function CreateAccountScreen() {
             disabled={!isValid}
           />
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

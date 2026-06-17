@@ -6,12 +6,13 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { Text, TextInput } from 'react-native';
+import { Platform, Text, TextInput, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from '@/shared/ui/toast-config';
 import '../src/global.css';
+import { colors } from '@/shared/theme';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -90,18 +91,20 @@ function RootNavigator() {
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
     </>
   );
 }
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
       <QueryClientProvider client={queryClient}>
         <BottomSheetModalProvider>
-          <RootNavigator />
-          <Toast config={toastConfig} />
+          <View style={{ flex: 1, backgroundColor: colors.background }}>
+            <RootNavigator />
+            <Toast config={toastConfig} />
+          </View>
         </BottomSheetModalProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>

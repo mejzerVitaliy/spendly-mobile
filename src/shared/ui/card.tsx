@@ -1,4 +1,5 @@
 import { Text, View, ViewProps } from 'react-native';
+import { colors } from '@/shared/theme';
 
 interface CardProps extends ViewProps {
   children: React.ReactNode;
@@ -7,29 +8,48 @@ interface CardProps extends ViewProps {
   footer?: React.ReactNode;
 }
 
-export function Card({ 
-  children, 
+export function Card({
+  children,
   variant = 'default',
   header,
   footer,
-  className = '', 
-  ...props 
+  className = '',
+  ...props
 }: CardProps) {
   const variantClasses = {
     default: 'bg-card border border-border',
-    elevated: 'bg-card shadow-lg',
-    outlined: 'bg-transparent border-2 border-border',
+    elevated: 'bg-card border border-border',
+    outlined: 'bg-transparent border border-border',
   }[variant];
 
   return (
-    <View 
-      className={`rounded-lg overflow-hidden ${variantClasses} ${className}`}
+    <View
+      className={`rounded-2xl overflow-hidden ${variantClasses} ${className}`}
+      style={
+        variant === 'elevated'
+          ? {
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.4,
+              shadowRadius: 12,
+              elevation: 8,
+            }
+          : undefined
+      }
       {...props}
     >
       {header && (
-        <View className="px-4 pt-4 pb-3 border-b border-border">
+        <View
+          style={{
+            paddingHorizontal: 16,
+            paddingTop: 16,
+            paddingBottom: 12,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+          }}
+        >
           {typeof header === 'string' ? (
-            <Text className="text-lg font-semibold text-card-foreground">
+            <Text style={{ fontSize: 15, fontWeight: '600', color: colors.foreground }}>
               {header}
             </Text>
           ) : (
@@ -37,13 +57,19 @@ export function Card({
           )}
         </View>
       )}
-      
-      <View className="p-4">
-        {children}
-      </View>
-      
+
+      <View className="p-4">{children}</View>
+
       {footer && (
-        <View className="px-4 pb-4 pt-3 border-t border-border">
+        <View
+          style={{
+            paddingHorizontal: 16,
+            paddingBottom: 16,
+            paddingTop: 12,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+          }}
+        >
           {footer}
         </View>
       )}
