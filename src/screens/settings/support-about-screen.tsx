@@ -61,7 +61,7 @@ export function SupportAboutScreen() {
               icon="mail-outline"
               label="Email Support"
               subtitle="support@spendly.app"
-              url="mailto:support@spendly.app"
+              url="mailto:support@spendly-ai.com"
             />
           </View>
 
@@ -76,13 +76,13 @@ export function SupportAboutScreen() {
             <LinkRow
               icon="shield-checkmark-outline"
               label="Privacy Policy"
-              url="https://spendly.app/privacy"
+              url="https://spendly-ai.com/privacy"
             />
             <View style={{ height: 1, backgroundColor: colors.glass.border, marginLeft: 56 }} />
             <LinkRow
               icon="document-text-outline"
               label="Terms of Use"
-              url="https://spendly.app/terms"
+              url="https://spendly-ai.com/terms"
             />
           </View>
         </View>
