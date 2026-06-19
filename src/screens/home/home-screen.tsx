@@ -102,7 +102,7 @@ export function HomeScreen() {
   };
 
   const handleDuplicate = async () => {
-    if (!selectedTransaction) return;
+    if (!selectedTransaction || selectedTransaction.transferGroupId) return;
     actionSheetRef.current?.close();
     try {
       await createMutation.mutateAsync({
@@ -110,7 +110,7 @@ export function HomeScreen() {
         date: new Date().toISOString(),
         currencyCode: selectedTransaction.currencyCode,
         type: selectedTransaction.type,
-        categoryId: selectedTransaction.categoryId,
+        categoryId: selectedTransaction.categoryId!,
         description: selectedTransaction.description,
         walletId: selectedTransaction.walletId,
       });

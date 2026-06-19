@@ -161,7 +161,17 @@
     "searchWallets": "Search wallets...",
     "selectCurrency": "Select Currency",
     "searchCurrency": "Search by code or name...",
-    "selectDate": "Select Date"
+    "selectDate": "Select Date",
+    "transfer": "Transfer",
+    "transferring": "Transferring...",
+    "fromWallet": "From Wallet",
+    "toWallet": "To Wallet",
+    "transferLabel": "Transfer",
+    "transferCreated": "Transfer completed",
+    "transferCreatedDesc": "Funds moved between wallets",
+    "failedTransfer": "Error creating transfer",
+    "sameWalletError": "Source and destination must be different",
+    "exchangeRateNote": "approximate"
   },
   "settings": {
     "title": "Settings",

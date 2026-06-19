@@ -1,4 +1,4 @@
-import { CreateTransactionRequest, CreateTransactionResponse, GetAllTransactionsResponse, GetTransactionByIdResponse, ParseTextTransactionRequest, ParseTextTransactionResponse, ParseVoiceTransactionResponse, UpdateTransactionRequest, UpdateTransactionResponse } from "@/shared/types";
+import { CreateTransactionRequest, CreateTransactionResponse, CreateTransferRequest, CreateTransferResponse, GetAllTransactionsResponse, GetTransactionByIdResponse, ParseTextTransactionRequest, ParseTextTransactionResponse, ParseVoiceTransactionResponse, UpdateTransactionRequest, UpdateTransactionResponse } from "@/shared/types";
 import { apiClient } from "./api";
 
 const create = async (request: CreateTransactionRequest): Promise<CreateTransactionResponse> => {
@@ -59,8 +59,14 @@ const parseVoice = async (audioUri: string): Promise<ParseVoiceTransactionRespon
   return response.data;
 };
 
+const createTransfer = async (request: CreateTransferRequest): Promise<CreateTransferResponse> => {
+  const response = await apiClient.post("/transaction/transfer", request);
+  return response.data;
+};
+
 export const transactionsApi = {
   create,
+  createTransfer,
   getAll,
   getById,
   update,

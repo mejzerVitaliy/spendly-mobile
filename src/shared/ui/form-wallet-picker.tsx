@@ -9,6 +9,8 @@ interface FormWalletPickerProps<T extends FieldValues> {
   name: Path<T>;
   label: string;
   error?: string;
+  excludeId?: string;
+  autoSelectDefault?: boolean;
 }
 
 interface WalletPickerFieldProps<T extends FieldValues> {
@@ -21,6 +23,7 @@ interface WalletPickerFieldProps<T extends FieldValues> {
   value: unknown;
   onChange: (value: unknown) => void;
   defaultWalletId?: string;
+  autoSelectDefault?: boolean;
 }
 
 function WalletPickerField<T extends FieldValues>({
@@ -33,14 +36,15 @@ function WalletPickerField<T extends FieldValues>({
   value,
   onChange,
   defaultWalletId,
+  autoSelectDefault = true,
 }: WalletPickerFieldProps<T>) {
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!value && defaultWalletId) {
+    if (!value && defaultWalletId && autoSelectDefault) {
       onChange(defaultWalletId);
     }
-  }, [defaultWalletId, onChange, value]);
+  }, [defaultWalletId, onChange, value, autoSelectDefault]);
 
   return (
     <FormPicker
@@ -62,11 +66,13 @@ export function FormWalletPicker<T extends FieldValues>({
   name,
   label,
   error,
+  excludeId,
+  autoSelectDefault = true,
 }: FormWalletPickerProps<T>) {
   const { wallets, defaultWallet, isLoading } = useWallets();
 
   const items: PickerItem[] = useMemo(() => {
-    const activeWallets = wallets.filter((w) => !w.isArchived);
+    const activeWallets = wallets.filter((w) => !w.isArchived && w.id !== excludeId);
 
     return activeWallets.map((wallet) => ({
       id: wallet.id,
@@ -74,7 +80,7 @@ export function FormWalletPicker<T extends FieldValues>({
       value: wallet.id,
       subtitle: `${wallet.currencyCode} ${(wallet.currentBalance / 100).toFixed(2)}${wallet.isDefault ? ' • Default' : ''}`,
     }));
-  }, [wallets]);
+  }, [wallets, excludeId]);
 
   return (
     <Controller
@@ -92,6 +98,7 @@ export function FormWalletPicker<T extends FieldValues>({
             value={value}
             onChange={onChange}
             defaultWalletId={defaultWallet?.id}
+            autoSelectDefault={autoSelectDefault}
           />
         );
       }}

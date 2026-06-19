@@ -161,7 +161,17 @@
     "searchWallets": "Поиск кошельков...",
     "selectCurrency": "Выбрать валюту",
     "searchCurrency": "Поиск по коду или названию...",
-    "selectDate": "Выбрать дату"
+    "selectDate": "Выбрать дату",
+    "transfer": "Перевод",
+    "transferring": "Переводим...",
+    "fromWallet": "Кошелёк-источник",
+    "toWallet": "Кошелёк-получатель",
+    "transferLabel": "Перевод",
+    "transferCreated": "Перевод выполнен",
+    "transferCreatedDesc": "Средства перемещены между кошельками",
+    "failedTransfer": "Ошибка создания перевода",
+    "sameWalletError": "Источник и получатель должны различаться",
+    "exchangeRateNote": "приблизительно"
   },
   "settings": {
     "title": "Настройки",

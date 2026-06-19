@@ -8,12 +8,13 @@ interface Transaction {
   amount: number
   type: TransactionType
   date: string
-  categoryId: string
+  categoryId?: string | null
   category?: CategoryDto
   currencyCode: string
   walletId: string
   convertedAmount: number
   mainCurrencyCode: string
+  transferGroupId?: string | null
 }
 
 interface CreateTransactionRequest {
@@ -25,6 +26,24 @@ interface CreateTransactionRequest {
   currencyCode: string
   walletId?: string
 }
+
+interface CreateTransferRequest {
+  fromWalletId: string
+  toWalletId: string
+  fromAmount: number
+  date: string
+  description?: string
+}
+
+interface CreateTransferResponse extends ApiResponse<{
+  fromTransaction: Transaction
+  toTransaction: Transaction
+  exchangeRate: number
+  fromCurrencyCode: string
+  toCurrencyCode: string
+  fromAmount: number
+  toAmount: number
+}> {}
 
 interface CreateTransactionResponse
   extends ApiResponse<Transaction> {}
@@ -61,6 +80,8 @@ interface ParseVoiceTransactionResponse
 
 export type {
     CreateTransactionRequest,
+    CreateTransferRequest,
+    CreateTransferResponse,
     CreateTransactionResponse,
     GetAllTransactionsResponse,
     GetTransactionByIdResponse,
@@ -71,4 +92,3 @@ export type {
     UpdateTransactionRequest,
     UpdateTransactionResponse
 };
-

@@ -1,5 +1,5 @@
 import { transactionsApi } from "@/shared/services/api";
-import { CreateTransactionRequest, UpdateTransactionRequest } from "@/shared/types";
+import { CreateTransactionRequest, CreateTransferRequest, UpdateTransactionRequest } from "@/shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface GetAllTransactionsParams {
@@ -50,6 +50,14 @@ const useTransactions = () => {
     },
   })
 
+  const createTransferMutation = useMutation({
+    mutationKey: ['transactions', 'createTransfer'],
+    mutationFn: (request: CreateTransferRequest) => transactionsApi.createTransfer(request),
+    onSuccess: async () => {
+      await invalidateAll(queryClient)
+    },
+  })
+
   const parseTextMutation = useMutation({
     mutationKey: ['transactions', 'parseText'],
     mutationFn: (text: string) => transactionsApi.parseText({ text }),
@@ -68,6 +76,7 @@ const useTransactions = () => {
 
   return {
     createMutation,
+    createTransferMutation,
     updateMutation,
     removeMutation,
     parseTextMutation,

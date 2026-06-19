@@ -76,10 +76,12 @@ function TransactionRow({
     transform: [{ translateY: translateY.value }],
   }));
 
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
+  const isTransfer = !!item.transferGroupId;
   const isIncome = item.type === 'INCOME';
   const amountColor = isIncome ? '#22C55E' : '#EF4444';
   const iconBg = isIncome ? '#22C55E20' : '#EF444420';
+  const transferColor = '#22D3EE';
 
   return (
     <Animated.View style={style}>
@@ -91,18 +93,24 @@ function TransactionRow({
       >
         <View
           className="w-10 h-10 rounded-full items-center justify-center mr-3"
-          style={{ backgroundColor: item.category?.color ? `${item.category.color}25` : iconBg }}
+          style={{
+            backgroundColor: isTransfer
+              ? `${transferColor}20`
+              : item.category?.color ? `${item.category.color}25` : iconBg,
+          }}
         >
           <Ionicons
-            name={isIncome ? 'arrow-down' : 'arrow-up'}
+            name={isTransfer ? 'swap-horizontal' : isIncome ? 'arrow-down' : 'arrow-up'}
             size={16}
-            color={item.category?.color ?? amountColor}
+            color={isTransfer ? transferColor : (item.category?.color ?? amountColor)}
           />
         </View>
 
         <View className="flex-1 mr-2">
           <Text className="text-sm font-semibold text-foreground" numberOfLines={1}>
-            {item.category ? getCategoryName(item.category, i18n.language) : unknownLabel}
+            {isTransfer
+              ? t('transaction.transferLabel')
+              : item.category ? getCategoryName(item.category, i18n.language) : unknownLabel}
           </Text>
           {item.description ? (
             <Text className="text-xs text-muted-foreground mt-0.5" numberOfLines={1}>
