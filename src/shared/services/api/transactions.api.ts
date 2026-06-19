@@ -1,4 +1,4 @@
-import { CreateTransactionRequest, CreateTransactionResponse, CreateTransferRequest, CreateTransferResponse, GetAllTransactionsResponse, GetTransactionByIdResponse, ParseTextTransactionRequest, ParseTextTransactionResponse, ParseVoiceTransactionResponse, UpdateTransactionRequest, UpdateTransactionResponse, UpdateTransferRequest, UpdateTransferResponse } from "@/shared/types";
+import { CreateTransactionRequest, CreateTransactionResponse, CreateTransferRequest, CreateTransferResponse, GetAllTransactionsResponse, GetTransactionByIdResponse, ParseTextTransactionRequest, ParseTextTransactionResponse, ParseVoiceTransactionResponse, PreviewTransactionResponse, UpdateTransactionRequest, UpdateTransactionResponse, UpdateTransferRequest, UpdateTransferResponse } from "@/shared/types";
 import { apiClient } from "./api";
 
 const create = async (request: CreateTransactionRequest): Promise<CreateTransactionResponse> => {
@@ -59,6 +59,25 @@ const parseVoice = async (audioUri: string): Promise<ParseVoiceTransactionRespon
   return response.data;
 };
 
+const previewText = async (text: string): Promise<PreviewTransactionResponse> => {
+  const response = await apiClient.post("/transaction/preview-text", { text });
+  return response.data;
+};
+
+const previewVoice = async (audioUri: string): Promise<PreviewTransactionResponse> => {
+  const formData = new FormData();
+  formData.append('audio', {
+    uri: audioUri,
+    name: 'audio.m4a',
+    type: 'audio/m4a',
+  } as any);
+
+  const response = await apiClient.post("/transaction/preview-voice", formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
 const createTransfer = async (request: CreateTransferRequest): Promise<CreateTransferResponse> => {
   const response = await apiClient.post("/transaction/transfer", request);
   return response.data;
@@ -79,5 +98,7 @@ export const transactionsApi = {
   remove,
   parseText,
   parseVoice,
+  previewText,
+  previewVoice,
 };
 

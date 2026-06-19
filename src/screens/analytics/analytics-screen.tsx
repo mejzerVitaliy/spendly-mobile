@@ -9,7 +9,6 @@ import { colors } from '@/shared/theme';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BlurView } from 'expo-blur';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 
@@ -17,7 +16,6 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
   if (Platform.OS === 'ios') {
     return (
       <View style={styles.chartCard}>
-        <BlurView intensity={35} tint="systemUltraThinMaterialDark" style={StyleSheet.absoluteFillObject} />
         <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 22 }]} />
         <View style={[StyleSheet.absoluteFillObject, { borderRadius: 22, borderWidth: 1, borderColor: colors.glass.border }]} />
         <Text style={styles.chartTitle}>{title}</Text>
@@ -137,7 +135,6 @@ export const AnalyticsScreen = () => {
           {/* Category breakdown */}
           {Platform.OS === 'ios' ? (
             <View style={[styles.chartCard, { paddingBottom: 8 }]}>
-              <BlurView intensity={35} tint="systemUltraThinMaterialDark" style={StyleSheet.absoluteFillObject} />
               <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 22 }]} />
               <View style={[StyleSheet.absoluteFillObject, { borderRadius: 22, borderWidth: 1, borderColor: colors.glass.border }]} />
               <View style={styles.catHeader}>

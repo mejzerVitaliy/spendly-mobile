@@ -91,11 +91,10 @@ export const PeriodSelector = ({ store = 'analytics' }: PeriodSelectorProps) => 
         <Pressable
           onPress={() => handleNavigate('prev')}
           hitSlop={8}
-          style={({ pressed }) => [styles.navBtn, { opacity: pressed ? 0.6 : 1 }]}
+          className='w-10 h-10 rounded-xl border border-border items-center justify-center pressed:opacity-60'
         >
           {Platform.OS === 'ios' ? (
             <>
-              <BlurView intensity={30} tint="systemUltraThinMaterialDark" style={StyleSheet.absoluteFillObject} />
               <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 12 }]} />
               <Ionicons name="chevron-back" size={20} color={colors.mutedForeground} />
             </>
@@ -112,11 +111,10 @@ export const PeriodSelector = ({ store = 'analytics' }: PeriodSelectorProps) => 
         <Pressable
           onPress={() => handleNavigate('next')}
           hitSlop={8}
-          style={({ pressed }) => [styles.navBtn, { opacity: pressed ? 0.6 : 1 }]}
+          className='w-10 h-10 rounded-xl border border-border items-center justify-center pressed:opacity-60'
         >
           {Platform.OS === 'ios' ? (
             <>
-              <BlurView intensity={30} tint="systemUltraThinMaterialDark" style={StyleSheet.absoluteFillObject} />
               <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 12 }]} />
               <Ionicons name="chevron-forward" size={20} color={colors.mutedForeground} />
             </>

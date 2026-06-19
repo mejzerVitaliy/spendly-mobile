@@ -1,5 +1,5 @@
 import { transactionsApi } from "@/shared/services/api";
-import { CreateTransactionRequest, CreateTransferRequest, UpdateTransactionRequest, UpdateTransferRequest } from "@/shared/types";
+import { CreateTransactionRequest, CreateTransferRequest, ParsedTransactionPreview, UpdateTransactionRequest, UpdateTransferRequest } from "@/shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface GetAllTransactionsParams {
@@ -83,6 +83,51 @@ const useTransactions = () => {
     },
   })
 
+  const previewTextMutation = useMutation({
+    mutationKey: ['transactions', 'previewText'],
+    mutationFn: (text: string) => transactionsApi.previewText(text),
+  })
+
+  const previewVoiceMutation = useMutation({
+    mutationKey: ['transactions', 'previewVoice'],
+    mutationFn: (audioUri: string) => transactionsApi.previewVoice(audioUri),
+  })
+
+  const createFromPreviewMutation = useMutation({
+    mutationKey: ['transactions', 'createFromPreview'],
+    mutationFn: async (previews: ParsedTransactionPreview[]) => {
+      const results = []
+      for (const tx of previews) {
+        if (tx.transactionType === 'TRANSFER') {
+          if (!tx.walletId || !tx.toWalletId) continue
+          const res = await transactionsApi.createTransfer({
+            fromWalletId: tx.walletId,
+            toWalletId: tx.toWalletId,
+            fromAmount: tx.amount,
+            date: tx.date,
+            description: tx.description || undefined,
+          })
+          results.push(res)
+        } else {
+          const res = await transactionsApi.create({
+            amount: tx.amount,
+            date: tx.date,
+            currencyCode: tx.currencyCode,
+            type: tx.transactionType as unknown as import('@/shared/constants').TransactionType,
+            categoryId: tx.categoryId ?? '',
+            description: tx.description || undefined,
+            walletId: tx.walletId ?? undefined,
+          })
+          results.push(res)
+        }
+      }
+      return results
+    },
+    onSuccess: async () => {
+      await invalidateAll(queryClient)
+    },
+  })
+
   return {
     createMutation,
     createTransferMutation,
@@ -91,6 +136,9 @@ const useTransactions = () => {
     removeMutation,
     parseTextMutation,
     parseVoiceMutation,
+    previewTextMutation,
+    previewVoiceMutation,
+    createFromPreviewMutation,
   }
 }
 

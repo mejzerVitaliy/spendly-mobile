@@ -374,6 +374,16 @@
     "recordingError": "Could not start recording",
     "recordingErrorDesc": "Please try again"
   },
+  "aiConfirm": {
+    "title": "Review transactions",
+    "subtitle_one": "{{count}} transaction parsed — confirm to add",
+    "subtitle_other": "{{count}} transactions parsed — confirm to add",
+    "subtitle": "{{count}} transaction(s) parsed — confirm to add",
+    "confirm_one": "Add {{count}} transaction",
+    "confirm_other": "Add {{count}} transactions",
+    "confirm": "Add transactions",
+    "reject": "Cancel"
+  },
   "validation": {
     "amountPositive": "Amount must be positive",
     "selectCategory": "Select category"

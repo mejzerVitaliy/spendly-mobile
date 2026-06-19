@@ -2,6 +2,27 @@ import { TransactionType } from "@/shared/constants";
 import { ApiResponse } from "../api";
 import { CategoryDto } from "../category";
 
+// ─── AI Preview ───────────────────────────────────────────────────────────────
+
+interface ParsedTransactionPreview {
+  transactionType: 'INCOME' | 'EXPENSE' | 'TRANSFER'
+  amount: number
+  currencyCode: string
+  categoryId?: string | null
+  walletId?: string | null
+  toWalletId?: string | null
+  description: string
+  date: string
+}
+
+interface PreviewTransactionRequest {
+  text: string
+}
+
+interface PreviewTransactionResponse extends ApiResponse<{
+  transactions: ParsedTransactionPreview[]
+}> {}
+
 interface Transaction {
   id: string
   description?: string
@@ -21,6 +42,8 @@ interface Transaction {
 }
 
 interface UpdateTransferRequest {
+  fromWalletId?: string
+  toWalletId?: string
   fromAmount: number
   date: string
   description?: string
@@ -93,6 +116,9 @@ interface ParseVoiceTransactionResponse
   extends ApiResponse<Transaction[]> {}
 
 export type {
+    ParsedTransactionPreview,
+    PreviewTransactionRequest,
+    PreviewTransactionResponse,
     CreateTransactionRequest,
     CreateTransferRequest,
     CreateTransferResponse,

@@ -374,6 +374,16 @@
     "recordingError": "Не удалось начать запись",
     "recordingErrorDesc": "Попробуйте снова"
   },
+  "aiConfirm": {
+    "title": "Проверьте транзакции",
+    "subtitle": "Найдено {{count}} тр. — подтвердите добавление",
+    "subtitle_one": "Найдена {{count}} транзакция — подтвердите",
+    "subtitle_other": "Найдено {{count}} транзакций — подтвердите",
+    "confirm": "Добавить",
+    "confirm_one": "Добавить {{count}} транзакцию",
+    "confirm_other": "Добавить {{count}} транзакций",
+    "reject": "Отмена"
+  },
   "validation": {
     "amountPositive": "Сумма должна быть положительной",
     "selectCategory": "Выберите категорию"

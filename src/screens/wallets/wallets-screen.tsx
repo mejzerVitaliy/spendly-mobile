@@ -208,7 +208,7 @@ export function WalletsScreen() {
             )}
             <View style={styles.heroDecorCircle} />
 
-            <View style={{ padding: 22 }}>
+            <View className='p-6 h-full flex justify-center'>
               <Text style={styles.heroLabel}>{t('wallets.totalBalance')}</Text>
               <Text style={styles.heroAmount}>
                 {formatCompact(displayBalance)}{' '}
@@ -236,9 +236,6 @@ export function WalletsScreen() {
 
           {activeWallets.length === 0 ? (
             <View style={styles.emptyCard}>
-              {Platform.OS === 'ios' && (
-                <BlurView intensity={25} tint="systemUltraThinMaterialDark" style={StyleSheet.absoluteFillObject} />
-              )}
               <View style={[StyleSheet.absoluteFillObject, { backgroundColor: Platform.OS === 'ios' ? colors.glass.background : colors.card, borderRadius: 18 }]} />
               <View style={[StyleSheet.absoluteFillObject, { borderRadius: 18, borderWidth: 1, borderColor: colors.border }]} />
               <View style={styles.emptyIconWrap}>
@@ -347,6 +344,7 @@ const styles = StyleSheet.create({
   },
   heroCard: {
     borderRadius: 26,
+    height: 150,
     overflow: 'hidden',
     marginBottom: 24,
     backgroundColor: Platform.OS === 'ios' ? 'rgba(10,10,10,0.5)' : colors.card,

@@ -150,7 +150,12 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
     }
   }, [transactionType, mode, setValue]);
 
+  const isFirstTypeRender = useRef(true);
   useEffect(() => {
+    if (isFirstTypeRender.current) {
+      isFirstTypeRender.current = false;
+      return;
+    }
     if (transactionType !== TransactionType.TRANSFER) {
       setValue('fromWalletId', undefined);
       setValue('toWalletId', undefined);
@@ -175,6 +180,8 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
           await updateTransferMutation.mutateAsync({
             transferGroupId: transaction!.transferGroupId!,
             request: {
+              fromWalletId: data.fromWalletId,
+              toWalletId: data.toWalletId,
               fromAmount: Math.round(data.amount * 100),
               date: data.date,
               description: data.description,
@@ -300,10 +307,6 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
       ? (createMutation.isPending ? t('transaction.creating') : t('transaction.create'))
       : (updateMutation.isPending ? t('transaction.updating') : t('transaction.update'));
 
-  // In edit mode for transfers, resolve wallet names for read-only display
-  const fromWalletName = wallets.find(w => w.id === fromWalletId)?.name;
-  const toWalletName = wallets.find(w => w.id === toWalletId)?.name;
-
   return (
     <>
       <ConfirmDialog
@@ -376,48 +379,25 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
           {isTransfer ? (
             /* ─── Transfer fields ─── */
             <>
-              {isEditTransfer ? (
-                /* Read-only wallet display when editing an existing transfer */
-                <>
-                  <View style={styles.readOnlyField}>
-                    <Text style={styles.readOnlyLabel}>{t('transaction.fromWallet')}</Text>
-                    <View style={styles.readOnlyValue}>
-                      <Text style={styles.readOnlyText}>{fromWalletName || '—'}</Text>
-                      <Ionicons name="lock-closed-outline" size={14} color={colors.mutedForeground} />
-                    </View>
-                  </View>
-                  <View style={styles.readOnlyField}>
-                    <Text style={styles.readOnlyLabel}>{t('transaction.toWallet')}</Text>
-                    <View style={styles.readOnlyValue}>
-                      <Text style={styles.readOnlyText}>{toWalletName || '—'}</Text>
-                      <Ionicons name="lock-closed-outline" size={14} color={colors.mutedForeground} />
-                    </View>
-                  </View>
-                </>
-              ) : (
-                /* Editable wallet pickers when creating a transfer */
-                <>
-                  <FormWalletPicker
-                    control={control}
-                    name="fromWalletId"
-                    label={t('transaction.fromWallet')}
-                    error={errors.fromWalletId?.message}
-                    autoSelectDefault={false}
-                  />
-                  <FormWalletPicker
-                    control={control}
-                    name="toWalletId"
-                    label={t('transaction.toWallet')}
-                    error={
-                      errors.toWalletId?.message === 'sameWallet'
-                        ? t('transaction.sameWalletError')
-                        : errors.toWalletId?.message
-                    }
-                    excludeId={fromWalletId}
-                    autoSelectDefault={false}
-                  />
-                </>
-              )}
+              <FormWalletPicker
+                control={control}
+                name="fromWalletId"
+                label={t('transaction.fromWallet')}
+                error={errors.fromWalletId?.message}
+                autoSelectDefault={false}
+              />
+              <FormWalletPicker
+                control={control}
+                name="toWalletId"
+                label={t('transaction.toWallet')}
+                error={
+                  errors.toWalletId?.message === 'sameWallet'
+                    ? t('transaction.sameWalletError')
+                    : errors.toWalletId?.message
+                }
+                excludeId={fromWalletId}
+                autoSelectDefault={false}
+              />
 
               <View className="flex-row gap-3">
                 <View className="flex-1">
@@ -566,30 +546,5 @@ const styles = StyleSheet.create({
   rateNote: {
     color: colors.mutedForeground,
     fontSize: 12,
-  },
-  readOnlyField: {
-    marginBottom: 16,
-  },
-  readOnlyLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.foreground,
-    marginBottom: 8,
-  },
-  readOnlyValue: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.input,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    opacity: 0.6,
-  },
-  readOnlyText: {
-    fontSize: 16,
-    color: colors.foreground,
   },
 });
