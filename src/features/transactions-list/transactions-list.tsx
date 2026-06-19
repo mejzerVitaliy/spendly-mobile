@@ -120,8 +120,8 @@ function TransactionRow({
         </View>
 
         <View className="items-end">
-          <Text className="text-sm font-bold" style={{ color: amountColor }}>
-            {isIncome ? '+' : '-'}{formatCompact(item.amount)} {item.currencyCode}
+          <Text className="text-sm font-bold" style={{ color: isTransfer ? '#FFFFFF' : amountColor }}>
+            {!isTransfer && (isIncome ? '+' : '-')}{formatCompact(item.amount)} {item.currencyCode}
           </Text>
           {item.currencyCode !== item.mainCurrencyCode && (
             <Text className="text-xs text-muted-foreground mt-0.5">
@@ -141,7 +141,8 @@ export function TransactionsList({ onTransactionPress, onTransactionLongPress, s
   const groupedTransactions = useMemo(() => {
     if (!query.data?.data) return {};
     const grouped: GroupedTransactions = {};
-    query.data.data.forEach((transaction) => {
+    const filtered = query.data.data.filter(tx => !tx.transferGroupId || tx.type !== 'INCOME');
+    filtered.forEach((transaction) => {
       const date = new Date(transaction.date).toLocaleDateString(i18n.language === 'ru' ? 'ru-RU' : 'en-US', {
         day: 'numeric',
         month: 'long',

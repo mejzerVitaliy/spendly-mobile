@@ -15,7 +15,21 @@ interface Transaction {
   convertedAmount: number
   mainCurrencyCode: string
   transferGroupId?: string | null
+  pairedTransactionWalletId?: string | null
+  pairedTransactionCurrencyCode?: string | null
+  pairedTransactionAmount?: number | null
 }
+
+interface UpdateTransferRequest {
+  fromAmount: number
+  date: string
+  description?: string
+}
+
+interface UpdateTransferResponse extends ApiResponse<{
+  fromTransaction: Transaction
+  toTransaction: Transaction
+}> {}
 
 interface CreateTransactionRequest {
   description?: string
@@ -82,6 +96,8 @@ export type {
     CreateTransactionRequest,
     CreateTransferRequest,
     CreateTransferResponse,
+    UpdateTransferRequest,
+    UpdateTransferResponse,
     CreateTransactionResponse,
     GetAllTransactionsResponse,
     GetTransactionByIdResponse,

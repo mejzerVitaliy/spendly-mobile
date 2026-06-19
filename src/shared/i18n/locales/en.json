@@ -170,6 +170,8 @@
     "transferCreated": "Transfer completed",
     "transferCreatedDesc": "Funds moved between wallets",
     "failedTransfer": "Error creating transfer",
+    "transferUpdated": "Transfer updated",
+    "transferUpdatedDesc": "Transfer details have been updated",
     "sameWalletError": "Source and destination must be different",
     "exchangeRateNote": "approximate"
   },

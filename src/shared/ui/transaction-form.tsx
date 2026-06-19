@@ -21,17 +21,16 @@ import { BottomSheetView } from '@gorhom/bottom-sheet';
 import { currencyApi } from '@/shared/services/api';
 import { useQuery } from '@tanstack/react-query';
 
-// Unified schema — superRefine enforces per-type rules
 const transactionSchema = z.object({
   type: z.nativeEnum(TransactionType),
   amount: z.coerce.number().positive(),
   date: z.string().datetime(),
   description: z.string().optional(),
-  // INCOME / EXPENSE fields
+  // INCOME / EXPENSE
   currencyCode: z.string().length(3).optional(),
   categoryId: z.string().uuid().optional(),
   walletId: z.string().uuid().optional(),
-  // TRANSFER fields
+  // TRANSFER
   fromWalletId: z.string().uuid().optional(),
   toWalletId: z.string().uuid().optional(),
 }).superRefine((data, ctx) => {
@@ -64,7 +63,7 @@ interface TransactionFormProps {
 }
 
 export function TransactionForm({ mode, transactionId, onSuccess }: TransactionFormProps) {
-  const { createMutation, createTransferMutation, updateMutation, removeMutation } = useTransactions();
+  const { createMutation, createTransferMutation, updateTransferMutation, updateMutation, removeMutation } = useTransactions();
   const { getMeQuery } = useAuth();
   const { wallets } = useWallets();
   const actionSheetRef = useRef<BottomSheetRef>(null);
@@ -77,6 +76,7 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
     useGetTransactionById(mode === 'edit' && transactionId ? transactionId : '');
 
   const transaction = transactionData?.data;
+  const isEditTransfer = mode === 'edit' && !!transaction?.transferGroupId;
 
   const {
     control,
@@ -101,14 +101,12 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
   const toWalletId = watch('toWalletId');
   const amount = watch('amount');
 
-  // Look up wallet details for currency info
   const fromWallet = wallets.find(w => w.id === fromWalletId);
   const toWallet = wallets.find(w => w.id === toWalletId);
   const fromCurrency = fromWallet?.currencyCode;
   const toCurrency = toWallet?.currencyCode;
   const needsConversion = !!(fromCurrency && toCurrency && fromCurrency !== toCurrency);
 
-  // Fetch exchange rate for preview when currencies differ
   const rateQuery = useQuery({
     queryKey: ['currency-rate', fromCurrency, toCurrency],
     queryFn: () => currencyApi.getRate(fromCurrency!, toCurrency!),
@@ -121,19 +119,28 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
 
   useEffect(() => {
     if (mode === 'edit' && transaction) {
-      const txType = transaction.transferGroupId
-        ? TransactionType.EXPENSE // transfers show as their underlying type in edit
-        : (transaction.type as TransactionType);
-
-      reset({
-        amount: transaction.amount / 100,
-        date: transaction.date,
-        currencyCode: transaction.currencyCode,
-        type: txType,
-        categoryId: transaction.categoryId || '',
-        description: transaction.description || '',
-        walletId: transaction.walletId,
-      });
+      if (transaction.transferGroupId) {
+        // Determine from/to based on which side we're viewing
+        const isExpense = transaction.type === TransactionType.EXPENSE;
+        reset({
+          type: TransactionType.TRANSFER,
+          amount: (isExpense ? transaction.amount : (transaction.pairedTransactionAmount ?? transaction.amount)) / 100,
+          date: transaction.date,
+          description: transaction.description || '',
+          fromWalletId: isExpense ? transaction.walletId : (transaction.pairedTransactionWalletId ?? undefined),
+          toWalletId: isExpense ? (transaction.pairedTransactionWalletId ?? undefined) : transaction.walletId,
+        });
+      } else {
+        reset({
+          amount: transaction.amount / 100,
+          date: transaction.date,
+          currencyCode: transaction.currencyCode,
+          type: transaction.type as TransactionType,
+          categoryId: transaction.categoryId || '',
+          description: transaction.description || '',
+          walletId: transaction.walletId,
+        });
+      }
     }
   }, [transaction, reset, mode]);
 
@@ -143,7 +150,6 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
     }
   }, [transactionType, mode, setValue]);
 
-  // Reset transfer wallet fields when switching to non-transfer
   useEffect(() => {
     if (transactionType !== TransactionType.TRANSFER) {
       setValue('fromWalletId', undefined);
@@ -155,24 +161,37 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
     }
   }, [transactionType, setValue]);
 
+  // Income | Transfer | Expense (Transfer in the middle)
   const TRANSACTION_TYPE_OPTIONS = [
     { label: t('transaction.income'), value: TransactionType.INCOME },
-    { label: t('transaction.expense'), value: TransactionType.EXPENSE },
     { label: t('transaction.transfer'), value: TransactionType.TRANSFER },
+    { label: t('transaction.expense'), value: TransactionType.EXPENSE },
   ];
 
   const onSubmit = async (data: TransactionFormData) => {
     try {
       if (data.type === TransactionType.TRANSFER) {
-        await createTransferMutation.mutateAsync({
-          fromWalletId: data.fromWalletId!,
-          toWalletId: data.toWalletId!,
-          fromAmount: Math.round(data.amount * 100),
-          date: data.date,
-          description: data.description,
-        });
-        Toast.show({ type: 'success', text1: t('transaction.transferCreated'), text2: t('transaction.transferCreatedDesc') });
-        reset();
+        if (isEditTransfer) {
+          await updateTransferMutation.mutateAsync({
+            transferGroupId: transaction!.transferGroupId!,
+            request: {
+              fromAmount: Math.round(data.amount * 100),
+              date: data.date,
+              description: data.description,
+            },
+          });
+          Toast.show({ type: 'success', text1: t('transaction.transferUpdated'), text2: t('transaction.transferUpdatedDesc') });
+        } else {
+          await createTransferMutation.mutateAsync({
+            fromWalletId: data.fromWalletId!,
+            toWalletId: data.toWalletId!,
+            fromAmount: Math.round(data.amount * 100),
+            date: data.date,
+            description: data.description,
+          });
+          Toast.show({ type: 'success', text1: t('transaction.transferCreated'), text2: t('transaction.transferCreatedDesc') });
+          reset();
+        }
       } else if (mode === 'create') {
         await createMutation.mutateAsync({
           amount: Math.round(data.amount * 100),
@@ -210,7 +229,7 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
   };
 
   const handleDuplicate = async () => {
-    if (!transaction) return;
+    if (!transaction || transaction.transferGroupId) return;
     actionSheetRef.current?.close();
     try {
       await createMutation.mutateAsync({
@@ -268,15 +287,22 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
   }
 
   const isTransfer = transactionType === TransactionType.TRANSFER;
+
   const isPending = isTransfer
-    ? createTransferMutation.isPending
+    ? (isEditTransfer ? updateTransferMutation.isPending : createTransferMutation.isPending)
     : mode === 'create' ? createMutation.isPending : updateMutation.isPending;
 
   const buttonText = isTransfer
-    ? (createTransferMutation.isPending ? t('transaction.transferring') : t('transaction.transfer'))
+    ? isPending
+      ? t('transaction.transferring')
+      : isEditTransfer ? t('transaction.update') : t('transaction.transfer')
     : mode === 'create'
       ? (createMutation.isPending ? t('transaction.creating') : t('transaction.create'))
       : (updateMutation.isPending ? t('transaction.updating') : t('transaction.update'));
+
+  // In edit mode for transfers, resolve wallet names for read-only display
+  const fromWalletName = wallets.find(w => w.id === fromWalletId)?.name;
+  const toWalletName = wallets.find(w => w.id === toWalletId)?.name;
 
   return (
     <>
@@ -295,18 +321,20 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
         <BottomSheetView>
           <View className="px-5 pt-2 pb-8">
             <Text className="text-base font-semibold text-foreground mb-4">{t('transaction.editTitle')}</Text>
-            <Pressable
-              onPress={handleDuplicate}
-              className="flex-row items-center gap-4 py-4 border-b border-border active:opacity-70"
-            >
-              <View className="w-10 h-10 rounded-2xl bg-primary/10 items-center justify-center">
-                <Ionicons name="copy-outline" size={20} color={colors.primary} />
-              </View>
-              <Text className="text-foreground font-medium text-base">{t('transaction.duplicate')}</Text>
-            </Pressable>
+            {!isEditTransfer && (
+              <Pressable
+                onPress={handleDuplicate}
+                className="flex-row items-center gap-4 py-4 border-b border-border active:opacity-70"
+              >
+                <View className="w-10 h-10 rounded-2xl bg-primary/10 items-center justify-center">
+                  <Ionicons name="copy-outline" size={20} color={colors.primary} />
+                </View>
+                <Text className="text-foreground font-medium text-base">{t('transaction.duplicate')}</Text>
+              </Pressable>
+            )}
             <Pressable
               onPress={handleDelete}
-              className="flex-row items-center gap-4 pt-4 active:opacity-70"
+              className={`flex-row items-center gap-4 active:opacity-70 ${isEditTransfer ? '' : 'pt-4'}`}
             >
               <View className="w-10 h-10 rounded-2xl bg-destructive/10 items-center justify-center">
                 <Ionicons name="trash-outline" size={20} color={colors.destructive} />
@@ -334,8 +362,8 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
             )}
           </View>
 
-          {/* Type selector — always shown in create mode, hidden for edit of transfers */}
-          {(mode === 'create' || !transaction?.transferGroupId) && (
+          {/* Type selector — hidden in edit mode for transfers (already fixed as TRANSFER) */}
+          {!isEditTransfer && (
             <FormSwitch
               control={control}
               name="type"
@@ -348,26 +376,48 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
           {isTransfer ? (
             /* ─── Transfer fields ─── */
             <>
-              <FormWalletPicker
-                control={control}
-                name="fromWalletId"
-                label={t('transaction.fromWallet')}
-                error={errors.fromWalletId?.message}
-                autoSelectDefault={false}
-              />
-
-              <FormWalletPicker
-                control={control}
-                name="toWalletId"
-                label={t('transaction.toWallet')}
-                error={
-                  errors.toWalletId?.message === 'sameWallet'
-                    ? t('transaction.sameWalletError')
-                    : errors.toWalletId?.message
-                }
-                excludeId={fromWalletId}
-                autoSelectDefault={false}
-              />
+              {isEditTransfer ? (
+                /* Read-only wallet display when editing an existing transfer */
+                <>
+                  <View style={styles.readOnlyField}>
+                    <Text style={styles.readOnlyLabel}>{t('transaction.fromWallet')}</Text>
+                    <View style={styles.readOnlyValue}>
+                      <Text style={styles.readOnlyText}>{fromWalletName || '—'}</Text>
+                      <Ionicons name="lock-closed-outline" size={14} color={colors.mutedForeground} />
+                    </View>
+                  </View>
+                  <View style={styles.readOnlyField}>
+                    <Text style={styles.readOnlyLabel}>{t('transaction.toWallet')}</Text>
+                    <View style={styles.readOnlyValue}>
+                      <Text style={styles.readOnlyText}>{toWalletName || '—'}</Text>
+                      <Ionicons name="lock-closed-outline" size={14} color={colors.mutedForeground} />
+                    </View>
+                  </View>
+                </>
+              ) : (
+                /* Editable wallet pickers when creating a transfer */
+                <>
+                  <FormWalletPicker
+                    control={control}
+                    name="fromWalletId"
+                    label={t('transaction.fromWallet')}
+                    error={errors.fromWalletId?.message}
+                    autoSelectDefault={false}
+                  />
+                  <FormWalletPicker
+                    control={control}
+                    name="toWalletId"
+                    label={t('transaction.toWallet')}
+                    error={
+                      errors.toWalletId?.message === 'sameWallet'
+                        ? t('transaction.sameWalletError')
+                        : errors.toWalletId?.message
+                    }
+                    excludeId={fromWalletId}
+                    autoSelectDefault={false}
+                  />
+                </>
+              )}
 
               <View className="flex-row gap-3">
                 <View className="flex-1">
@@ -390,7 +440,6 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
                 </View>
               </View>
 
-              {/* Exchange rate preview */}
               {needsConversion && (
                 <View style={styles.ratePreview}>
                   <Ionicons name="swap-horizontal" size={16} color={colors.primary} />
@@ -399,7 +448,7 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
                   ) : estimatedReceiveAmount ? (
                     <Text style={styles.rateText}>
                       ≈ <Text style={styles.rateAmount}>{estimatedReceiveAmount} {toCurrency}</Text>
-                      {' '}<Text style={styles.rateNote}>({t('transaction.exchangeRateNote')})</Text>
+                      {'  '}<Text style={styles.rateNote}>({t('transaction.exchangeRateNote')})</Text>
                     </Text>
                   ) : null}
                 </View>
@@ -517,5 +566,30 @@ const styles = StyleSheet.create({
   rateNote: {
     color: colors.mutedForeground,
     fontSize: 12,
+  },
+  readOnlyField: {
+    marginBottom: 16,
+  },
+  readOnlyLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.foreground,
+    marginBottom: 8,
+  },
+  readOnlyValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.input,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    opacity: 0.6,
+  },
+  readOnlyText: {
+    fontSize: 16,
+    color: colors.foreground,
   },
 });

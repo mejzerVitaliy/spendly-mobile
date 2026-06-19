@@ -170,6 +170,8 @@
     "transferCreated": "Перевод выполнен",
     "transferCreatedDesc": "Средства перемещены между кошельками",
     "failedTransfer": "Ошибка создания перевода",
+    "transferUpdated": "Перевод обновлён",
+    "transferUpdatedDesc": "Данные перевода успешно изменены",
     "sameWalletError": "Источник и получатель должны различаться",
     "exchangeRateNote": "приблизительно"
   },

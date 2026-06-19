@@ -1,4 +1,4 @@
-import { CreateTransactionRequest, CreateTransactionResponse, CreateTransferRequest, CreateTransferResponse, GetAllTransactionsResponse, GetTransactionByIdResponse, ParseTextTransactionRequest, ParseTextTransactionResponse, ParseVoiceTransactionResponse, UpdateTransactionRequest, UpdateTransactionResponse } from "@/shared/types";
+import { CreateTransactionRequest, CreateTransactionResponse, CreateTransferRequest, CreateTransferResponse, GetAllTransactionsResponse, GetTransactionByIdResponse, ParseTextTransactionRequest, ParseTextTransactionResponse, ParseVoiceTransactionResponse, UpdateTransactionRequest, UpdateTransactionResponse, UpdateTransferRequest, UpdateTransferResponse } from "@/shared/types";
 import { apiClient } from "./api";
 
 const create = async (request: CreateTransactionRequest): Promise<CreateTransactionResponse> => {
@@ -64,9 +64,15 @@ const createTransfer = async (request: CreateTransferRequest): Promise<CreateTra
   return response.data;
 };
 
+const updateTransfer = async (transferGroupId: string, request: UpdateTransferRequest): Promise<UpdateTransferResponse> => {
+  const response = await apiClient.put(`/transaction/transfer/${transferGroupId}`, request);
+  return response.data;
+};
+
 export const transactionsApi = {
   create,
   createTransfer,
+  updateTransfer,
   getAll,
   getById,
   update,
