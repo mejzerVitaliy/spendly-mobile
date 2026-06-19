@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { BottomSheetView } from '@gorhom/bottom-sheet';
 import { useWallets } from '@/shared/hooks';
-import { WalletDto, WalletType } from '@/shared/types';
+import { WalletDto } from '@/shared/types';
 import { BottomSheet, ConfirmDialog } from '@/shared/ui';
 import { formatCompact } from '@/shared/utils';
 import Toast from 'react-native-toast-message';
@@ -15,14 +15,7 @@ import { CreateWalletModal, EditWalletModal } from './components';
 import { ArchivedWalletCard } from './components/archived-wallet-card';
 import { WalletCard } from './components/wallet-card';
 import { colors } from '@/shared/theme';
-
-const WALLET_TYPE_LABELS: Record<WalletType, string> = {
-  CASH: 'Cash',
-  DEBIT_CARD: 'Debit Card',
-  CREDIT_CARD: 'Credit Card',
-  SAVINGS: 'Savings',
-  CUSTOM: 'Custom',
-};
+import { useTranslation } from 'react-i18next';
 
 function WalletActionSheet({
   wallet,
@@ -37,6 +30,7 @@ function WalletActionSheet({
   onArchive: () => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <BottomSheet
       open={!!wallet}
@@ -49,12 +43,11 @@ function WalletActionSheet({
           {/* Wallet info */}
           <View className="px-1 pb-4 border-b border-white/10 mb-1">
             <Text className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">
-              {WALLET_TYPE_LABELS[wallet?.type ?? 'CUSTOM']}
+              {t(`wallets.types.${wallet?.type ?? 'CUSTOM'}`)}
             </Text>
             <Text className="text-[20px] font-bold text-foreground">{wallet?.name}</Text>
           </View>
 
-          {/* Edit Wallet */}
           <Pressable
             onPress={onEdit}
             className="flex-row items-center gap-3.5 py-[15px] px-4 rounded-[18px] bg-card border border-white/10 active:opacity-65"
@@ -62,11 +55,10 @@ function WalletActionSheet({
             <View className="w-10 h-10 rounded-[13px] items-center justify-center bg-primary/[0.1]">
               <Ionicons name="pencil-outline" size={20} color={colors.primary} />
             </View>
-            <Text className="flex-1 text-[15px] font-semibold text-foreground">Edit Wallet</Text>
+            <Text className="flex-1 text-[15px] font-semibold text-foreground">{t('wallets.editWallet')}</Text>
             <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />
           </Pressable>
 
-          {/* Set as Default */}
           <Pressable
             onPress={wallet?.isDefault ? undefined : onSetDefault}
             className={`flex-row items-center gap-3.5 py-[15px] px-4 rounded-[18px] bg-card border border-white/10 ${wallet?.isDefault ? 'opacity-60' : 'active:opacity-65'}`}
@@ -76,16 +68,15 @@ function WalletActionSheet({
             </View>
             <View className="flex-1">
               <Text className={`text-[15px] font-semibold ${wallet?.isDefault ? 'text-muted-foreground' : 'text-foreground'}`}>
-                {wallet?.isDefault ? 'Already Default' : 'Set as Default'}
+                {wallet?.isDefault ? t('wallets.alreadyDefault') : t('wallets.setAsDefault')}
               </Text>
               {wallet?.isDefault && (
-                <Text className="text-[11px] text-muted-foreground mt-0.5">This is your active default wallet</Text>
+                <Text className="text-[11px] text-muted-foreground mt-0.5">{t('wallets.alreadyDefaultDesc')}</Text>
               )}
             </View>
             {!wallet?.isDefault && <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />}
           </Pressable>
 
-          {/* Archive */}
           <Pressable
             onPress={wallet?.isDefault ? undefined : onArchive}
             className={`flex-row items-center gap-3.5 py-[15px] px-4 rounded-[18px] bg-card border border-white/10 ${wallet?.isDefault ? 'opacity-60' : 'active:opacity-65'}`}
@@ -95,21 +86,20 @@ function WalletActionSheet({
             </View>
             <View className="flex-1">
               <Text className={`text-[15px] font-semibold ${wallet?.isDefault ? 'text-muted-foreground' : 'text-destructive'}`}>
-                Archive Wallet
+                {t('wallets.archiveWallet')}
               </Text>
               {wallet?.isDefault && (
-                <Text className="text-[11px] text-muted-foreground mt-0.5">Set another wallet as default first</Text>
+                <Text className="text-[11px] text-muted-foreground mt-0.5">{t('wallets.setDefaultFirst')}</Text>
               )}
             </View>
             {!wallet?.isDefault && <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />}
           </Pressable>
 
-          {/* Cancel */}
           <Pressable
             onPress={onClose}
             className="py-[15px] rounded-[18px] items-center bg-card border border-white/[0.08] active:opacity-70 mt-1"
           >
-            <Text className="text-[15px] font-semibold text-muted-foreground">Cancel</Text>
+            <Text className="text-[15px] font-semibold text-muted-foreground">{t('common.cancel')}</Text>
           </Pressable>
 
         </View>
@@ -119,6 +109,7 @@ function WalletActionSheet({
 }
 
 export function WalletsScreen() {
+  const { t } = useTranslation();
   const [showArchived, setShowArchived] = useState(false);
   const {
     wallets,
@@ -152,9 +143,9 @@ export function WalletsScreen() {
     if (!wallet || wallet.isDefault) return;
     try {
       await setDefaultMutation.mutateAsync({ walletId: wallet.id });
-      Toast.show({ type: 'success', text1: 'Default updated', text2: `"${wallet.name}" is now your default wallet` });
+      Toast.show({ type: 'success', text1: t('wallets.defaultUpdated'), text2: t('wallets.defaultUpdatedDesc', { name: wallet.name }) });
     } catch {
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to set default wallet' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: t('wallets.failedSetDefault') });
     }
   };
 
@@ -167,9 +158,9 @@ export function WalletsScreen() {
   const handleUnarchive = async (wallet: WalletDto) => {
     try {
       await unarchiveMutation.mutateAsync(wallet.id);
-      Toast.show({ type: 'success', text1: 'Wallet restored', text2: `"${wallet.name}" moved to active wallets` });
+      Toast.show({ type: 'success', text1: t('wallets.walletRestored'), text2: t('wallets.walletRestoredDesc', { name: wallet.name }) });
     } catch {
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to unarchive wallet' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: t('wallets.failedUnarchive') });
     }
   };
 
@@ -179,9 +170,9 @@ export function WalletsScreen() {
     setArchiveTarget(null);
     try {
       await archiveMutation.mutateAsync(wallet.id);
-      Toast.show({ type: 'success', text1: 'Archived', text2: `"${wallet.name}" moved to archive` });
+      Toast.show({ type: 'success', text1: t('wallets.walletArchived'), text2: t('wallets.walletArchivedDesc', { name: wallet.name }) });
     } catch {
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to archive wallet' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: t('wallets.failedArchive') });
     }
   };
 
@@ -197,8 +188,8 @@ export function WalletsScreen() {
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.primary} />}
       >
         <View style={styles.content}>
-          <Text style={styles.pageTitle}>Wallets</Text>
-          <Text style={styles.pageSubtitle}>Manage your cards and balances</Text>
+          <Text style={styles.pageTitle}>{t('wallets.title')}</Text>
+          <Text style={styles.pageSubtitle}>{t('wallets.subtitle')}</Text>
 
           {/* Total balance hero card */}
           <View style={styles.heroCard}>
@@ -218,20 +209,20 @@ export function WalletsScreen() {
             <View style={styles.heroDecorCircle} />
 
             <View style={{ padding: 22 }}>
-              <Text style={styles.heroLabel}>Total Balance</Text>
+              <Text style={styles.heroLabel}>{t('wallets.totalBalance')}</Text>
               <Text style={styles.heroAmount}>
                 {formatCompact(displayBalance)}{' '}
                 <Text style={styles.heroCurrency}>{mainCurrency}</Text>
               </Text>
               <Text style={styles.heroMeta}>
-                {activeWallets.length} active wallet{activeWallets.length !== 1 ? 's' : ''}
+                {activeWallets.length} {activeWallets.length !== 1 ? t('wallets.activeWallets') : t('wallets.activeWallet')}
               </Text>
             </View>
           </View>
 
           {/* Section header */}
           <View className="flex flex-row items-center justify-between mb-4">
-            <Text style={styles.sectionTitle}>Your Wallets</Text>
+            <Text style={styles.sectionTitle}>{t('wallets.yourWallets')}</Text>
 
             <Pressable
               onPress={() => setIsCreateModalVisible(true)}
@@ -253,15 +244,15 @@ export function WalletsScreen() {
               <View style={styles.emptyIconWrap}>
                 <Ionicons name="wallet-outline" size={28} color={colors.mutedForeground} />
               </View>
-              <Text style={styles.emptyTitle}>No wallets yet</Text>
-              <Text style={styles.emptyText}>Add your first wallet to start tracking your finances</Text>
+              <Text style={styles.emptyTitle}>{t('wallets.noWallets')}</Text>
+              <Text style={styles.emptyText}>{t('wallets.noWalletsDesc')}</Text>
             </View>
           ) : (
             activeWallets.map((wallet) => (
               <WalletCard
                 key={wallet.id}
                 wallet={wallet}
-                typeLabel={WALLET_TYPE_LABELS[wallet.type]}
+                typeLabel={t(`wallets.types.${wallet.type}`)}
                 onLongPress={() => openActionSheet(wallet)}
                 onActionPress={() => openActionSheet(wallet)}
               />
@@ -281,7 +272,7 @@ export function WalletsScreen() {
                   color={colors.mutedForeground}
                 />
                 <Text style={styles.archiveToggleText}>
-                  Archived ({archivedWallets.length})
+                  {t('wallets.archived')} ({archivedWallets.length})
                 </Text>
               </Pressable>
 
@@ -290,7 +281,7 @@ export function WalletsScreen() {
                   <ArchivedWalletCard
                     key={wallet.id}
                     wallet={wallet}
-                    typeLabel={WALLET_TYPE_LABELS[wallet.type]}
+                    typeLabel={t(`wallets.types.${wallet.type}`)}
                     onUnarchive={() => handleUnarchive(wallet)}
                   />
                 ))}
@@ -322,9 +313,9 @@ export function WalletsScreen() {
 
       <ConfirmDialog
         visible={!!archiveTarget}
-        title="Archive Wallet"
-        message={`Are you sure you want to archive "${archiveTarget?.name}"?`}
-        confirmText="Archive"
+        title={t('wallets.archiveConfirmTitle')}
+        message={t('wallets.archiveConfirmMessage', { name: archiveTarget?.name })}
+        confirmText={t('wallets.archive')}
         destructive
         onConfirm={handleArchiveConfirm}
         onCancel={() => setArchiveTarget(null)}

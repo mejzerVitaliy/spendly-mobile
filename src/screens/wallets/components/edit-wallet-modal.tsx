@@ -8,6 +8,7 @@ import { WalletDto, WalletType } from '@/shared/types';
 import { useWallets } from '@/shared/hooks';
 import { colors } from '@/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 interface EditWalletModalProps {
   visible: boolean;
@@ -15,16 +16,17 @@ interface EditWalletModalProps {
   onClose: () => void;
 }
 
-const WALLET_TYPES: { value: WalletType; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { value: 'CASH', label: 'Cash', icon: 'cash-outline' },
-  { value: 'DEBIT_CARD', label: 'Debit', icon: 'card-outline' },
-  { value: 'CREDIT_CARD', label: 'Credit', icon: 'card' },
-  { value: 'SAVINGS', label: 'Savings', icon: 'save-outline' },
-  { value: 'CUSTOM', label: 'Custom', icon: 'wallet-outline' },
+const WALLET_TYPE_ICONS: { value: WalletType; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { value: 'CASH', icon: 'cash-outline' },
+  { value: 'DEBIT_CARD', icon: 'card-outline' },
+  { value: 'CREDIT_CARD', icon: 'card' },
+  { value: 'SAVINGS', icon: 'save-outline' },
+  { value: 'CUSTOM', icon: 'wallet-outline' },
 ];
 
 export function EditWalletModal({ visible, wallet, onClose }: EditWalletModalProps) {
   const { updateMutation } = useWallets();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [type, setType] = useState<WalletType>('CASH');
@@ -39,15 +41,15 @@ export function EditWalletModal({ visible, wallet, onClose }: EditWalletModalPro
   const handleSave = async () => {
     if (!wallet) return;
     if (!name.trim()) {
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter a wallet name' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: t('editWallet.errorNoName') });
       return;
     }
     try {
       await updateMutation.mutateAsync({ id: wallet.id, request: { name: name.trim(), type } });
-      Toast.show({ type: 'success', text1: 'Saved', text2: 'Wallet updated successfully' });
+      Toast.show({ type: 'success', text1: t('editWallet.saved'), text2: t('editWallet.savedDesc') });
       onClose();
     } catch {
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to update wallet' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: t('editWallet.errorUpdate') });
     }
   };
 
@@ -68,7 +70,7 @@ export function EditWalletModal({ visible, wallet, onClose }: EditWalletModalPro
 
           {/* Header */}
           <View className="flex-row justify-between items-center mb-7">
-            <Text className="text-[20px] font-bold text-foreground">Edit Wallet</Text>
+            <Text className="text-[20px] font-bold text-foreground">{t('editWallet.title')}</Text>
             <Pressable
               onPress={onClose}
               className="w-8 h-8 rounded-full bg-secondary border border-white/10 items-center justify-center active:opacity-70"
@@ -79,12 +81,12 @@ export function EditWalletModal({ visible, wallet, onClose }: EditWalletModalPro
 
           {/* Name */}
           <Text className="text-[12px] font-semibold text-muted-foreground uppercase tracking-widest mb-2.5">
-            Wallet Name
+            {t('editWallet.walletName')}
           </Text>
           <BottomSheetTextInput
             value={name}
             onChangeText={setName}
-            placeholder="e.g. Main Card"
+            placeholder={t('editWallet.namePlaceholder')}
             placeholderTextColor={colors.mutedForeground}
             returnKeyType="done"
             style={{
@@ -102,10 +104,10 @@ export function EditWalletModal({ visible, wallet, onClose }: EditWalletModalPro
 
           {/* Type */}
           <Text className="text-[12px] font-semibold text-muted-foreground uppercase tracking-widest mb-2.5">
-            Type
+            {t('editWallet.type')}
           </Text>
           <View className="flex-row flex-wrap gap-2 mb-8">
-            {WALLET_TYPES.map((wt) => {
+            {WALLET_TYPE_ICONS.map((wt) => {
               const active = type === wt.value;
               return (
                 <Pressable
@@ -126,7 +128,7 @@ export function EditWalletModal({ visible, wallet, onClose }: EditWalletModalPro
                     className="text-[13px] font-semibold"
                     style={{ color: active ? colors.primary : colors.foreground }}
                   >
-                    {wt.label}
+                    {t(`editWallet.types.${wt.value}`)}
                   </Text>
                 </Pressable>
               );
@@ -141,7 +143,7 @@ export function EditWalletModal({ visible, wallet, onClose }: EditWalletModalPro
             style={{ opacity: updateMutation.isPending ? 0.7 : 1 }}
           >
             <Text className="text-[16px] font-bold text-primary-foreground">
-              {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+              {updateMutation.isPending ? t('editWallet.saving') : t('editWallet.saveChanges')}
             </Text>
           </Pressable>
 

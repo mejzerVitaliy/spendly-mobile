@@ -1,4 +1,6 @@
-import { useAuthStore } from '@/shared/stores';
+import '@/shared/i18n';
+import { useAuthStore, useLanguageStore } from '@/shared/stores';
+import { analytics } from '@/shared/services/analytics';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Inter_400Regular, useFonts } from '@expo-google-fonts/inter';
@@ -33,8 +35,9 @@ function RootNavigator() {
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
   });
-  
+
   const { isAuthenticated, isLoading, initializeAuth } = useAuthStore();
+  useLanguageStore();
 
   useEffect(() => {
     setIsMounted(true);
@@ -42,9 +45,11 @@ function RootNavigator() {
 
   useEffect(() => {
     const init = async () => {
+      await analytics.init();
+      analytics.track('app_open');
       await initializeAuth();
     };
-    
+
     init();
   }, [initializeAuth]);
 

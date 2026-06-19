@@ -13,6 +13,7 @@ export default function SettingsLayout() {
       <Stack.Screen name="security" />
       <Stack.Screen name="data-storage" />
       <Stack.Screen name="support-about" />
+      <Stack.Screen name="language" />
     </Stack>
   );
 }

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { colors } from '@/shared/theme';
 import Toast from 'react-native-toast-message';
+import { useTranslation } from 'react-i18next';
 
 interface CreateTransactionVoiceProps {
   onSuccess?: () => void;
@@ -18,6 +19,7 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
   const recordingRef = useRef<Audio.Recording | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { parseVoiceMutation } = useTransactions();
+  const { t } = useTranslation();
 
   useEffect(() => {
     return () => {
@@ -32,10 +34,9 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
       if (!granted) {
         Toast.show({
           type: 'error',
-          text1: 'Microphone access denied',
-          text2: 'Please allow microphone access in settings',
+          text1: t('voiceAI.micDeniedTitle'),
+          text2: t('voiceAI.micDeniedDesc'),
         });
-
         return;
       }
 
@@ -58,8 +59,8 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
     } catch {
       Toast.show({
         type: 'error',
-        text1: 'Could not start recording',
-        text2: 'Please try again',
+        text1: t('voiceAI.recordingError'),
+        text2: t('voiceAI.recordingErrorDesc'),
       });
     }
   };
@@ -92,13 +93,12 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
 
       Toast.show({
         type: 'success',
-        text1: 'Transactions created',
-        text2: `${count} transaction${count > 1 ? 's' : ''} added successfully`,
+        text1: t('voiceAI.created'),
+        text2: t(count === 1 ? 'voiceAI.createdDesc_one' : 'voiceAI.createdDesc_other', { count }),
       });
     } catch (error) {
       const err = error as { response?: { data?: { message?: string } } };
-      const message =
-        err?.response?.data?.message ?? 'Failed to process voice. Please try again.';
+      const message = err?.response?.data?.message ?? t('voiceAI.errorDefault');
 
       setState('idle');
       setDuration(0);
@@ -106,7 +106,7 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
 
       Toast.show({
         type: 'error',
-        text1: 'Could not create transaction',
+        text1: t('voiceAI.errorTitle'),
         text2: message,
       });
     }
@@ -120,9 +120,9 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
 
   return (
     <View className="px-5 pt-4 pb-8 items-center">
-      <Text className="text-lg font-bold text-foreground mb-1">Voice Input</Text>
+      <Text className="text-lg font-bold text-foreground mb-1">{t('voiceAI.title')}</Text>
       <Text className="text-sm text-muted-foreground mb-8 text-center">
-        Tap the button and describe your transaction
+        {t('voiceAI.subtitle')}
       </Text>
 
       {state === 'processing' ? (
@@ -139,7 +139,7 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
           >
             <ActivityIndicator size="large" color={colors.primary} />
           </View>
-          <Text className="text-muted-foreground text-sm">Processing...</Text>
+          <Text className="text-muted-foreground text-sm">{t('voiceAI.processing')}</Text>
         </View>
       ) : (
         <View className="items-center gap-4">
@@ -183,12 +183,12 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
                 </Text>
               </View>
               <Text className="text-muted-foreground text-sm">
-                Tap to stop and create
+                {t('voiceAI.tapToStop')}
               </Text>
             </View>
           ) : (
             <Text className="text-muted-foreground text-sm">
-              Tap to start recording
+              {t('voiceAI.tapToStart')}
             </Text>
           )}
         </View>

@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { colors } from '@/shared/theme';
+import { useTranslation } from 'react-i18next';
 
 interface ArchivedWalletCardProps {
   wallet: WalletDto;
@@ -12,6 +13,7 @@ interface ArchivedWalletCardProps {
 }
 
 export function ArchivedWalletCard({ wallet, typeLabel, onUnarchive }: ArchivedWalletCardProps) {
+  const { t } = useTranslation();
   return (
     <View style={styles.card}>
       {Platform.OS === 'ios' && (
@@ -40,7 +42,7 @@ export function ArchivedWalletCard({ wallet, typeLabel, onUnarchive }: ArchivedW
           style={({ pressed }) => [styles.restoreBtn, { opacity: pressed ? 0.7 : 1 }]}
         >
           <Ionicons name="reload-outline" size={15} color={colors.success} />
-          <Text style={styles.restoreText}>Restore</Text>
+          <Text style={styles.restoreText}>{t('wallets.restore')}</Text>
         </Pressable>
       </View>
     </View>

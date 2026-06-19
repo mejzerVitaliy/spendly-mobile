@@ -3,6 +3,8 @@ import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-nati
 import { Button } from '@/shared/ui';
 import { categoryApi } from '@/shared/services/api/category.api';
 import { CategoryDto } from '@/shared/types';
+import { getCategoryName } from '@/shared/utils';
+import { useTranslation } from 'react-i18next';
 
 interface CategoriesStepProps {
   selected: string[];
@@ -14,6 +16,7 @@ interface CategoriesStepProps {
 export function CategoriesStep({ selected, onSelect, onNext, onBack }: CategoriesStepProps) {
   const [categories, setCategories] = useState<CategoryDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     categoryApi.getAll().then((res) => {
@@ -41,10 +44,10 @@ export function CategoriesStep({ selected, onSelect, onNext, onBack }: Categorie
   return (
     <View className="flex-1 px-6 pt-8">
       <Text className="text-2xl font-bold text-foreground mb-2">
-        Choose your categories
+        {t('onboarding.chooseCategories')}
       </Text>
       <Text className="text-base text-muted-foreground mb-6">
-        Select the categories you use most often.
+        {t('onboarding.chooseCategoriesDesc')}
       </Text>
 
       <ScrollView className="flex-1 mb-4" showsVerticalScrollIndicator={false}>
@@ -66,7 +69,7 @@ export function CategoriesStep({ selected, onSelect, onNext, onBack }: Categorie
                     isSelected ? 'text-primary' : 'text-foreground'
                   }`}
                 >
-                  {category.name}
+                  {getCategoryName(category, i18n.language)}
                 </Text>
               </Pressable>
             );
@@ -76,11 +79,11 @@ export function CategoriesStep({ selected, onSelect, onNext, onBack }: Categorie
 
       <View className="flex-row gap-3 pb-8">
         <View className="flex-1">
-          <Button title="Back" variant="outline" onPress={onBack} />
+          <Button title={t('common.back')} variant="outline" onPress={onBack} />
         </View>
         <View className="flex-1">
           <Button
-            title="Continue"
+            title={t('common.continue')}
             onPress={onNext}
             disabled={selected.length === 0}
           />

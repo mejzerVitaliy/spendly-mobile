@@ -13,6 +13,7 @@ import Animated, {
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '@/shared/theme';
+import { useTranslation } from 'react-i18next';
 
 interface BalanceViewProps {
   startDate?: string;
@@ -127,6 +128,7 @@ const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
   const { getSummary } = useReports({ startDate, endDate });
   const { totalBalance: walletTotalBalance, isLoading: isWalletsLoading } = useWallets();
   const { getMeQuery } = useAuth();
+  const { t } = useTranslation();
 
   const isLoading = getSummary.isLoading || isWalletsLoading;
   const data = getSummary?.data?.data;
@@ -149,7 +151,7 @@ const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
 
   const balanceCard = (
     <>
-      <Text style={styles.balanceLabel}>Total Balance</Text>
+      <Text style={styles.balanceLabel}>{t('balance.totalBalance')}</Text>
       {isLoading ? (
         <SkeletonBlock width={200} height={44} />
       ) : (
@@ -163,7 +165,6 @@ const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
 
   return (
     <View style={styles.container}>
-      {/* Main balance card with glass */}
       {Platform.OS === 'ios' ? (
         <BlurView
           intensity={45}
@@ -188,10 +189,9 @@ const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
         </View>
       )}
 
-      {/* Stat row */}
       <View style={styles.statRow}>
         <StatCard
-          label="Income"
+          label={t('balance.income')}
           amount={totalIncome}
           currency={mainCurrencyCode}
           icon="arrow-down-circle"
@@ -199,7 +199,7 @@ const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
           isLoading={isLoading}
         />
         <StatCard
-          label="Expenses"
+          label={t('balance.expenses')}
           amount={totalExpenses}
           currency={mainCurrencyCode}
           icon="arrow-up-circle"

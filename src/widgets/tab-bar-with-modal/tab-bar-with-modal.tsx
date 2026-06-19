@@ -18,39 +18,42 @@ import Animated, {
 } from 'react-native-reanimated';
 import { colors } from '@/shared/theme';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-const MENU_ITEMS = [
+const MENU_ITEM_CONFIGS = [
   {
-    key: 'manual',
+    key: 'manual' as const,
     icon: 'create-outline' as const,
-    label: 'Manual',
+    labelKey: 'transactionMenu.manual' as const,
     accentColor: colors.primary,
     gradientColors: ['rgba(34,211,238,0.15)', 'rgba(34,211,238,0.05)'] as const,
   },
   {
-    key: 'text',
+    key: 'text' as const,
     icon: 'sparkles' as const,
-    label: 'Text AI',
+    labelKey: 'transactionMenu.textAI' as const,
     accentColor: colors.success,
     gradientColors: ['rgba(34,197,94,0.15)', 'rgba(34,197,94,0.05)'] as const,
   },
   {
-    key: 'voice',
+    key: 'voice' as const,
     icon: 'mic-outline' as const,
-    label: 'Voice AI',
+    labelKey: 'transactionMenu.voiceAI' as const,
     accentColor: '#F97316',
     gradientColors: ['rgba(249,115,22,0.15)', 'rgba(249,115,22,0.05)'] as const,
   },
-] as const;
+];
+
+type MenuItemConfig = (typeof MENU_ITEM_CONFIGS)[number];
 
 function MenuItem({
   item,
   idx,
   onPress,
 }: {
-  item: (typeof MENU_ITEMS)[number];
+  item: MenuItemConfig & { label: string };
   idx: number;
   onPress: () => void;
 }) {
@@ -114,10 +117,12 @@ function MenuItem({
 }
 
 function MenuItems({ onItemPress }: { onItemPress: (key: string) => void }) {
+  const { t } = useTranslation();
+  const menuItems = MENU_ITEM_CONFIGS.map((cfg) => ({ ...cfg, label: t(cfg.labelKey) }));
   return (
     <Animated.View entering={FadeIn.duration(200)} style={styles.menuContainer}>
       <View style={styles.menuRow}>
-        {MENU_ITEMS.map((item, idx) => (
+        {menuItems.map((item, idx) => (
           <MenuItem key={item.key} item={item} idx={idx} onPress={() => onItemPress(item.key)} />
         ))}
       </View>

@@ -6,9 +6,11 @@ import { Controller, useForm } from 'react-hook-form';
 import { Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { LoginFormData, loginSchema } from './schemas';
+import { useTranslation } from 'react-i18next';
 
 export function LoginForm() {
   const { loginMutation } = useAuth();
+  const { t } = useTranslation();
 
   const {
     control,
@@ -27,15 +29,15 @@ export function LoginForm() {
       await loginMutation.mutateAsync(data);
       router.replace('/');
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 'Error';
-      Toast.show({ type: 'error', text1: 'Error', text2: errorMessage });
+      const errorMessage = error?.response?.data?.message || t('common.error');
+      Toast.show({ type: 'error', text1: t('common.error'), text2: errorMessage });
     }
   };
 
   return (
     <View className="w-full space-y-4">
       <View className="mb-4">
-        <Text className="text-sm font-medium text-foreground mb-2">Email</Text>
+        <Text className="text-sm font-medium text-foreground mb-2">{t('authLogin.email')}</Text>
         <Controller
           control={control}
           name="email"
@@ -52,7 +54,7 @@ export function LoginForm() {
       </View>
 
       <View className="mb-6">
-        <Text className="text-sm font-medium text-foreground mb-2">Password</Text>
+        <Text className="text-sm font-medium text-foreground mb-2">{t('authLogin.password')}</Text>
         <Controller
           control={control}
           name="password"
@@ -69,7 +71,7 @@ export function LoginForm() {
       </View>
 
       <Button
-        title={loginMutation.isPending ? 'Logging in...' : 'Log in'}
+        title={loginMutation.isPending ? t('authLogin.loggingIn') : t('authLogin.logIn')}
         onPress={handleSubmit(onSubmit)}
         disabled={loginMutation.isPending}
       />

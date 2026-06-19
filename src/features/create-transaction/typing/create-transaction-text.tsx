@@ -5,6 +5,7 @@ import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { colors } from '@/shared/theme';
+import { useTranslation } from 'react-i18next';
 
 interface CreateTransactionTextProps {
   onSuccess?: () => void;
@@ -13,6 +14,7 @@ interface CreateTransactionTextProps {
 const CreateTransactionText = ({ onSuccess }: CreateTransactionTextProps) => {
   const [text, setText] = useState('');
   const { parseTextMutation } = useTransactions();
+  const { t } = useTranslation();
 
   const handleSubmit = async () => {
     const trimmed = text.trim();
@@ -27,15 +29,15 @@ const CreateTransactionText = ({ onSuccess }: CreateTransactionTextProps) => {
       onSuccess?.();
       Toast.show({
         type: 'success',
-        text1: 'Transactions created',
-        text2: `${count} transaction${count > 1 ? 's' : ''} added successfully`,
+        text1: t('textAI.created'),
+        text2: t(count === 1 ? 'textAI.createdDesc_one' : 'textAI.createdDesc_other', { count }),
       });
     } catch (error) {
       const err = error as { response?: { data?: { message?: string } } };
-      const message = err?.response?.data?.message ?? 'Failed to create transaction. Please try again.';
+      const message = err?.response?.data?.message ?? t('textAI.errorDefault');
       Toast.show({
         type: 'error',
-        text1: 'Could not create transaction',
+        text1: t('textAI.errorTitle'),
         text2: message,
       });
     }
@@ -44,16 +46,16 @@ const CreateTransactionText = ({ onSuccess }: CreateTransactionTextProps) => {
   return (
     <View className="px-5 pt-4 pb-6">
       <Text className="text-lg font-bold text-foreground mb-1">
-        Describe your transaction
+        {t('textAI.title')}
       </Text>
       <Text className="text-sm text-muted-foreground mb-4">
-        e.g. &quot;Spent 200 UAH on groceries yesterday&quot;
+        {t('textAI.subtitle')}
       </Text>
 
       <View className="flex-row items-center gap-3">
         <BottomSheetTextInput
           style={{ height: 56, flex: 1, backgroundColor: 'transparent', fontSize: 16, paddingHorizontal: 16, borderRadius: 12, borderWidth: 1, borderColor: colors.border, color: colors.foreground }}
-          placeholder="What did you spend or earn?"
+          placeholder={t('textAI.placeholder')}
           placeholderTextColor={colors.mutedForeground}
           value={text}
           onChangeText={setText}

@@ -6,10 +6,12 @@ import { useRouter } from 'expo-router';
 import { Button, Input, SettingsHeader } from '@/shared/ui';
 import { useAuthStore } from '@/shared/stores';
 import { authApi } from '@/shared/services/api/auth.api';
+import { useTranslation } from 'react-i18next';
 
 export function CreateAccountScreen() {
   const router = useRouter();
   const { setAuth } = useAuthStore();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,7 +27,7 @@ export function CreateAccountScreen() {
     if (!isValid) return;
 
     if (password !== confirmPassword) {
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Passwords do not match' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: t('createAccountScreen.passwordsMismatch') });
       return;
     }
 
@@ -41,8 +43,8 @@ export function CreateAccountScreen() {
       router.back();
     } catch (error: any) {
       const message =
-        error?.response?.data?.message || 'Something went wrong. Please try again.';
-      Toast.show({ type: 'error', text1: 'Error', text2: message });
+        error?.response?.data?.message || t('createAccountScreen.somethingWentWrong');
+      Toast.show({ type: 'error', text1: t('common.error'), text2: message });
     } finally {
       setIsLoading(false);
     }
@@ -50,30 +52,30 @@ export function CreateAccountScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background px-5 py-4">
-      <SettingsHeader title="Create Account" />
+      <SettingsHeader title={t('createAccountScreen.title')} />
       <View className="flex-1">
         <Text className="text-muted-foreground mb-6">
-          Link your account with email and password to access it from any device.
+          {t('createAccountScreen.description')}
         </Text>
 
         <View className="gap-4">
           <Input
-            label="Email"
-            placeholder="john@example.com"
+            label={t('createAccountScreen.email')}
+            placeholder={t('createAccountScreen.emailPlaceholder')}
             value={email}
             onChangeText={setEmail}
             type="email"
           />
           <Input
-            label="Password"
-            placeholder="At least 6 characters"
+            label={t('createAccountScreen.password')}
+            placeholder={t('createAccountScreen.passwordPlaceholder')}
             value={password}
             onChangeText={setPassword}
             type="password"
           />
           <Input
-            label="Confirm Password"
-            placeholder="Repeat your password"
+            label={t('createAccountScreen.confirmPassword')}
+            placeholder={t('createAccountScreen.confirmPasswordPlaceholder')}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             type="password"
@@ -82,7 +84,7 @@ export function CreateAccountScreen() {
 
         <View className="mt-auto">
           <Button
-            title="Create Account"
+            title={t('createAccountScreen.createAccount')}
             onPress={handleSubmit}
             isLoading={isLoading}
             disabled={!isValid}

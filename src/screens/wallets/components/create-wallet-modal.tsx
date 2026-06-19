@@ -10,22 +10,24 @@ import { useAuthStore } from '@/shared/stores';
 import { useForm } from 'react-hook-form';
 import { colors } from '@/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 interface CreateWalletModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
-const WALLET_TYPES: { value: WalletType; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { value: 'CASH', label: 'Cash', icon: 'cash-outline' },
-  { value: 'DEBIT_CARD', label: 'Debit', icon: 'card-outline' },
-  { value: 'CREDIT_CARD', label: 'Credit', icon: 'card' },
-  { value: 'SAVINGS', label: 'Savings', icon: 'save-outline' },
-  { value: 'CUSTOM', label: 'Custom', icon: 'wallet-outline' },
+const WALLET_TYPE_ICONS: { value: WalletType; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { value: 'CASH', icon: 'cash-outline' },
+  { value: 'DEBIT_CARD', icon: 'card-outline' },
+  { value: 'CREDIT_CARD', icon: 'card' },
+  { value: 'SAVINGS', icon: 'save-outline' },
+  { value: 'CUSTOM', icon: 'wallet-outline' },
 ];
 
 export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) {
   const { createMutation } = useWallets();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const userMainCurrency = useAuthStore((state) => state.user?.mainCurrencyCode) ?? 'USD';
   const { control, watch, setValue } = useForm<{ currencyCode: string }>({
@@ -52,7 +54,7 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Please enter a wallet name' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: t('createWallet.errorNoName') });
       return;
     }
     try {
@@ -65,7 +67,7 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
       resetFormState();
       onClose();
     } catch {
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to create wallet' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: t('createWallet.errorCreate') });
     }
   };
 
@@ -86,7 +88,7 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>New Wallet</Text>
+          <Text style={styles.title}>{t('createWallet.title')}</Text>
           <Pressable
             onPress={() => { resetFormState(); onClose(); }}
             style={styles.closeBtn}
@@ -96,22 +98,21 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
         </View>
 
         {/* Name */}
-        <Text style={styles.label}>Wallet Name</Text>
+        <Text style={styles.label}>{t('createWallet.walletName')}</Text>
         <TextInput
           value={name}
           onChangeText={setName}
-          placeholder="e.g. Main Card"
+          placeholder={t('createWallet.namePlaceholder')}
           placeholderTextColor={colors.mutedForeground}
           style={styles.textInput}
         />
 
         {/* Currency */}
-        <FormCurrencyPicker control={control} name="currencyCode" label="Currency" />
+        <FormCurrencyPicker control={control} name="currencyCode" label={t('createWallet.currency')} />
 
-        {/* Type */}
-        <Text style={styles.label}>Type</Text>
+        <Text style={styles.label}>{t('createWallet.type')}</Text>
         <View style={styles.typeRow}>
-          {WALLET_TYPES.map((wt) => (
+          {WALLET_TYPE_ICONS.map((wt) => (
             <Pressable
               key={wt.value}
               onPress={() => setType(wt.value)}
@@ -133,16 +134,15 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
                   { color: type === wt.value ? colors.primary : colors.foreground },
                 ]}
               >
-                {wt.label}
+                {t(`createWallet.types.${wt.value}`)}
               </Text>
             </Pressable>
           ))}
         </View>
 
-        {/* Initial balance */}
         <Text style={styles.label}>
-          Initial Balance{' '}
-          <Text style={{ color: colors.mutedForeground }}>(optional)</Text>
+          {t('createWallet.initialBalance')}{' '}
+          <Text style={{ color: colors.mutedForeground }}>({t('createWallet.optional')})</Text>
         </Text>
         <Pressable
           onPress={balanceKb.open}
@@ -169,7 +169,7 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
           className="bg-primary active:opacity-80 p-4 rounded-2xl items-center"
         >
           <Text style={styles.submitText}>
-            {createMutation.isPending ? 'Creating...' : 'Create Wallet'}
+            {createMutation.isPending ? t('createWallet.creating') : t('createWallet.createWallet')}
           </Text>
         </Pressable>
         <View style={{ height: 16 }} />

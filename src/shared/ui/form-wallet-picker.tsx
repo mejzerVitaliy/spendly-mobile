@@ -2,6 +2,7 @@ import { useWallets } from '@/shared/hooks';
 import { useEffect, useMemo } from 'react';
 import { Controller, Control, FieldValues, Path } from 'react-hook-form';
 import { FormPicker, PickerItem } from './form-picker';
+import { useTranslation } from 'react-i18next';
 
 interface FormWalletPickerProps<T extends FieldValues> {
   control: Control<T>;
@@ -33,6 +34,8 @@ function WalletPickerField<T extends FieldValues>({
   onChange,
   defaultWalletId,
 }: WalletPickerFieldProps<T>) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     if (!value && defaultWalletId) {
       onChange(defaultWalletId);
@@ -47,9 +50,9 @@ function WalletPickerField<T extends FieldValues>({
       error={error}
       items={items}
       isLoading={isLoading}
-      placeholder="Select wallet"
-      searchPlaceholder="Search wallets..."
-      modalTitle="Select Wallet"
+      placeholder={t('transaction.selectWallet')}
+      searchPlaceholder={t('transaction.searchWallets')}
+      modalTitle={t('transaction.selectWallet')}
     />
   );
 }

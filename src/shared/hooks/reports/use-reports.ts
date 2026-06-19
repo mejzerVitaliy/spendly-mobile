@@ -6,6 +6,7 @@ interface UseReportsParams {
   startDate?: string;
   endDate?: string;
   type?: TransactionType;
+  language?: string;
 }
 
 export const useReports = (params?: UseReportsParams) => {
@@ -17,7 +18,7 @@ export const useReports = (params?: UseReportsParams) => {
   });
 
   const getCategoryChartQuery = useQuery({
-    queryKey: ['reports', 'categories', params?.startDate, params?.endDate, params?.type],
+    queryKey: ['reports', 'categories', params?.startDate, params?.endDate, params?.type, params?.language],
     queryFn: () => reportsApi.getCategoryChart(params),
     enabled: !!params?.startDate && !!params?.endDate,
     staleTime: 30 * 1000,

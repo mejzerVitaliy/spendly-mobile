@@ -9,12 +9,14 @@ import { WelcomeStep } from './steps/welcome-step';
 import { CategoriesStep } from './steps/categories-step';
 import { CurrencyStep } from './steps/currency-step';
 import { WalletStep } from './steps/wallet-step';
+import { useTranslation } from 'react-i18next';
 
 const TOTAL_STEPS = 4;
 
 export function OnboardingScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const { t } = useTranslation();
 
   const {
     step,
@@ -41,12 +43,12 @@ export function OnboardingScreen() {
       });
 
       const { user, accessToken, refreshToken } = response.data;
-      
+
       await setAuth(user, accessToken, refreshToken);
-      
+
       setCompleted(true);
     } catch {
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Something went wrong. Please try again.' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: t('onboarding.somethingWentWrong') });
     } finally {
       setIsSubmitting(false);
     }

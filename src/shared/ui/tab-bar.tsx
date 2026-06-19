@@ -243,6 +243,12 @@ export function TabBar({ state, descriptors, navigation, onCreateTransaction }: 
 
   return (
     <View style={styles.container}>
+      <View style={styles.glowOverlay} pointerEvents="none">
+        <LinearGradient
+          colors={['transparent', 'rgba(255,255,255,0.04)']}
+          style={{ flex: 1 }}
+        />
+      </View>
       <Animated.View style={[styles.indicator, indicatorStyle]} />
       <View
         style={[
@@ -289,6 +295,13 @@ export function TabBar({ state, descriptors, navigation, onCreateTransaction }: 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'transparent',
+  },
+  glowOverlay: {
+    position: 'absolute',
+    top: -40,
+    left: 0,
+    right: 0,
+    height: 40,
   },
   indicator: {
     position: 'absolute',

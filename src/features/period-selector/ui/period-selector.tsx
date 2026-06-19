@@ -11,18 +11,13 @@ import Animated, {
 } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { colors } from '@/shared/theme';
+import { useTranslation } from 'react-i18next';
 
 interface PeriodSelectorProps {
   store?: 'analytics' | 'home';
 }
 
-const PERIODS = [
-  { key: 'week', label: 'Week' },
-  { key: 'month', label: 'Month' },
-  { key: 'year', label: 'Year' },
-] as const;
-
-type PeriodKey = (typeof PERIODS)[number]['key'];
+type PeriodKey = 'week' | 'month' | 'year';
 
 function PeriodTab({ label, isActive, onPress }: { label: string; isActive: boolean; onPress: () => void }) {
   const opacity = useSharedValue(isActive ? 1 : 0.45);
@@ -52,6 +47,13 @@ export const PeriodSelector = ({ store = 'analytics' }: PeriodSelectorProps) => 
   const indicatorInset = 3;
   const analyticsStore = useAnalyticsStore();
   const homeStore = useHomeStore();
+  const { t } = useTranslation();
+
+  const PERIODS = [
+    { key: 'week' as PeriodKey, label: t('period.week') },
+    { key: 'month' as PeriodKey, label: t('period.month') },
+    { key: 'year' as PeriodKey, label: t('period.year') },
+  ];
 
   const { periodType, currentDate, setPeriodType, setCurrentDate, setDateRange } =
     store === 'home' ? homeStore : analyticsStore;
@@ -85,7 +87,6 @@ export const PeriodSelector = ({ store = 'analytics' }: PeriodSelectorProps) => 
 
   return (
     <View style={styles.wrapper}>
-      {/* Navigation row */}
       <View style={styles.navRow}>
         <Pressable
           onPress={() => handleNavigate('prev')}
@@ -95,13 +96,13 @@ export const PeriodSelector = ({ store = 'analytics' }: PeriodSelectorProps) => 
           {Platform.OS === 'ios' ? (
             <>
               <BlurView intensity={30} tint="systemUltraThinMaterialDark" style={StyleSheet.absoluteFillObject} />
-              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 22 }]} />
-              <Ionicons name="chevron-back" size={18} color={colors.mutedForeground} />
+              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 12 }]} />
+              <Ionicons name="chevron-back" size={20} color={colors.mutedForeground} />
             </>
           ) : (
             <>
-              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.secondary, borderRadius: 22 }]} />
-              <Ionicons name="chevron-back" size={18} color={colors.mutedForeground} />
+              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.secondary, borderRadius: 12 }]} />
+              <Ionicons name="chevron-back" size={20} color={colors.mutedForeground} />
             </>
           )}
         </Pressable>
@@ -116,19 +117,18 @@ export const PeriodSelector = ({ store = 'analytics' }: PeriodSelectorProps) => 
           {Platform.OS === 'ios' ? (
             <>
               <BlurView intensity={30} tint="systemUltraThinMaterialDark" style={StyleSheet.absoluteFillObject} />
-              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 22 }]} />
-              <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
+              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 12 }]} />
+              <Ionicons name="chevron-forward" size={20} color={colors.mutedForeground} />
             </>
           ) : (
             <>
-              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.secondary, borderRadius: 22 }]} />
-              <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
+              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.secondary, borderRadius: 12 }]} />
+              <Ionicons name="chevron-forward" size={20} color={colors.mutedForeground} />
             </>
           )}
         </Pressable>
       </View>
 
-      {/* Segmented tabs */}
       <View
         style={styles.tabsContainer}
         onLayout={(e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width)}
@@ -162,9 +162,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   navBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',

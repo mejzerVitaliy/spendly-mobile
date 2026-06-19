@@ -1,7 +1,10 @@
 import { TabBarWithModal } from '@/widgets/tab-bar-with-modal';
 import { Tabs } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
 export default function TabsLayout() {
+  const { t } = useTranslation();
+
   return (
     <Tabs
       screenOptions={{
@@ -13,25 +16,25 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: t('tabs.home'),
         }}
       />
       <Tabs.Screen
         name="analytics"
         options={{
-          title: 'Analytics',
+          title: t('tabs.analytics'),
         }}
       />
       <Tabs.Screen
         name="wallets"
         options={{
-          title: 'Wallets',
+          title: t('tabs.wallets'),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: t('tabs.settings'),
         }}
       />
     </Tabs>

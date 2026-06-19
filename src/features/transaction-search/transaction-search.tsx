@@ -4,6 +4,7 @@ import { Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { colors } from '@/shared/theme';
+import { useTranslation } from 'react-i18next';
 
 interface TransactionSearchProps {
   onSearchChange: (search: string) => void;
@@ -14,6 +15,7 @@ export function TransactionSearch({ onSearchChange }: TransactionSearchProps) {
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const borderOpacity = useSharedValue(0);
+  const { t } = useTranslation();
 
   useEffect(() => {
     borderOpacity.value = withTiming(isFocused ? 1 : 0, { duration: 180 });
@@ -43,7 +45,7 @@ export function TransactionSearch({ onSearchChange }: TransactionSearchProps) {
         onChangeText={handleChange}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        placeholder="Search transactions..."
+        placeholder={t('search.placeholder')}
         placeholderTextColor={colors.mutedForeground}
         style={styles.input}
         returnKeyType="search"

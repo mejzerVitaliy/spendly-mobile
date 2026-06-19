@@ -11,6 +11,7 @@ import { ActivityIndicator, Platform, RefreshControl, ScrollView, StyleSheet, Te
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   if (Platform.OS === 'ios') {
@@ -36,6 +37,7 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 export const AnalyticsScreen = () => {
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+  const { t, i18n } = useTranslation();
 
   const { startDate, endDate, selectedCategoryTransactionType, setSelectedCategoryTransactionType } =
     useAnalyticsStore();
@@ -44,6 +46,7 @@ export const AnalyticsScreen = () => {
     startDate,
     endDate,
     type: selectedCategoryTransactionType,
+    language: i18n.language,
   });
 
   const summary = getSummary.data?.data;
@@ -60,6 +63,18 @@ export const AnalyticsScreen = () => {
     setRefreshing(false);
   }, [queryClient]);
 
+  const categoryTypeOptions = [
+    { label: t('analytics.expense'), value: TransactionType.EXPENSE },
+    { label: t('analytics.income'), value: TransactionType.INCOME },
+  ];
+
+  const categoryChartTitle =
+    (selectedCategoryTransactionType === TransactionType.EXPENSE
+      ? t('analytics.expenses')
+      : t('analytics.income')) +
+    ' ' +
+    t('analytics.byCategory');
+
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <ScrollView
@@ -75,7 +90,7 @@ export const AnalyticsScreen = () => {
         }
       >
         <View style={styles.content}>
-          <Text style={styles.pageTitle}>Analytics</Text>
+          <Text style={styles.pageTitle}>{t('analytics.title')}</Text>
 
           <PeriodSelector />
 
@@ -83,7 +98,7 @@ export const AnalyticsScreen = () => {
 
           <View style={{ height: 8 }} />
 
-          <ChartCard title="Cash Flow Trend">
+          <ChartCard title={t('analytics.cashFlowTrend')}>
             {getCashFlowTrend.isLoading ? (
               <View style={styles.loadingBox}>
                 <ActivityIndicator color={colors.primary} />
@@ -96,12 +111,12 @@ export const AnalyticsScreen = () => {
               />
             ) : (
               <View style={styles.loadingBox}>
-                <Text style={styles.emptyText}>No data for this period</Text>
+                <Text style={styles.emptyText}>{t('common.noData')}</Text>
               </View>
             )}
           </ChartCard>
 
-          <ChartCard title="Income vs Expense">
+          <ChartCard title={t('analytics.incomeVsExpense')}>
             {getSummary.isLoading ? (
               <View style={[styles.loadingBox, { height: 64 }]}>
                 <ActivityIndicator color={colors.primary} />
@@ -114,7 +129,7 @@ export const AnalyticsScreen = () => {
               />
             ) : (
               <View style={[styles.loadingBox, { height: 64 }]}>
-                <Text style={styles.emptyText}>No data for this period</Text>
+                <Text style={styles.emptyText}>{t('common.noData')}</Text>
               </View>
             )}
           </ChartCard>
@@ -126,16 +141,11 @@ export const AnalyticsScreen = () => {
               <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 22 }]} />
               <View style={[StyleSheet.absoluteFillObject, { borderRadius: 22, borderWidth: 1, borderColor: colors.glass.border }]} />
               <View style={styles.catHeader}>
-                <Text style={styles.chartTitle}>
-                  {selectedCategoryTransactionType === TransactionType.EXPENSE ? 'Expenses' : 'Income'} by Category
-                </Text>
+                <Text style={styles.chartTitle}>{categoryChartTitle}</Text>
                 <SegmentedControl
                   value={selectedCategoryTransactionType}
                   onChange={setSelectedCategoryTransactionType}
-                  options={[
-                    { label: 'Expense', value: TransactionType.EXPENSE },
-                    { label: 'Income', value: TransactionType.INCOME },
-                  ]}
+                  options={categoryTypeOptions}
                 />
               </View>
               {getCategoryChart.isLoading ? (
@@ -150,23 +160,18 @@ export const AnalyticsScreen = () => {
                 />
               ) : (
                 <View style={styles.loadingBox}>
-                  <Text style={styles.emptyText}>No data for this period</Text>
+                  <Text style={styles.emptyText}>{t('common.noData')}</Text>
                 </View>
               )}
             </View>
           ) : (
             <View style={[styles.chartCard, { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, paddingBottom: 8 }]}>
               <View style={styles.catHeader}>
-                <Text style={styles.chartTitle}>
-                  {selectedCategoryTransactionType === TransactionType.EXPENSE ? 'Expenses' : 'Income'} by Category
-                </Text>
+                <Text style={styles.chartTitle}>{categoryChartTitle}</Text>
                 <SegmentedControl
                   value={selectedCategoryTransactionType}
                   onChange={setSelectedCategoryTransactionType}
-                  options={[
-                    { label: 'Expense', value: TransactionType.EXPENSE },
-                    { label: 'Income', value: TransactionType.INCOME },
-                  ]}
+                  options={categoryTypeOptions}
                 />
               </View>
               {getCategoryChart.isLoading ? (
@@ -181,7 +186,7 @@ export const AnalyticsScreen = () => {
                 />
               ) : (
                 <View style={styles.loadingBox}>
-                  <Text style={styles.emptyText}>No data for this period</Text>
+                  <Text style={styles.emptyText}>{t('common.noData')}</Text>
                 </View>
               )}
             </View>

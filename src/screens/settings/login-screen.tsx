@@ -6,10 +6,12 @@ import { useRouter } from 'expo-router';
 import { Button, Input, SettingsHeader } from '@/shared/ui';
 import { useAuthStore } from '@/shared/stores';
 import { authApi } from '@/shared/services/api/auth.api';
+import { useTranslation } from 'react-i18next';
 
 export function LoginScreen() {
   const router = useRouter();
   const { setAuth } = useAuthStore();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,8 +34,8 @@ export function LoginScreen() {
       router.replace('/(tabs)' as any);
     } catch (error: any) {
       const message =
-        error?.response?.data?.message || 'Invalid email or password.';
-      Toast.show({ type: 'error', text1: 'Error', text2: message });
+        error?.response?.data?.message || t('loginScreen.invalidCredentials');
+      Toast.show({ type: 'error', text1: t('common.error'), text2: message });
     } finally {
       setIsLoading(false);
     }
@@ -41,23 +43,23 @@ export function LoginScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background px-5 py-4">
-      <SettingsHeader title="Login" />
+      <SettingsHeader title={t('loginScreen.title')} />
       <View className="flex-1">
         <Text className="text-muted-foreground mb-6">
-          Login with your existing account to restore your data.
+          {t('loginScreen.description')}
         </Text>
 
         <View className="gap-4">
           <Input
-            label="Email"
-            placeholder="john@example.com"
+            label={t('loginScreen.email')}
+            placeholder={t('loginScreen.emailPlaceholder')}
             value={email}
             onChangeText={setEmail}
             type="email"
           />
           <Input
-            label="Password"
-            placeholder="Enter your password"
+            label={t('loginScreen.password')}
+            placeholder={t('loginScreen.passwordPlaceholder')}
             value={password}
             onChangeText={setPassword}
             type="password"
@@ -66,7 +68,7 @@ export function LoginScreen() {
 
         <View className="mt-auto">
           <Button
-            title="Login"
+            title={t('loginScreen.login')}
             onPress={handleSubmit}
             isLoading={isLoading}
             disabled={!isValid}
