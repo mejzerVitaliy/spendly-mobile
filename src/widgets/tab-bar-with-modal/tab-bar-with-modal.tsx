@@ -19,6 +19,7 @@ import Animated, {
 import { colors } from '@/shared/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
+import { useOfflineGuard } from '@/shared/hooks';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -135,6 +136,7 @@ export function TabBarWithModal(props: BottomTabBarProps) {
   const manualRef = useRef<BottomSheetRef>(null);
   const textRef = useRef<BottomSheetRef>(null);
   const voiceRef = useRef<BottomSheetRef>(null);
+  const { guard } = useOfflineGuard();
 
   const handleItemPress = (key: string) => {
     setMenuVisible(false);
@@ -147,7 +149,7 @@ export function TabBarWithModal(props: BottomTabBarProps) {
 
   return (
     <>
-      <TabBar {...props} onCreateTransaction={() => setMenuVisible(true)} />
+      <TabBar {...props} onCreateTransaction={guard(() => setMenuVisible(true))} />
 
       <Modal
         visible={menuVisible}
@@ -170,7 +172,11 @@ export function TabBarWithModal(props: BottomTabBarProps) {
         )}
       </Modal>
 
-      <BottomSheet ref={manualRef}>
+      <BottomSheet
+        ref={manualRef}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+      >
         <CreateTransactionForm onSuccess={() => manualRef.current?.close()} />
       </BottomSheet>
 

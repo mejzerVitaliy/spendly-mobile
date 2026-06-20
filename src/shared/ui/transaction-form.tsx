@@ -1,5 +1,6 @@
 import { TransactionType } from '@/shared/constants';
 import { useAuth, useTransactions, useGetTransactionById, useWallets } from '@/shared/hooks';
+import { RecurringPeriod } from '@/shared/types/transactions/transactions';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -14,6 +15,7 @@ import { FormDatePicker } from './form-date-picker';
 import { FormInput } from './form-input';
 import { FormSwitch } from './form-switch';
 import { FormWalletPicker } from './form-wallet-picker';
+import { RecurringSelector } from './recurring-selector';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheet, type BottomSheetRef } from './bottom-sheet';
@@ -68,6 +70,8 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
   const { wallets } = useWallets();
   const actionSheetRef = useRef<BottomSheetRef>(null);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringPeriod, setRecurringPeriod] = useState<RecurringPeriod | null>('MONTHLY');
   const { t } = useTranslation();
 
   const userMainCurrency = getMeQuery.data?.data?.mainCurrencyCode || 'USD';
@@ -116,6 +120,13 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
 
   const exchangeRate = rateQuery.data?.data?.rate;
   const estimatedReceiveAmount = exchangeRate && amount ? (amount * exchangeRate).toFixed(2) : null;
+
+  useEffect(() => {
+    if (mode === 'edit' && transaction) {
+      setIsRecurring(transaction.isRecurring ?? false);
+      setRecurringPeriod((transaction.recurringPeriod as RecurringPeriod) ?? 'MONTHLY');
+    }
+  }, [transaction, mode]);
 
   useEffect(() => {
     if (mode === 'edit' && transaction) {
@@ -208,6 +219,8 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
           categoryId: data.categoryId!,
           description: data.description,
           walletId: data.walletId,
+          isRecurring,
+          recurringPeriod: isRecurring ? recurringPeriod : null,
         });
         Toast.show({ type: 'success', text1: t('transaction.created'), text2: t('transaction.createdDesc') });
         reset();
@@ -222,6 +235,8 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
             categoryId: data.categoryId!,
             description: data.description,
             walletId: data.walletId,
+            isRecurring,
+            recurringPeriod: isRecurring ? recurringPeriod : null,
           },
         });
         Toast.show({ type: 'success', text1: t('transaction.updated'), text2: t('transaction.updatedDesc') });
@@ -349,8 +364,8 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
       </BottomSheet>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="px-5 pb-6">
-          <View className="flex-row justify-between items-center mb-6">
+        <View className="px-5 pb-4">
+          <View className="flex-row justify-between items-center mb-4">
             <Text className="text-2xl font-bold text-foreground">
               {mode === 'create' ? t('transaction.createTitle') : t('transaction.editTitle')}
             </Text>
@@ -502,13 +517,20 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
                 numberOfLines={3}
                 error={errors.description?.message}
               />
+
+              <RecurringSelector
+                enabled={isRecurring}
+                period={recurringPeriod}
+                onToggle={setIsRecurring}
+                onPeriodChange={setRecurringPeriod}
+              />
             </>
           )}
 
           <Pressable
             onPress={handleSubmit(onSubmit)}
             disabled={isPending}
-            className={`py-4 rounded-2xl mt-4 ${
+            className={`py-3.5 rounded-2xl mt-3 ${
               isPending ? 'bg-primary/50' : 'bg-primary active:bg-primary/90'
             }`}
           >

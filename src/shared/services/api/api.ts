@@ -1,6 +1,13 @@
 import { ENV } from '@/shared/constants/config';
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { tokenStorage } from '../storage';
+import { getIsOnline } from '@/shared/lib/network-state';
+import Toast from 'react-native-toast-message';
+import { Alert } from 'react-native';
+import { router } from 'expo-router';
+import i18n from '@/shared/i18n';
+
+let limitAlertVisible = false;
 
 const apiClient = axios.create({
   baseURL: ENV.API_URL,
@@ -30,8 +37,17 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    const token = await tokenStorage.getAccessToken();
+    const method = (config.method ?? 'get').toLowerCase();
+    if (method !== 'get' && !getIsOnline()) {
+      Toast.show({
+        type: 'error',
+        text1: i18n.t('offline.actionTitle'),
+        text2: i18n.t('offline.actionBody'),
+      });
+      return Promise.reject(Object.assign(new Error('offline'), { isOffline: true }));
+    }
 
+    const token = await tokenStorage.getAccessToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -49,6 +65,31 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
+
+    if (error.response?.status === 429) {
+      if (!limitAlertVisible) {
+        limitAlertVisible = true;
+        Alert.alert(
+          i18n.t('limits.limitReachedTitle'),
+          i18n.t('limits.limitReachedBody'),
+          [
+            {
+              text: i18n.t('common.cancel'),
+              style: 'cancel',
+              onPress: () => { limitAlertVisible = false; },
+            },
+            {
+              text: i18n.t('limits.viewUsage'),
+              onPress: () => {
+                limitAlertVisible = false;
+                router.push('/settings/limits' as any);
+              },
+            },
+          ],
+        );
+      }
+      return Promise.reject(error);
+    }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (originalRequest.url?.includes('/auth/refresh')) {

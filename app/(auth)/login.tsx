@@ -2,8 +2,11 @@ import { LoginForm } from '@/features/auth';
 import { router } from 'expo-router';
 import { KeyboardAvoidingView, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 export default function LoginScreen() {
+  const { t } = useTranslation();
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       <KeyboardAvoidingView
@@ -21,6 +24,15 @@ export default function LoginScreen() {
           </View>
 
           <LoginForm />
+
+          <TouchableOpacity
+            className="mt-4 items-center"
+            onPress={() => router.push('/forgot-password')}
+          >
+            <Text className="text-primary text-sm font-medium">
+              {t('authLogin.forgotPassword')}
+            </Text>
+          </TouchableOpacity>
 
           <View className="mt-6 flex-row justify-center items-center">
             <Text className="text-muted-foreground">Don&apos;t have an account? </Text>

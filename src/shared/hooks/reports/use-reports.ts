@@ -14,7 +14,6 @@ export const useReports = (params?: UseReportsParams) => {
     queryKey: ['reports', 'summary', params?.startDate, params?.endDate],
     queryFn: () => reportsApi.getSummary({ startDate: params?.startDate, endDate: params?.endDate }),
     staleTime: 30 * 1000,
-    gcTime: 5 * 60 * 1000,
   });
 
   const getCategoryChartQuery = useQuery({
@@ -22,7 +21,6 @@ export const useReports = (params?: UseReportsParams) => {
     queryFn: () => reportsApi.getCategoryChart(params),
     enabled: !!params?.startDate && !!params?.endDate,
     staleTime: 30 * 1000,
-    gcTime: 5 * 60 * 1000,
   });
 
   const getCashFlowTrendQuery = useQuery({
@@ -30,7 +28,6 @@ export const useReports = (params?: UseReportsParams) => {
     queryFn: () => reportsApi.getCashFlowTrend({ startDate: params?.startDate, endDate: params?.endDate }),
     enabled: !!params?.startDate && !!params?.endDate,
     staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
   });
 
   return {

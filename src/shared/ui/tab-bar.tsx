@@ -253,11 +253,13 @@ export function TabBar({ state, descriptors, navigation, onCreateTransaction }: 
           },
         ]}
       >
-        <BlurView
-          intensity={Platform.OS === 'ios' ? 60 : 80}
-          tint="systemUltraThinMaterialDark"
-          style={StyleSheet.absoluteFillObject}
-        />
+        {Platform.OS === 'ios' && (
+          <BlurView
+            intensity={60}
+            tint="systemUltraThinMaterialDark"
+            style={StyleSheet.absoluteFillObject}
+          />
+        )}
         <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(8,8,8,1)' }]} />
 
         <View

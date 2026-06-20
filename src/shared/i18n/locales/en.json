@@ -17,7 +17,8 @@
     "success": "Success",
     "loading": "Loading...",
     "noData": "No data for this period",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "transfer": "Transfer"
   },
   "home": {
     "transactions": "Transactions",
@@ -38,7 +39,9 @@
     "year": "Year"
   },
   "analytics": {
-    "title": "Analytics",
+    "title": "Analytics and Insights",
+    "analytics": "Analytics",
+    "insights": "Insights",
     "cashFlowTrend": "Cash Flow Trend",
     "incomeVsExpense": "Income vs Expense",
     "byCategory": "by Category",
@@ -182,7 +185,25 @@
     "categories": "Categories",
     "currencies": "Currencies",
     "language": "Language",
+    "limits": "Limits & Usage",
+    "pushNotifications": "Push Notifications",
+    "pushPermissionDenied": "Enable in device Settings to receive alerts",
     "supportAbout": "Support & About"
+  },
+  "limits": {
+    "title": "Limits & Usage",
+    "subtitle": "Your monthly AI usage",
+    "resetsOn": "Resets on {{date}}",
+    "aiTransactions": "AI Transactions",
+    "aiTransactionsDesc": "Text and voice AI transaction creation",
+    "aiInsights": "AI Insights",
+    "aiInsightsDesc": "Monthly AI financial analysis",
+    "used": "{{used}} / {{limit}} used",
+    "freePlan": "Free Plan",
+    "freePlanDesc": "Your AI features reset on the 1st of each month.",
+    "limitReachedTitle": "Monthly Limit Reached",
+    "limitReachedBody": "You've used all your AI requests for this month.",
+    "viewUsage": "View Usage"
   },
   "language": {
     "title": "Language",
@@ -330,7 +351,31 @@
     "email": "Email",
     "password": "Password",
     "loggingIn": "Logging in...",
-    "logIn": "Log in"
+    "logIn": "Log in",
+    "forgotPassword": "Forgot password?"
+  },
+  "forgotPassword": {
+    "title": "Forgot Password?",
+    "subtitle": "Enter your email and we'll send you a reset link.",
+    "email": "Email",
+    "emailPlaceholder": "example@mail.com",
+    "sendLink": "Send Reset Link",
+    "sending": "Sending...",
+    "successTitle": "Check your email",
+    "successMessage": "If that email is registered, you'll receive a reset link shortly.",
+    "backToLogin": "Back to Login"
+  },
+  "resetPassword": {
+    "title": "Reset Password",
+    "subtitle": "Enter your new password below.",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "reset": "Reset Password",
+    "resetting": "Resetting...",
+    "successTitle": "Password reset",
+    "successMessage": "Your password has been updated. You can now log in.",
+    "invalidToken": "This reset link is invalid or has expired.",
+    "backToLogin": "Back to Login"
   },
   "authRegister": {
     "firstName": "First Name",
@@ -387,5 +432,99 @@
   "validation": {
     "amountPositive": "Amount must be positive",
     "selectCategory": "Select category"
+  },
+  "offline": {
+    "actionTitle": "No internet connection",
+    "actionBody": "This action requires an internet connection"
+  },
+  "insights": {
+    "title": "Insights",
+    "subtitle": "Your financial snapshot",
+    "noData": "Add transactions to unlock insights",
+    "aiCoach": "AI Coach",
+    "aiCoachSubtitle": "Deep analysis powered by AI",
+    "generate": "Generate AI Analysis",
+    "regenerate": "Regenerate",
+    "generating": "Analyzing your finances...",
+    "aiError": "Failed to generate insights. Try again.",
+    "rules": {
+      "positiveCashFlow": {
+        "title": "Positive Cash Flow",
+        "desc": "Your income exceeded expenses by {{amount}} {{currency}} this period."
+      },
+      "negativeCashFlow": {
+        "title": "Spending Exceeds Income",
+        "desc": "You spent {{amount}} {{currency}} more than you earned."
+      },
+      "balanced": {
+        "title": "Nearly Break-Even",
+        "desc": "Your income and expenses are almost equal this period."
+      },
+      "savingsRateGood": {
+        "title": "Great Savings Rate",
+        "desc": "You saved {{rate}}% of your income — keep it up!"
+      },
+      "savingsRateMedium": {
+        "title": "Savings Rate: {{rate}}%",
+        "desc": "You're saving a moderate portion of your income."
+      },
+      "savingsRateLow": {
+        "title": "Low Savings Rate",
+        "desc": "Only {{rate}}% of income saved. Try reducing discretionary spending."
+      },
+      "topCategory": {
+        "title": "Top Expense: {{category}}",
+        "desc": "{{category}} made up {{pct}}% of your total expenses."
+      },
+      "categoryConcentration": {
+        "title": "High Spending Concentration",
+        "desc": "{{pct}}% of expenses went to {{category}}. Consider diversifying."
+      },
+      "noActivity": {
+        "title": "No Activity Yet",
+        "desc": "Start adding transactions to unlock personalized insights."
+      },
+      "spendingPeak": {
+        "title": "Peak Spending Day",
+        "desc": "Your highest expenses were on {{date}} — {{amount}} {{currency}}."
+      },
+      "activeDays": {
+        "title": "{{count}} Active Days",
+        "desc": "You tracked finances on {{count}} of {{total}} days this period."
+      }
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "clearAll": "Clear",
+    "empty": "No notifications yet",
+    "emptyDesc": "We'll notify you about your spending, streaks, and weekly summaries here.",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago",
+    "dailyCheckinTitle": "Track your day 💸",
+    "dailyCheckinBody": "You haven't logged any expenses today. Take 10 seconds to stay on top of your finances.",
+    "weeklySummaryTitle": "Your weekly summary 📊",
+    "weeklySummaryBody": "The week is ending — open the app to see how you did financially.",
+    "monthlyRecapTitle": "Month is almost over 📆",
+    "monthlyRecapBody": "Check your monthly spending recap in Analytics before the month resets.",
+    "streakTitle": "{{days}}-day streak 🔥",
+    "streakBody": "You've tracked your expenses {{days}} days in a row. Keep it going!",
+    "inactivityTitle": "Your budget needs attention 💡",
+    "inactivityBody": "You haven't tracked for {{days}} days. You might be missing expenses — catch up now.",
+    "spendingTrendTitle": "Spending alert 📉",
+    "spendingTrendBody": "Your spending changed by {{pct}} compared to last week.",
+    "recurringDueTitle": "Recurring transactions",
+    "recurringDueBody": "{{count}} recurring transaction(s) were automatically added."
+  },
+  "recurring": {
+    "repeat": "Repeat",
+    "DAILY": "Daily",
+    "WEEKLY": "Weekly",
+    "BIWEEKLY": "Every 2 weeks",
+    "MONTHLY": "Monthly",
+    "SEMIANNUAL": "Every 6 months",
+    "ANNUAL": "Yearly"
   }
 }

@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppHeader , BottomSheet, ConfirmDialog } from '@/shared/ui';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { BottomSheetView } from '@gorhom/bottom-sheet';
-import { useWallets } from '@/shared/hooks';
+import { useWallets, useOfflineGuard } from '@/shared/hooks';
 import { WalletDto } from '@/shared/types';
-import { BottomSheet, ConfirmDialog } from '@/shared/ui';
 import { formatCompact } from '@/shared/utils';
 import Toast from 'react-native-toast-message';
 import { CreateWalletModal, EditWalletModal } from './components';
@@ -110,6 +110,7 @@ function WalletActionSheet({
 
 export function WalletsScreen() {
   const { t } = useTranslation();
+  const { guard } = useOfflineGuard();
   const [showArchived, setShowArchived] = useState(false);
   const {
     wallets,
@@ -187,10 +188,8 @@ export function WalletsScreen() {
         style={{ flex: 1 }}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.primary} />}
       >
+        <AppHeader />
         <View style={styles.content}>
-          <Text style={styles.pageTitle}>{t('wallets.title')}</Text>
-          <Text style={styles.pageSubtitle}>{t('wallets.subtitle')}</Text>
-
           {/* Total balance hero card */}
           <View style={styles.heroCard}>
             {Platform.OS === 'ios' ? (
@@ -225,7 +224,7 @@ export function WalletsScreen() {
             <Text style={styles.sectionTitle}>{t('wallets.yourWallets')}</Text>
 
             <Pressable
-              onPress={() => setIsCreateModalVisible(true)}
+              onPress={guard(() => setIsCreateModalVisible(true))}
               className="!flex !flex-row items-center gap-3"
             >
               <View className="w-10 h-10 rounded-3xl bg-primary/12 border border-primary/25 items-center justify-center">
@@ -328,19 +327,8 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 12,
     paddingBottom: 20,
-  },
-  pageTitle: {
-    fontSize: 30,
-    fontWeight: '700',
-    color: colors.foreground,
-    marginBottom: 2,
-  },
-  pageSubtitle: {
-    fontSize: 14,
-    color: colors.mutedForeground,
-    marginBottom: 20,
   },
   heroCard: {
     borderRadius: 26,

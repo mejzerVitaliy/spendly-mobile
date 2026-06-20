@@ -1,6 +1,8 @@
 import { transactionsApi } from "@/shared/services/api";
+import { notificationService } from "@/shared/services/notifications";
 import { CreateTransactionRequest, CreateTransferRequest, ParsedTransactionPreview, UpdateTransactionRequest, UpdateTransferRequest } from "@/shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 interface GetAllTransactionsParams {
   startDate?: string;
@@ -22,14 +24,19 @@ const invalidateAll = (queryClient: ReturnType<typeof useQueryClient>) => {
   )
 }
 
+const invalidateUsage = (queryClient: ReturnType<typeof useQueryClient>) =>
+  queryClient.invalidateQueries({ queryKey: ['usage'], exact: false, refetchType: 'all' })
+
 const useTransactions = () => {
   const queryClient = useQueryClient()
+  const { t } = useTranslation()
 
   const createMutation = useMutation({
     mutationKey: ['transactions', 'create'],
     mutationFn: (request: CreateTransactionRequest) => transactionsApi.create(request),
     onSuccess: async () => {
       await invalidateAll(queryClient)
+      notificationService.onTransactionCreated(t)
     },
   })
 
@@ -71,7 +78,8 @@ const useTransactions = () => {
     mutationKey: ['transactions', 'parseText'],
     mutationFn: (text: string) => transactionsApi.parseText({ text }),
     onSuccess: async () => {
-      await invalidateAll(queryClient)
+      await Promise.all([invalidateAll(queryClient), invalidateUsage(queryClient)])
+      notificationService.onTransactionCreated(t)
     },
   })
 
@@ -79,23 +87,30 @@ const useTransactions = () => {
     mutationKey: ['transactions', 'parseVoice'],
     mutationFn: (audioUri: string) => transactionsApi.parseVoice(audioUri),
     onSuccess: async () => {
-      await invalidateAll(queryClient)
+      await Promise.all([invalidateAll(queryClient), invalidateUsage(queryClient)])
+      notificationService.onTransactionCreated(t)
     },
   })
 
   const previewTextMutation = useMutation({
     mutationKey: ['transactions', 'previewText'],
     mutationFn: (text: string) => transactionsApi.previewText(text),
+    onSuccess: () => { invalidateUsage(queryClient); },
   })
 
   const previewVoiceMutation = useMutation({
     mutationKey: ['transactions', 'previewVoice'],
     mutationFn: (audioUri: string) => transactionsApi.previewVoice(audioUri),
+    onSuccess: () => { invalidateUsage(queryClient); },
   })
 
   const createFromPreviewMutation = useMutation({
     mutationKey: ['transactions', 'createFromPreview'],
-    mutationFn: async (previews: ParsedTransactionPreview[]) => {
+    mutationFn: async ({ previews, isRecurring, recurringPeriod }: {
+      previews: ParsedTransactionPreview[]
+      isRecurring?: boolean
+      recurringPeriod?: import('@/shared/types/transactions/transactions').RecurringPeriod | null
+    }) => {
       const results = []
       for (const tx of previews) {
         if (tx.transactionType === 'TRANSFER') {
@@ -117,6 +132,8 @@ const useTransactions = () => {
             categoryId: tx.categoryId ?? '',
             description: tx.description || undefined,
             walletId: tx.walletId ?? undefined,
+            isRecurring: isRecurring ?? false,
+            recurringPeriod: isRecurring ? recurringPeriod : null,
           })
           results.push(res)
         }

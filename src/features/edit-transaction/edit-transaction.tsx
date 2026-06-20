@@ -1,5 +1,6 @@
 import { BottomSheet, BottomSheetRef } from '@/shared/ui';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+
 import { EditTransactionForm } from './ui/edit-transaction-form';
 
 export interface EditTransactionRef {
@@ -28,7 +29,11 @@ const EditTransaction = forwardRef<EditTransactionRef>((_, ref) => {
   };
 
   return (
-    <BottomSheet ref={bottomSheetRef}>
+    <BottomSheet
+      ref={bottomSheetRef}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+    >
       {selectedTransactionId && (
         <EditTransactionForm
           transactionId={selectedTransactionId}

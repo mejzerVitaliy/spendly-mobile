@@ -1,4 +1,4 @@
-import { GetMeResponse, GuestRequest, GuestResponse, LoginRequest, LoginResponse, RefreshResponse, RegisterRequest, RegisterResponse, UpgradeGuestRequest, UpgradeGuestResponse } from "@/shared/types";
+import { ForgotPasswordRequest, GetMeResponse, GuestRequest, GuestResponse, LoginRequest, LoginResponse, RefreshResponse, RegisterRequest, RegisterResponse, ResetPasswordRequest, UpgradeGuestRequest, UpgradeGuestResponse } from "@/shared/types";
 import { apiClient } from "./api";
 
 const guest = async (request: GuestRequest): Promise<GuestResponse> => {
@@ -64,6 +64,14 @@ const logout = async () => {
   await apiClient.put("/auth/logout");
 };
 
+const forgotPassword = async (request: ForgotPasswordRequest): Promise<void> => {
+  await apiClient.post("/auth/forgot-password", request);
+};
+
+const resetPassword = async (request: ResetPasswordRequest): Promise<void> => {
+  await apiClient.post("/auth/reset-password", request);
+};
+
 export const authApi = {
   guest,
   upgradeGuest,
@@ -74,4 +82,6 @@ export const authApi = {
   getMe,
   logout,
   resendTwoFactorCode,
+  forgotPassword,
+  resetPassword,
 };

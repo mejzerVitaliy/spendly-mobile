@@ -23,6 +23,10 @@ interface PreviewTransactionResponse extends ApiResponse<{
   transactions: ParsedTransactionPreview[]
 }> {}
 
+export type RecurringPeriod = 'DAILY' | 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'SEMIANNUAL' | 'ANNUAL'
+
+export const RECURRING_PERIODS: RecurringPeriod[] = ['DAILY', 'WEEKLY', 'BIWEEKLY', 'MONTHLY', 'SEMIANNUAL', 'ANNUAL']
+
 interface Transaction {
   id: string
   description?: string
@@ -39,6 +43,9 @@ interface Transaction {
   pairedTransactionWalletId?: string | null
   pairedTransactionCurrencyCode?: string | null
   pairedTransactionAmount?: number | null
+  isRecurring?: boolean
+  recurringPeriod?: RecurringPeriod | null
+  nextRecurringDate?: string | null
 }
 
 interface UpdateTransferRequest {
@@ -62,6 +69,8 @@ interface CreateTransactionRequest {
   categoryId: string
   currencyCode: string
   walletId?: string
+  isRecurring?: boolean
+  recurringPeriod?: RecurringPeriod | null
 }
 
 interface CreateTransferRequest {
@@ -99,6 +108,8 @@ interface UpdateTransactionRequest {
   categoryId: string
   currencyCode: string
   walletId?: string
+  isRecurring?: boolean
+  recurringPeriod?: RecurringPeriod | null
 }
 
 interface UpdateTransactionResponse
@@ -114,6 +125,9 @@ interface ParseTextTransactionResponse
 
 interface ParseVoiceTransactionResponse
   extends ApiResponse<Transaction[]> {}
+
+interface GetRecurringDueResponse extends ApiResponse<Transaction[]> {}
+interface ProcessRecurringResponse extends ApiResponse<{ created: Transaction; nextRecurringDate: string }> {}
 
 export type {
     ParsedTransactionPreview,
@@ -132,5 +146,7 @@ export type {
     ParseVoiceTransactionResponse,
     Transaction,
     UpdateTransactionRequest,
-    UpdateTransactionResponse
+    UpdateTransactionResponse,
+    GetRecurringDueResponse,
+    ProcessRecurringResponse,
 };

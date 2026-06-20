@@ -5,7 +5,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import type { PropsWithChildren, ReactNode } from 'react';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { colors } from '@/shared/theme';
 
@@ -51,7 +51,9 @@ const GlassBackground = () => {
       />
     );
   }
-  return null;
+  return (
+    <View style={[StyleSheet.absoluteFillObject, styles.backgroundBase, { backgroundColor: colors.card }]} />
+  );
 };
 
 const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProps>>(

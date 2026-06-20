@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -64,6 +64,14 @@ export function LoginScreen() {
             onChangeText={setPassword}
             type="password"
           />
+          <TouchableOpacity
+            className="items-end"
+            onPress={() => router.push('/forgot-password')}
+          >
+            <Text className="text-primary text-sm font-medium">
+              {t('authLogin.forgotPassword')}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <View className="mt-auto">

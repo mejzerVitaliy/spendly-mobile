@@ -1,20 +1,22 @@
 import { ParsedTransactionPreview } from '@/shared/types';
+import { RecurringPeriod } from '@/shared/types/transactions/transactions';
 import { useWallets } from '@/shared/hooks';
 import { useCategories } from '@/shared/hooks/categories';
 import { formatCompact } from '@/shared/utils';
 import { Ionicons } from '@expo/vector-icons';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors } from '@/shared/theme';
 import { BottomSheet, type BottomSheetRef } from './bottom-sheet';
 import { BottomSheetView } from '@gorhom/bottom-sheet';
+import { RecurringSelector } from './recurring-selector';
 
 interface AIConfirmationDialogProps {
   visible: boolean;
   transactions: ParsedTransactionPreview[];
   isCreating: boolean;
-  onConfirm: () => void;
+  onConfirm: (recurring: { isRecurring: boolean; recurringPeriod: RecurringPeriod | null }) => void;
   onCancel: () => void;
 }
 
@@ -80,6 +82,8 @@ export function AIConfirmationDialog({
 }: AIConfirmationDialogProps) {
   const sheetRef = useRef<BottomSheetRef>(null);
   const { t } = useTranslation();
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringPeriod, setRecurringPeriod] = useState<RecurringPeriod | null>('MONTHLY');
 
   useEffect(() => {
     if (visible) {
@@ -110,13 +114,22 @@ export function AIConfirmationDialog({
             {t('aiConfirm.subtitle', { count: transactions.length })}
           </Text>
 
-          <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 320 }}>
+          <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 260 }}>
             {transactions.map((tx, i) => (
               <TransactionPreviewRow key={i} tx={tx} />
             ))}
           </ScrollView>
 
-          <View className="flex-row gap-3 mt-4">
+          <View className="mt-3">
+            <RecurringSelector
+              enabled={isRecurring}
+              period={recurringPeriod}
+              onToggle={setIsRecurring}
+              onPeriodChange={setRecurringPeriod}
+            />
+          </View>
+
+          <View className="flex-row gap-3 mt-1">
             <Pressable
               onPress={onCancel}
               disabled={isCreating}
@@ -128,7 +141,7 @@ export function AIConfirmationDialog({
             </Pressable>
 
             <Pressable
-              onPress={onConfirm}
+              onPress={() => onConfirm({ isRecurring, recurringPeriod: isRecurring ? recurringPeriod : null })}
               disabled={isCreating}
               className={`flex-1 py-3.5 rounded-2xl items-center ${
                 isCreating ? 'bg-primary/50' : 'bg-primary active:bg-primary/90'

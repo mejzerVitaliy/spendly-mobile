@@ -17,7 +17,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import { BottomSheet, BottomSheetRef, ConfirmDialog } from '@/shared/ui';
+import { AppHeader, BottomSheet, BottomSheetRef, ConfirmDialog } from '@/shared/ui';
 import { BottomSheetView } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import { useTransactions } from '@/shared/hooks';
@@ -166,6 +166,7 @@ export function HomeScreen() {
             stickyThreshold.value = e.nativeEvent.layout.height;
           }}
         >
+          <AppHeader />
           <View style={styles.scrollableHeader}>
             <PeriodSelector store="home" />
             <TransactionSearch onSearchChange={handleSearchChange} />

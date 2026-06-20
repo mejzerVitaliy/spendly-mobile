@@ -106,9 +106,9 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
     }
   };
 
-  const handleConfirm = async () => {
+  const handleConfirm = async ({ isRecurring, recurringPeriod }: { isRecurring: boolean; recurringPeriod: import('@/shared/types/transactions/transactions').RecurringPeriod | null }) => {
     try {
-      await createFromPreviewMutation.mutateAsync(preview);
+      await createFromPreviewMutation.mutateAsync({ previews: preview, isRecurring, recurringPeriod });
       const count = preview.length;
       setShowConfirm(false);
       setPreview([]);

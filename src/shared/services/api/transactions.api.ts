@@ -1,4 +1,4 @@
-import { CreateTransactionRequest, CreateTransactionResponse, CreateTransferRequest, CreateTransferResponse, GetAllTransactionsResponse, GetTransactionByIdResponse, ParseTextTransactionRequest, ParseTextTransactionResponse, ParseVoiceTransactionResponse, PreviewTransactionResponse, UpdateTransactionRequest, UpdateTransactionResponse, UpdateTransferRequest, UpdateTransferResponse } from "@/shared/types";
+import { CreateTransactionRequest, CreateTransactionResponse, CreateTransferRequest, CreateTransferResponse, GetAllTransactionsResponse, GetRecurringDueResponse, GetTransactionByIdResponse, ParseTextTransactionRequest, ParseTextTransactionResponse, ParseVoiceTransactionResponse, PreviewTransactionResponse, ProcessRecurringResponse, UpdateTransactionRequest, UpdateTransactionResponse, UpdateTransferRequest, UpdateTransferResponse } from "@/shared/types";
 import { apiClient } from "./api";
 
 const create = async (request: CreateTransactionRequest): Promise<CreateTransactionResponse> => {
@@ -88,6 +88,21 @@ const updateTransfer = async (transferGroupId: string, request: UpdateTransferRe
   return response.data;
 };
 
+const getRecurringDue = async (): Promise<GetRecurringDueResponse> => {
+  const response = await apiClient.get("/transaction/recurring/due");
+  return response.data;
+};
+
+const processRecurring = async (id: string): Promise<ProcessRecurringResponse> => {
+  const response = await apiClient.post(`/transaction/recurring/${id}/process`);
+  return response.data;
+};
+
+const getRecurringProcessedToday = async (): Promise<{ data: { count: number } }> => {
+  const response = await apiClient.get('/transaction/recurring/processed-today');
+  return response.data;
+};
+
 export const transactionsApi = {
   create,
   createTransfer,
@@ -100,5 +115,8 @@ export const transactionsApi = {
   parseVoice,
   previewText,
   previewVoice,
+  getRecurringDue,
+  processRecurring,
+  getRecurringProcessedToday,
 };
 
