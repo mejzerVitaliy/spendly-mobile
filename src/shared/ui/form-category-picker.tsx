@@ -1,7 +1,9 @@
 import { useCategories } from '@/shared/hooks';
 import { CategoryType } from '@/shared/types';
+import { getCategoryName } from '@/shared/utils';
 import { useMemo } from 'react';
 import { Control, FieldValues, Path } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { FormPicker, PickerItem } from './form-picker';
 
 interface FormCategoryPickerProps<T extends FieldValues> {
@@ -20,6 +22,7 @@ export function FormCategoryPicker<T extends FieldValues>({
   transactionType = 'EXPENSE',
 }: FormCategoryPickerProps<T>) {
   const { getAllQuery, getFavoritesQuery } = useCategories();
+  const { i18n, t } = useTranslation();
 
   const items: PickerItem[] = useMemo(() => {
     const categories = getAllQuery.data?.data ?? [];
@@ -39,12 +42,12 @@ export function FormCategoryPicker<T extends FieldValues>({
 
     return sorted.map((category) => ({
       id: category.id,
-      label: category.name,
+      label: getCategoryName(category, i18n.language),
       value: category.id,
       color: category.color,
       isFavorite: favoriteIds.includes(category.id),
     }));
-  }, [getAllQuery.data, getFavoritesQuery.data, transactionType]);
+  }, [getAllQuery.data, getFavoritesQuery.data, transactionType, i18n.language]);
 
   return (
     <FormPicker
@@ -54,9 +57,9 @@ export function FormCategoryPicker<T extends FieldValues>({
       error={error}
       items={items}
       isLoading={getAllQuery.isLoading}
-      placeholder="Select category"
-      searchPlaceholder="Search categories..."
-      modalTitle="Select Category"
+      placeholder={t('categories.searchPlaceholder')}
+      searchPlaceholder={t('categories.searchPlaceholder')}
+      modalTitle={t('transaction.category')}
     />
   );
 }

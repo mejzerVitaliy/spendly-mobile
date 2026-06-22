@@ -40,16 +40,18 @@ const useWallets = (includeArchived = false) => {
   const archiveMutation = useMutation({
     mutationKey: ['wallets', 'archive'],
     mutationFn: (id: string) => walletApi.archive(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['wallets'], exact: false, refetchType: 'all' });
+      await queryClient.refetchQueries({ queryKey: ['wallets'], exact: false, type: 'active' });
     },
   });
 
   const unarchiveMutation = useMutation({
     mutationKey: ['wallets', 'unarchive'],
     mutationFn: (id: string) => walletApi.unarchive(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['wallets'], exact: false, refetchType: 'all' });
+      await queryClient.refetchQueries({ queryKey: ['wallets'], exact: false, type: 'active' });
     },
   });
 

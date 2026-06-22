@@ -28,8 +28,14 @@ const updateFavorites = async (
   return data;
 };
 
+const getRate = async (from: string, to: string): Promise<{ data: { rate: number; from: string; to: string } }> => {
+  const { data } = await apiClient.get('/currency/rate', { params: { from, to } });
+  return data;
+};
+
 export const currencyApi = {
   getAll,
   getFavorites,
   updateFavorites,
+  getRate,
 };

@@ -103,6 +103,19 @@ interface ChangePasswordResponse extends ApiResponse<null> {}
 
 interface DeleteAccountResponse extends ApiResponse<null> {}
 
+interface ForgotPasswordRequest {
+  email: string;
+}
+
+interface ForgotPasswordResponse extends ApiResponse<null> {}
+
+interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}
+
+interface ResetPasswordResponse extends ApiResponse<null> {}
+
 export {
   AuthStore, GetMeResponse, GuestRequest, GuestResponse,
   LoginRequest, LoginResponse, RefreshResponse,
@@ -112,6 +125,8 @@ export {
   ChangePasswordRequest, ChangePasswordResponse,
   DeleteAccountResponse,
   UpgradeGuestRequest, UpgradeGuestResponse,
-  User, UserType, VerifyTwoFactorRequest
+  User, UserType, VerifyTwoFactorRequest,
+  ForgotPasswordRequest, ForgotPasswordResponse,
+  ResetPasswordRequest, ResetPasswordResponse,
 };
 

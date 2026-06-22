@@ -43,6 +43,7 @@ interface ReportsCategoryChartRequest {
   startDate?: string
   endDate?: string
   type?: TransactionType
+  language?: string
 }
 
 interface ReportsCategoryChartResponse

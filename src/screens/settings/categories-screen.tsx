@@ -1,5 +1,6 @@
 import { useCategories } from '@/shared/hooks';
 import { CategoryDto } from '@/shared/types';
+import { getCategoryName } from '@/shared/utils';
 import { SegmentedControl, SettingsHeader } from '@/shared/ui';
 import { colors } from '@/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +16,7 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 export function CategoriesScreen() {
   const { getAllQuery, getFavoritesQuery, updateFavoritesMutation } = useCategories();
@@ -22,6 +24,7 @@ export function CategoriesScreen() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'EXPENSE' | 'INCOME'>('EXPENSE');
   const [refreshing, setRefreshing] = useState(false);
+  const { t } = useTranslation();
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -61,7 +64,7 @@ export function CategoriesScreen() {
       next = selectedIds.filter((c) => c !== categoryId);
     } else {
       if (selectedIds.length >= 10) {
-        Toast.show({ type: 'info', text1: 'Limit reached', text2: 'Maximum 10 favorites allowed' });
+        Toast.show({ type: 'info', text1: t('categories.limitReached'), text2: t('categories.limitReachedDesc') });
         return;
       }
       next = [...selectedIds, categoryId];
@@ -73,12 +76,17 @@ export function CategoriesScreen() {
       await updateFavoritesMutation.mutateAsync({ categoryIds: next });
     } catch (e: any) {
       setSelectedIds(previous);
-      Toast.show({ type: 'error', text1: 'Error', text2: e?.response?.data?.message || 'Failed to update' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: e?.response?.data?.message || t('categories.failedUpdate') });
     }
   };
 
   const isLoading = getAllQuery.isLoading || getFavoritesQuery.isLoading;
   const isError = getAllQuery.isError || getFavoritesQuery.isError;
+
+  const tabOptions = [
+    { label: t('categories.expenses'), value: 'EXPENSE' as const },
+    { label: t('categories.income'), value: 'INCOME' as const },
+  ];
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -97,11 +105,10 @@ export function CategoriesScreen() {
       >
         <View className="px-5 py-4">
           <SettingsHeader
-            title="Categories"
-            description="Pin up to 10 favorites for quick access when adding transactions"
+            title={t('categories.title')}
+            description={t('categories.description')}
           />
 
-          {/* Search */}
           <View
             className="flex-row items-center rounded-2xl border px-4 mb-4"
             style={{ backgroundColor: colors.input, borderColor: colors.border }}
@@ -110,7 +117,7 @@ export function CategoriesScreen() {
             <TextInput
               value={search}
               onChangeText={setSearch}
-              placeholder="Search categories..."
+              placeholder={t('categories.searchPlaceholder')}
               placeholderTextColor={colors.mutedForeground}
               style={{
                 flex: 1,
@@ -127,20 +134,15 @@ export function CategoriesScreen() {
             )}
           </View>
 
-          {/* Tabs */}
           <SegmentedControl
             value={activeTab}
             onChange={setActiveTab}
-            options={[
-              { label: 'Expenses', value: 'EXPENSE' },
-              { label: 'Income', value: 'INCOME' },
-            ]}
+            options={tabOptions}
           />
 
-          {/* Counter bar */}
           <View className="flex-row items-center justify-between mt-5 mb-3">
             <Text className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
-              Favorites
+              {t('categories.favorites')}
             </Text>
             <View
               className="px-2.5 py-0.5 rounded-full"
@@ -163,14 +165,12 @@ export function CategoriesScreen() {
             </View>
           </View>
 
-          {/* Loading */}
           {isLoading && (
             <View className="py-12 items-center justify-center">
               <ActivityIndicator size="large" color={colors.primary} />
             </View>
           )}
 
-          {/* Error */}
           {isError && !isLoading && (
             <View
               className="rounded-2xl p-4 items-center"
@@ -178,19 +178,20 @@ export function CategoriesScreen() {
             >
               <Ionicons name="alert-circle-outline" size={24} color={colors.destructive} />
               <Text className="text-destructive text-sm font-medium mt-2 text-center">
-                Failed to load categories. Pull to refresh.
+                {t('categories.failedLoad')}
               </Text>
             </View>
           )}
 
-          {/* Category list */}
           {!isLoading && !isError && (
             <>
               {filteredCategories.length === 0 ? (
                 <View className="py-12 items-center justify-center">
                   <Ionicons name="search-outline" size={32} color={colors.mutedForeground} />
                   <Text className="text-muted-foreground text-sm mt-3 text-center">
-                    {search ? `No results for "${search}"` : 'No categories'}
+                    {search
+                      ? t('categories.noResults', { query: search })
+                      : t('categories.noCategories')}
                   </Text>
                 </View>
               ) : (
@@ -233,6 +234,7 @@ interface CategoryRowProps {
 }
 
 function CategoryRow({ category, selected, onPress, disabled, showSeparator }: CategoryRowProps) {
+  const { i18n } = useTranslation();
   return (
     <>
       <Pressable
@@ -241,7 +243,6 @@ function CategoryRow({ category, selected, onPress, disabled, showSeparator }: C
         className="flex-row items-center px-4 py-3.5 active:opacity-70"
         style={selected ? { backgroundColor: 'rgba(34,211,238,0.06)' } : undefined}
       >
-        {/* Color dot with ring */}
         <View
           className="w-10 h-10 rounded-full items-center justify-center mr-3"
           style={{
@@ -256,15 +257,13 @@ function CategoryRow({ category, selected, onPress, disabled, showSeparator }: C
           />
         </View>
 
-        {/* Name */}
         <Text
           className="flex-1 text-[15px] font-semibold"
           style={{ color: selected ? colors.foreground : colors.secondaryForeground }}
         >
-          {category.name}
+          {getCategoryName(category, i18n.language)}
         </Text>
 
-        {/* Checkmark / placeholder */}
         {selected ? (
           <View
             className="w-7 h-7 rounded-full items-center justify-center"
@@ -282,15 +281,7 @@ function CategoryRow({ category, selected, onPress, disabled, showSeparator }: C
         )}
       </Pressable>
 
-      {showSeparator && (
-        <View
-          style={{
-            height: 1,
-            backgroundColor: colors.glass.border,
-            marginLeft: 60,
-          }}
-        />
-      )}
+      {showSeparator && <View className="h-px bg-border" />}
     </>
   );
 }

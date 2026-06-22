@@ -1,10 +1,13 @@
 import { useTransactions } from '@/shared/hooks/transactions/use-transactions';
+import { ParsedTransactionPreview } from '@/shared/types';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { colors } from '@/shared/theme';
 import Toast from 'react-native-toast-message';
+import { useTranslation } from 'react-i18next';
+import { AIConfirmationDialog } from '@/shared/ui/ai-confirmation-dialog';
 
 interface CreateTransactionVoiceProps {
   onSuccess?: () => void;
@@ -15,9 +18,12 @@ type RecordingState = 'idle' | 'recording' | 'processing';
 const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
   const [state, setState] = useState<RecordingState>('idle');
   const [duration, setDuration] = useState(0);
+  const [preview, setPreview] = useState<ParsedTransactionPreview[]>([]);
+  const [showConfirm, setShowConfirm] = useState(false);
   const recordingRef = useRef<Audio.Recording | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const { parseVoiceMutation } = useTransactions();
+  const { previewVoiceMutation, createFromPreviewMutation } = useTransactions();
+  const { t } = useTranslation();
 
   useEffect(() => {
     return () => {
@@ -32,10 +38,9 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
       if (!granted) {
         Toast.show({
           type: 'error',
-          text1: 'Microphone access denied',
-          text2: 'Please allow microphone access in settings',
+          text1: t('voiceAI.micDeniedTitle'),
+          text2: t('voiceAI.micDeniedDesc'),
         });
-
         return;
       }
 
@@ -58,13 +63,13 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
     } catch {
       Toast.show({
         type: 'error',
-        text1: 'Could not start recording',
-        text2: 'Please try again',
+        text1: t('voiceAI.recordingError'),
+        text2: t('voiceAI.recordingErrorDesc'),
       });
     }
   };
 
-  const stopAndSubmit = async () => {
+  const stopAndPreview = async () => {
     if (!recordingRef.current) return;
 
     if (timerRef.current) {
@@ -83,33 +88,48 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
 
       if (!uri) throw new Error('No audio URI');
 
-      const result = await parseVoiceMutation.mutateAsync(uri);
-      const count = result.data.length;
-
+      const result = await previewVoiceMutation.mutateAsync(uri);
       setState('idle');
       setDuration(0);
-      onSuccess?.();
-
-      Toast.show({
-        type: 'success',
-        text1: 'Transactions created',
-        text2: `${count} transaction${count > 1 ? 's' : ''} added successfully`,
-      });
-    } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      const message =
-        err?.response?.data?.message ?? 'Failed to process voice. Please try again.';
-
+      setPreview(result.data.transactions);
+      setShowConfirm(true);
+    } catch {
       setState('idle');
       setDuration(0);
       recordingRef.current = null;
 
       Toast.show({
         type: 'error',
-        text1: 'Could not create transaction',
-        text2: message,
+        text1: t('voiceAI.errorTitle'),
+        text2: t('voiceAI.errorDefault'),
       });
     }
+  };
+
+  const handleConfirm = async ({ isRecurring, recurringPeriod }: { isRecurring: boolean; recurringPeriod: import('@/shared/types/transactions/transactions').RecurringPeriod | null }) => {
+    try {
+      await createFromPreviewMutation.mutateAsync({ previews: preview, isRecurring, recurringPeriod });
+      const count = preview.length;
+      setShowConfirm(false);
+      setPreview([]);
+      onSuccess?.();
+      Toast.show({
+        type: 'success',
+        text1: t('voiceAI.created'),
+        text2: t(count === 1 ? 'voiceAI.createdDesc_one' : 'voiceAI.createdDesc_other', { count }),
+      });
+    } catch {
+      Toast.show({
+        type: 'error',
+        text1: t('voiceAI.errorTitle'),
+        text2: t('voiceAI.errorDefault'),
+      });
+    }
+  };
+
+  const handleCancel = () => {
+    setShowConfirm(false);
+    setPreview([]);
   };
 
   const formatDuration = (s: number) => {
@@ -119,81 +139,92 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
   };
 
   return (
-    <View className="px-5 pt-4 pb-8 items-center">
-      <Text className="text-lg font-bold text-foreground mb-1">Voice Input</Text>
-      <Text className="text-sm text-muted-foreground mb-8 text-center">
-        Tap the button and describe your transaction
-      </Text>
+    <>
+      <View className="px-5 pt-4 pb-8 items-center">
+        <Text className="text-lg font-bold text-foreground mb-1">{t('voiceAI.title')}</Text>
+        <Text className="text-sm text-muted-foreground mb-8 text-center">
+          {t('voiceAI.subtitle')}
+        </Text>
 
-      {state === 'processing' ? (
-        <View className="items-center gap-4">
-          <View
-            style={{
-              width: 96,
-              height: 96,
-              borderRadius: 48,
-              backgroundColor: colors.primary + '26',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <ActivityIndicator size="large" color={colors.primary} />
+        {state === 'processing' ? (
+          <View className="items-center gap-4">
+            <View
+              style={{
+                width: 96,
+                height: 96,
+                borderRadius: 48,
+                backgroundColor: colors.primary + '26',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+            <Text className="text-muted-foreground text-sm">{t('voiceAI.processing')}</Text>
           </View>
-          <Text className="text-muted-foreground text-sm">Processing...</Text>
-        </View>
-      ) : (
-        <View className="items-center gap-4">
-          <Pressable
-            onPress={state === 'idle' ? startRecording : stopAndSubmit}
-            style={({ pressed }) => ({
-              width: 96,
-              height: 96,
-              borderRadius: 48,
-              backgroundColor:
-                state === 'recording'
-                  ? 'rgba(239,68,68,0.15)'
-                  : 'rgba(249,115,22,0.15)',
-              borderWidth: 2,
-              borderColor: state === 'recording' ? '#EF4444' : '#F97316',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: pressed ? 0.7 : 1,
-            })}
-          >
-            <Ionicons
-              name={state === 'recording' ? 'stop' : 'mic'}
-              size={40}
-              color={state === 'recording' ? '#EF4444' : '#F97316'}
-            />
-          </Pressable>
+        ) : (
+          <View className="items-center gap-4">
+            <Pressable
+              onPress={state === 'idle' ? startRecording : stopAndPreview}
+              style={({ pressed }) => ({
+                width: 96,
+                height: 96,
+                borderRadius: 48,
+                backgroundColor:
+                  state === 'recording'
+                    ? 'rgba(239,68,68,0.15)'
+                    : 'rgba(249,115,22,0.15)',
+                borderWidth: 2,
+                borderColor: state === 'recording' ? '#EF4444' : '#F97316',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              <Ionicons
+                name={state === 'recording' ? 'stop' : 'mic'}
+                size={40}
+                color={state === 'recording' ? '#EF4444' : '#F97316'}
+              />
+            </Pressable>
 
-          {state === 'recording' ? (
-            <View className="items-center gap-1">
-              <View className="flex-row items-center gap-2">
-                <View
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor: '#EF4444',
-                  }}
-                />
-                <Text className="text-foreground font-semibold text-base">
-                  {formatDuration(duration)}
+            {state === 'recording' ? (
+              <View className="items-center gap-1">
+                <View className="flex-row items-center gap-2">
+                  <View
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: '#EF4444',
+                    }}
+                  />
+                  <Text className="text-foreground font-semibold text-base">
+                    {formatDuration(duration)}
+                  </Text>
+                </View>
+                <Text className="text-muted-foreground text-sm">
+                  {t('voiceAI.tapToStop')}
                 </Text>
               </View>
+            ) : (
               <Text className="text-muted-foreground text-sm">
-                Tap to stop and create
+                {t('voiceAI.tapToStart')}
               </Text>
-            </View>
-          ) : (
-            <Text className="text-muted-foreground text-sm">
-              Tap to start recording
-            </Text>
-          )}
-        </View>
-      )}
-    </View>
+            )}
+          </View>
+        )}
+      </View>
+
+      <AIConfirmationDialog
+        visible={showConfirm}
+        transactions={preview}
+        isCreating={createFromPreviewMutation.isPending}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+        onEditSuccess={onSuccess}
+      />
+    </>
   );
 };
 

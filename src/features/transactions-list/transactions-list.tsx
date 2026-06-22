@@ -1,13 +1,15 @@
 import { useGetAllTransactions } from '@/shared/hooks';
-import { formatCompact } from '@/shared/utils';
+import { formatCompact, getCategoryName } from '@/shared/utils';
 import { Transaction } from '@/shared/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useMemo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 
 interface TransactionsListProps {
   onTransactionPress?: (transaction: Transaction) => void;
+  onTransactionLongPress?: (transaction: Transaction) => void;
   startDate?: string;
   endDate?: string;
   search?: string;
@@ -48,11 +50,15 @@ function SkeletonRow() {
 function TransactionRow({
   item,
   onPress,
+  onLongPress,
   index,
+  unknownLabel,
 }: {
   item: Transaction;
   onPress?: () => void;
+  onLongPress?: () => void;
   index: number;
+  unknownLabel: string;
 }) {
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(12);
@@ -70,30 +76,41 @@ function TransactionRow({
     transform: [{ translateY: translateY.value }],
   }));
 
+  const { i18n, t } = useTranslation();
+  const isTransfer = !!item.transferGroupId;
   const isIncome = item.type === 'INCOME';
   const amountColor = isIncome ? '#22C55E' : '#EF4444';
   const iconBg = isIncome ? '#22C55E20' : '#EF444420';
+  const transferColor = '#22D3EE';
 
   return (
     <Animated.View style={style}>
       <Pressable
         onPress={onPress}
+        onLongPress={onLongPress}
+        delayLongPress={350}
         className="flex-row items-center bg-card rounded-2xl px-4 py-3 mb-2 border border-border active:opacity-70"
       >
         <View
           className="w-10 h-10 rounded-full items-center justify-center mr-3"
-          style={{ backgroundColor: item.category?.color ? `${item.category.color}25` : iconBg }}
+          style={{
+            backgroundColor: isTransfer
+              ? `${transferColor}20`
+              : item.category?.color ? `${item.category.color}25` : iconBg,
+          }}
         >
           <Ionicons
-            name={isIncome ? 'arrow-down' : 'arrow-up'}
+            name={isTransfer ? 'swap-horizontal' : isIncome ? 'arrow-down' : 'arrow-up'}
             size={16}
-            color={item.category?.color ?? amountColor}
+            color={isTransfer ? transferColor : (item.category?.color ?? amountColor)}
           />
         </View>
 
         <View className="flex-1 mr-2">
           <Text className="text-sm font-semibold text-foreground" numberOfLines={1}>
-            {item.category?.name ?? 'Unknown'}
+            {isTransfer
+              ? t('transaction.transferLabel')
+              : item.category ? getCategoryName(item.category, i18n.language) : unknownLabel}
           </Text>
           {item.description ? (
             <Text className="text-xs text-muted-foreground mt-0.5" numberOfLines={1}>
@@ -103,8 +120,8 @@ function TransactionRow({
         </View>
 
         <View className="items-end">
-          <Text className="text-sm font-bold" style={{ color: amountColor }}>
-            {isIncome ? '+' : '-'}{formatCompact(item.amount)} {item.currencyCode}
+          <Text className="text-sm font-bold" style={{ color: isTransfer ? '#FFFFFF' : amountColor }}>
+            {!isTransfer && (isIncome ? '+' : '-')}{formatCompact(item.amount)} {item.currencyCode}
           </Text>
           {item.currencyCode !== item.mainCurrencyCode && (
             <Text className="text-xs text-muted-foreground mt-0.5">
@@ -117,14 +134,16 @@ function TransactionRow({
   );
 }
 
-export function TransactionsList({ onTransactionPress, startDate, endDate, search }: TransactionsListProps) {
+export function TransactionsList({ onTransactionPress, onTransactionLongPress, startDate, endDate, search }: TransactionsListProps) {
   const query = useGetAllTransactions({ startDate, endDate, search });
+  const { t, i18n } = useTranslation();
 
   const groupedTransactions = useMemo(() => {
     if (!query.data?.data) return {};
     const grouped: GroupedTransactions = {};
-    query.data.data.forEach((transaction) => {
-      const date = new Date(transaction.date).toLocaleDateString('en-US', {
+    const filtered = query.data.data.filter(tx => !tx.transferGroupId || tx.type !== 'INCOME');
+    filtered.forEach((transaction) => {
+      const date = new Date(transaction.date).toLocaleDateString(i18n.language === 'ru' ? 'ru-RU' : 'en-US', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
@@ -133,7 +152,7 @@ export function TransactionsList({ onTransactionPress, startDate, endDate, searc
       grouped[date].push(transaction);
     });
     return grouped;
-  }, [query.data]);
+  }, [query.data, i18n.language]);
 
   if (query.isLoading) {
     return (
@@ -151,7 +170,7 @@ export function TransactionsList({ onTransactionPress, startDate, endDate, searc
       <View className="mt-4 py-10 items-center justify-center">
         <Ionicons name="alert-circle-outline" size={32} color="#EF4444" />
         <Text className="text-destructive text-center mt-2 text-sm">
-          Failed to load transactions
+          {t('home.failedToLoad')}
         </Text>
       </View>
     );
@@ -162,13 +181,13 @@ export function TransactionsList({ onTransactionPress, startDate, endDate, searc
 
   return (
     <View className="mt-4">
-      <Text className="text-lg font-bold text-foreground mb-3">Transactions</Text>
+      <Text className="text-lg font-bold text-foreground mb-3">{t('home.transactions')}</Text>
 
       {dateKeys.length === 0 ? (
         <View className="py-12 items-center justify-center">
           <Ionicons name="receipt-outline" size={40} color="#374151" />
           <Text className="text-muted-foreground text-center mt-3 text-sm">
-            No transactions for this period
+            {t('home.noTransactions')}
           </Text>
         </View>
       ) : (
@@ -184,7 +203,9 @@ export function TransactionsList({ onTransactionPress, startDate, endDate, searc
                   key={item.id}
                   item={item}
                   onPress={() => onTransactionPress?.(item)}
+                  onLongPress={() => onTransactionLongPress?.(item)}
                   index={idx}
+                  unknownLabel={t('common.unknown')}
                 />
               );
             })}

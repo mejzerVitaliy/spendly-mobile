@@ -15,17 +15,19 @@ import { BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-shee
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
+import { useTranslation } from 'react-i18next';
 
 // ─── Guest Screen ────────────────────────────────────────────────────────────
 
 function GuestAccountScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView className="flex-1">
         <View className="px-5 py-5">
-          <SettingsHeader title="Account" description="You are currently using a guest account" />
+          <SettingsHeader title={t('account.title')} description={t('account.descriptionGuest')} />
 
           <View className="rounded-3xl p-5 mb-6 border border-white/[0.08]" style={{ backgroundColor: colors.card }}>
             <View className="w-14 h-14 rounded-2xl items-center justify-center mb-4"
@@ -33,15 +35,15 @@ function GuestAccountScreen() {
             >
               <Ionicons name="person-outline" size={24} color={colors.primary} />
             </View>
-            <Text className="text-[16px] font-bold text-foreground mb-1">Save your progress</Text>
+            <Text className="text-[16px] font-bold text-foreground mb-1">{t('account.saveProgress')}</Text>
             <Text className="text-[14px] text-muted-foreground leading-[20px]">
-              Create an account to back up your data and access it from any device. All your current data will be preserved.
+              {t('account.saveProgressDesc')}
             </Text>
           </View>
 
           <View className="gap-3">
-            <Button title="Create Account" onPress={() => router.push('/settings/create-account' as any)} />
-            <Button title="Sign in to Existing Account" variant="outline" onPress={() => router.push('/settings/login' as any)} />
+            <Button title={t('account.createAccount')} onPress={() => router.push('/settings/create-account' as any)} />
+            <Button title={t('account.signInExisting')} variant="outline" onPress={() => router.push('/settings/login' as any)} />
           </View>
         </View>
       </ScrollView>
@@ -55,15 +57,14 @@ export function AccountScreen() {
   const { user } = useAuthStore();
   const { logoutMutation } = useAuth();
   const { updateEmailMutation, changePasswordMutation, deleteAccountMutation } = useProfile();
+  const { t } = useTranslation();
 
   const [showEditEmail, setShowEditEmail] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Edit email form
   const [newEmail, setNewEmail] = useState('');
-  // Change password form
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -81,15 +82,15 @@ export function AccountScreen() {
 
   const handleSaveEmail = async () => {
     if (!newEmail.trim() || !newEmail.includes('@')) {
-      Toast.show({ type: 'error', text1: 'Invalid email', text2: 'Please enter a valid email address' });
+      Toast.show({ type: 'error', text1: t('account.emailInvalid'), text2: t('account.emailInvalidDesc') });
       return;
     }
     try {
       await updateEmailMutation.mutateAsync({ email: newEmail.trim().toLowerCase() });
       setShowEditEmail(false);
-      Toast.show({ type: 'success', text1: 'Email updated' });
+      Toast.show({ type: 'success', text1: t('account.emailUpdated') });
     } catch (e: any) {
-      Toast.show({ type: 'error', text1: 'Error', text2: e?.response?.data?.message ?? 'Failed to update email' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: e?.response?.data?.message ?? t('account.failedUpdateEmail') });
     }
   };
 
@@ -102,23 +103,23 @@ export function AccountScreen() {
 
   const handleSavePassword = async () => {
     if (!currentPassword) {
-      Toast.show({ type: 'error', text1: 'Required', text2: 'Enter your current password' });
+      Toast.show({ type: 'error', text1: t('account.currentPasswordRequired'), text2: t('account.currentPasswordRequiredDesc') });
       return;
     }
     if (newPassword.length < 6) {
-      Toast.show({ type: 'error', text1: 'Too short', text2: 'New password must be at least 6 characters' });
+      Toast.show({ type: 'error', text1: t('account.passwordTooShort'), text2: t('account.passwordTooShortDesc') });
       return;
     }
     if (newPassword !== confirmPassword) {
-      Toast.show({ type: 'error', text1: 'Mismatch', text2: 'Passwords do not match' });
+      Toast.show({ type: 'error', text1: t('account.passwordMismatch'), text2: t('account.passwordMismatchDesc') });
       return;
     }
     try {
       await changePasswordMutation.mutateAsync({ currentPassword, newPassword });
       setShowChangePassword(false);
-      Toast.show({ type: 'success', text1: 'Password changed' });
+      Toast.show({ type: 'success', text1: t('account.passwordChanged') });
     } catch (e: any) {
-      Toast.show({ type: 'error', text1: 'Error', text2: e?.response?.data?.message ?? 'Failed to change password' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: e?.response?.data?.message ?? t('account.failedChangePassword') });
     }
   };
 
@@ -132,7 +133,7 @@ export function AccountScreen() {
     try {
       await deleteAccountMutation.mutateAsync();
     } catch (e: any) {
-      Toast.show({ type: 'error', text1: 'Error', text2: e?.response?.data?.message ?? 'Failed to delete account' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: e?.response?.data?.message ?? t('account.failedDelete') });
     }
   };
 
@@ -140,9 +141,8 @@ export function AccountScreen() {
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="px-5 py-5">
-          <SettingsHeader title="Account" description="Manage your personal information and security" />
+          <SettingsHeader title={t('account.title')} description={t('account.descriptionRegistered')} />
 
-          {/* Avatar + email hero */}
           <View className="items-center py-6 mb-6">
             <View
               className="w-20 h-20 rounded-full items-center justify-center mb-3"
@@ -156,49 +156,38 @@ export function AccountScreen() {
               style={{ backgroundColor: 'rgba(34,211,238,0.1)', borderWidth: 1, borderColor: 'rgba(34,211,238,0.2)' }}
             >
               <Ionicons name="checkmark-circle" size={12} color={colors.primary} />
-              <Text className="text-[11px] font-semibold" style={{ color: colors.primary }}>Registered</Text>
+              <Text className="text-[11px] font-semibold" style={{ color: colors.primary }}>{t('account.registered')}</Text>
             </View>
           </View>
 
-          {/* Account actions */}
           <Text className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-            Account
+            {t('account.sectionAccount')}
           </Text>
           <View className="rounded-3xl overflow-hidden mb-5" style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.glass.border }}>
-            <ActionRow
-              icon="mail-outline"
-              label="Edit Email"
-              onPress={handleOpenEditEmail}
-            />
-            <View style={{ height: 1, backgroundColor: colors.glass.border, marginLeft: 56 }} />
-            <ActionRow
-              icon="lock-closed-outline"
-              label="Change Password"
-              onPress={handleOpenChangePassword}
-            />
+            <ActionRow icon="mail-outline" label={t('account.editEmail')} onPress={handleOpenEditEmail} />
+            <View className="h-px bg-border" />
+            <ActionRow icon="lock-closed-outline" label={t('account.changePassword')} onPress={handleOpenChangePassword} />
           </View>
 
-          {/* Session */}
           <Text className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-            Session
+            {t('account.sectionSession')}
           </Text>
           <View className="rounded-3xl overflow-hidden mb-5" style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.glass.border }}>
             <ActionRow
               icon="log-out-outline"
-              label="Log Out"
+              label={t('account.logOut')}
               onPress={() => setShowLogoutConfirm(true)}
               loading={logoutMutation.isPending}
             />
           </View>
 
-          {/* Danger zone */}
           <Text className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: 'rgba(239,68,68,0.7)' }}>
-            Danger Zone
+            {t('account.dangerZone')}
           </Text>
           <View className="rounded-3xl overflow-hidden" style={{ backgroundColor: 'rgba(239,68,68,0.05)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.15)' }}>
             <ActionRow
               icon="trash-outline"
-              label="Delete Account"
+              label={t('account.deleteAccount')}
               destructive
               onPress={() => setShowDeleteConfirm(true)}
               loading={deleteAccountMutation.isPending}
@@ -206,7 +195,7 @@ export function AccountScreen() {
           </View>
 
           <Text className="text-[12px] text-muted-foreground text-center mt-4 leading-[18px]">
-            Deleting your account is permanent and cannot be undone.{'\n'}All your data will be removed.
+            {t('account.deleteAccountDesc')}
           </Text>
 
           <View className="h-8" />
@@ -224,7 +213,7 @@ export function AccountScreen() {
         <BottomSheetScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View className="px-5 pt-1.5 pb-10">
             <View className="flex-row justify-between items-center mb-7">
-              <Text className="text-[20px] font-bold text-foreground">Edit Email</Text>
+              <Text className="text-[20px] font-bold text-foreground">{t('account.editEmail')}</Text>
               <Pressable
                 onPress={() => setShowEditEmail(false)}
                 className="w-8 h-8 rounded-full bg-secondary border border-white/10 items-center justify-center active:opacity-70"
@@ -234,7 +223,7 @@ export function AccountScreen() {
             </View>
 
             <Text className="text-[12px] font-semibold text-muted-foreground uppercase tracking-widest mb-2.5">
-              New Email Address
+              {t('account.newEmailAddress')}
             </Text>
             <BottomSheetTextInput
               value={newEmail}
@@ -265,7 +254,7 @@ export function AccountScreen() {
             >
               {updateEmailMutation.isPending
                 ? <ActivityIndicator size="small" color={colors.primaryForeground} />
-                : <Text className="text-[16px] font-bold text-primary-foreground">Save Email</Text>
+                : <Text className="text-[16px] font-bold text-primary-foreground">{t('account.saveEmail')}</Text>
               }
             </Pressable>
           </View>
@@ -283,7 +272,7 @@ export function AccountScreen() {
         <BottomSheetScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View className="px-5 pt-1.5 pb-10">
             <View className="flex-row justify-between items-center mb-7">
-              <Text className="text-[20px] font-bold text-foreground">Change Password</Text>
+              <Text className="text-[20px] font-bold text-foreground">{t('account.changePassword')}</Text>
               <Pressable
                 onPress={() => setShowChangePassword(false)}
                 className="w-8 h-8 rounded-full bg-secondary border border-white/10 items-center justify-center active:opacity-70"
@@ -292,9 +281,9 @@ export function AccountScreen() {
               </Pressable>
             </View>
 
-            <SheetPasswordField label="Current Password" value={currentPassword} onChange={setCurrentPassword} />
-            <SheetPasswordField label="New Password" value={newPassword} onChange={setNewPassword} hint="Minimum 6 characters" />
-            <SheetPasswordField label="Confirm New Password" value={confirmPassword} onChange={setConfirmPassword} returnKeyType="done" extraMargin />
+            <SheetPasswordField label={t('account.currentPassword')} value={currentPassword} onChange={setCurrentPassword} />
+            <SheetPasswordField label={t('account.newPassword')} value={newPassword} onChange={setNewPassword} hint={t('account.minSixChars')} />
+            <SheetPasswordField label={t('account.confirmNewPassword')} value={confirmPassword} onChange={setConfirmPassword} returnKeyType="done" extraMargin />
 
             <Pressable
               onPress={handleSavePassword}
@@ -304,29 +293,29 @@ export function AccountScreen() {
             >
               {changePasswordMutation.isPending
                 ? <ActivityIndicator size="small" color={colors.primaryForeground} />
-                : <Text className="text-[16px] font-bold text-primary-foreground">Change Password</Text>
+                : <Text className="text-[16px] font-bold text-primary-foreground">{t('account.changePasswordBtn')}</Text>
               }
             </Pressable>
           </View>
         </BottomSheetScrollView>
       </BottomSheet>
 
-      {/* Logout Confirm */}
       <ConfirmDialog
         visible={showLogoutConfirm}
-        title="Log Out"
-        message="Are you sure you want to log out of your account?"
-        confirmText="Log Out"
+        title={t('account.logoutConfirmTitle')}
+        message={t('account.logoutConfirmMessage')}
+        confirmText={t('account.logOut')}
+        cancelText={t('common.cancel')}
         onConfirm={handleLogout}
         onCancel={() => setShowLogoutConfirm(false)}
       />
 
-      {/* Delete Account Confirm */}
       <ConfirmDialog
         visible={showDeleteConfirm}
-        title="Delete Account"
-        message="This will permanently delete your account and all associated data. This action cannot be undone."
-        confirmText="Delete Account"
+        title={t('account.deleteConfirmTitle')}
+        message={t('account.deleteConfirmMessage')}
+        confirmText={t('account.deleteAccount')}
+        cancelText={t('common.cancel')}
         destructive
         onConfirm={handleDeleteAccount}
         onCancel={() => setShowDeleteConfirm(false)}
@@ -357,16 +346,11 @@ function ActionRow({
       className="flex-row items-center px-4 py-4 gap-3 active:opacity-60"
     >
       <View
-        className="w-9 h-9 rounded-2xl items-center justify-center"
-        style={{
-          backgroundColor: destructive ? 'rgba(239,68,68,0.12)' : colors.glass.background,
-          borderWidth: 1,
-          borderColor: destructive ? 'rgba(239,68,68,0.25)' : colors.glass.border,
-        }}
+        className={`w-10 h-10 rounded-xl items-center justify-center ${destructive ? 'bg-red-500/[0.12] border border-red-500/[0.25]' : 'bg-white/[0.05] border border-white/[0.08]'}`}
       >
         {loading
           ? <ActivityIndicator size="small" color={destructive ? colors.destructive : colors.mutedForeground} />
-          : <Ionicons name={icon} size={18} color={destructive ? colors.destructive : colors.mutedForeground} />
+          : <Ionicons name={icon} size={20} color={destructive ? colors.destructive : colors.mutedForeground} />
         }
       </View>
       <Text

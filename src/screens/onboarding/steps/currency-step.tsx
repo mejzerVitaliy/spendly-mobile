@@ -3,6 +3,7 @@ import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-nati
 import { Button, Input } from '@/shared/ui';
 import { currencyApi } from '@/shared/services/api/currency.api';
 import { CurrencyDto } from '@/shared/types';
+import { useTranslation } from 'react-i18next';
 
 interface CurrencyStepProps {
   selected: string;
@@ -15,6 +16,7 @@ export function CurrencyStep({ selected, onSelect, onNext, onBack }: CurrencySte
   const [currencies, setCurrencies] = useState<CurrencyDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const { t } = useTranslation();
 
   useEffect(() => {
     currencyApi.getAll().then((res) => {
@@ -43,14 +45,14 @@ export function CurrencyStep({ selected, onSelect, onNext, onBack }: CurrencySte
   return (
     <View className="flex-1 px-6 pt-8">
       <Text className="text-2xl font-bold text-foreground mb-2">
-        Select your currency
+        {t('onboarding.selectCurrency')}
       </Text>
       <Text className="text-base text-muted-foreground mb-6">
-        Choose the main currency for your wallets.
+        {t('onboarding.selectCurrencyDesc')}
       </Text>
 
-      <Input 
-        placeholder="Search by code or name" 
+      <Input
+        placeholder={t('onboarding.searchCurrency')}
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
@@ -92,10 +94,10 @@ export function CurrencyStep({ selected, onSelect, onNext, onBack }: CurrencySte
 
       <View className="flex-row gap-3 pb-8">
         <View className="flex-1">
-          <Button title="Back" variant="outline" onPress={onBack} />
+          <Button title={t('common.back')} variant="outline" onPress={onBack} />
         </View>
         <View className="flex-1">
-          <Button title="Continue" onPress={onNext} disabled={!selected} />
+          <Button title={t('common.continue')} onPress={onNext} disabled={!selected} />
         </View>
       </View>
     </View>

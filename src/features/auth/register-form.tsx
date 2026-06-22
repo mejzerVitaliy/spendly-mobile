@@ -6,9 +6,11 @@ import { Controller, useForm } from 'react-hook-form';
 import { ScrollView, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { RegisterFormData, registerSchema } from './schemas';
+import { useTranslation } from 'react-i18next';
 
 export function RegisterForm() {
   const { registerMutation } = useAuth();
+  const { t } = useTranslation();
 
   const {
     control,
@@ -31,8 +33,8 @@ export function RegisterForm() {
       await registerMutation.mutateAsync(registerData);
       router.replace('/');
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 'Error';
-      Toast.show({ type: 'error', text1: 'Error', text2: errorMessage });
+      const errorMessage = error?.response?.data?.message || t('common.error');
+      Toast.show({ type: 'error', text1: t('common.error'), text2: errorMessage });
     }
   };
 
@@ -40,13 +42,13 @@ export function RegisterForm() {
     <ScrollView className="w-full">
       <View className="space-y-4">
         <View className="mb-4">
-          <Text className="text-sm font-medium text-foreground mb-2">First Name</Text>
+          <Text className="text-sm font-medium text-foreground mb-2">{t('authRegister.firstName')}</Text>
           <Controller
             control={control}
             name="firstName"
             render={({ field: { onChange, value } }) => (
               <Input
-                placeholder="Type your name"
+                placeholder={t('authRegister.firstNamePlaceholder')}
                 type="text"
                 value={value}
                 onChangeText={onChange}
@@ -57,13 +59,13 @@ export function RegisterForm() {
         </View>
 
         <View className="mb-4">
-          <Text className="text-sm font-medium text-foreground mb-2">Last Name</Text>
+          <Text className="text-sm font-medium text-foreground mb-2">{t('authRegister.lastName')}</Text>
           <Controller
             control={control}
             name="lastName"
             render={({ field: { onChange, value } }) => (
               <Input
-                placeholder="Type your last name"
+                placeholder={t('authRegister.lastNamePlaceholder')}
                 type="text"
                 value={value}
                 onChangeText={onChange}
@@ -74,7 +76,7 @@ export function RegisterForm() {
         </View>
 
         <View className="mb-4">
-          <Text className="text-sm font-medium text-foreground mb-2">Email</Text>
+          <Text className="text-sm font-medium text-foreground mb-2">{t('authRegister.email')}</Text>
           <Controller
             control={control}
             name="email"
@@ -91,7 +93,7 @@ export function RegisterForm() {
         </View>
 
         <View className="mb-4">
-          <Text className="text-sm font-medium text-foreground mb-2">Password</Text>
+          <Text className="text-sm font-medium text-foreground mb-2">{t('authRegister.password')}</Text>
           <Controller
             control={control}
             name="password"
@@ -109,7 +111,7 @@ export function RegisterForm() {
 
         <View className="mb-6">
           <Text className="text-sm font-medium text-foreground mb-2">
-            Confirm Password
+            {t('authRegister.confirmPassword')}
           </Text>
           <Controller
             control={control}
@@ -127,7 +129,7 @@ export function RegisterForm() {
         </View>
 
         <Button
-          title={registerMutation.isPending ? 'Registering...' : 'Register'}
+          title={registerMutation.isPending ? t('authRegister.registering') : t('authRegister.register')}
           onPress={handleSubmit(onSubmit)}
           disabled={registerMutation.isPending}
         />

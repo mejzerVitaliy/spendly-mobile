@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -11,6 +12,7 @@ import {
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import { BottomSheet, type BottomSheetRef } from './bottom-sheet';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BlurView } from 'expo-blur';
 import { colors } from '@/shared/theme';
 
 export interface PickerItem {
@@ -117,11 +119,19 @@ export function FormPicker<T extends FieldValues>({
               noWrapper
               onOpenChange={(open) => { if (!open) setSearch(''); }}
             >
-              <BottomSheetScrollView
-                stickyHeaderIndices={[0]}
-                contentContainerStyle={{ paddingBottom: 16 }}
-              >
-                <View style={styles.sheetHeader}>
+              {/* Glass header — fixed, not scrollable */}
+              <View style={styles.sheetHeader}>
+                {Platform.OS === 'ios' && (
+                  <BlurView
+                    intensity={55}
+                    tint="systemUltraThinMaterialDark"
+                    style={StyleSheet.absoluteFillObject}
+                  />
+                )}
+                <View style={[StyleSheet.absoluteFillObject, {
+                  backgroundColor: Platform.OS === 'ios' ? 'rgba(10,10,10,0.35)' : colors.card,
+                }]} />
+                <View style={styles.sheetHeaderContent}>
                   <Text style={styles.sheetTitle}>{modalTitle}</Text>
                   <View style={styles.searchContainer}>
                     <Ionicons name="search" size={20} color={colors.mutedForeground} />
@@ -139,7 +149,10 @@ export function FormPicker<T extends FieldValues>({
                     )}
                   </View>
                 </View>
+              </View>
 
+              {/* Scrollable list */}
+              <BottomSheetScrollView contentContainerStyle={{ paddingBottom: 16 }}>
                 {isLoading ? (
                   <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={colors.primary} />
@@ -265,12 +278,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   sheetHeader: {
+    overflow: 'hidden',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.glass.border,
+  },
+  sheetHeaderContent: {
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.card,
   },
   sheetTitle: {
     fontSize: 18,

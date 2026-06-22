@@ -170,6 +170,7 @@ enum Category {
 enum TransactionType {
   INCOME = 'INCOME',
   EXPENSE = 'EXPENSE',
+  TRANSFER = 'TRANSFER',
 }
 
 enum ChartType {

@@ -51,7 +51,7 @@ const FormInput = <T extends FieldValues>({
               </View>
             ) : (
               <BottomSheetTextInput
-                className="border border-input rounded-2xl px-4 py-3 text-base text-foreground bg-input"
+                className="border border-border rounded-2xl px-4 py-3 text-base text-foreground bg-input"
                 onBlur={onBlur}
                 onFocus={() => {}}
                 onChangeText={onChange}

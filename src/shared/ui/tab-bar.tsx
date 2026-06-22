@@ -17,8 +17,9 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { colors } from '@/shared/theme';
+import { useCoachTargetsStore } from '@/shared/stores/coach-targets';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const AnimatedText = Animated.createAnimatedComponent(Text);
@@ -33,6 +34,7 @@ interface TabButtonProps {
   label: string;
   accessibilityLabel?: string;
   onLayout?: (e: LayoutChangeEvent) => void;
+  viewRef?: React.RefObject<View | null>;
 }
 
 function TabButton({
@@ -43,6 +45,7 @@ function TabButton({
   label,
   accessibilityLabel,
   onLayout,
+  viewRef,
 }: TabButtonProps) {
   const scale = useSharedValue(1);
   const iconOpacity = useSharedValue(isFocused ? 1 : 0.5);
@@ -93,6 +96,7 @@ function TabButton({
 
   return (
     <Pressable
+      ref={viewRef}
       accessibilityRole="button"
       accessibilityState={isFocused ? { selected: true } : {}}
       accessibilityLabel={accessibilityLabel}
@@ -115,7 +119,7 @@ function TabButton({
   );
 }
 
-function CenterButton({ onPress }: { onPress: () => void }) {
+function CenterButton({ onPress, wrapperRef, onCenterLayout }: { onPress: () => void; wrapperRef?: React.RefObject<View | null>; onCenterLayout?: (e: LayoutChangeEvent) => void }) {
   const scale = useSharedValue(1);
   const rotate = useSharedValue(0);
 
@@ -139,7 +143,7 @@ function CenterButton({ onPress }: { onPress: () => void }) {
   }));
 
   return (
-    <View style={styles.centerButtonWrapper}>
+    <View ref={wrapperRef} style={styles.centerButtonWrapper} onLayout={onCenterLayout}>
       <AnimatedPressable
         onPress={handlePress}
         onPressIn={handlePressIn}
@@ -169,6 +173,20 @@ export function TabBar({ state, descriptors, navigation, onCreateTransaction }: 
   const [layoutVersion, setLayoutVersion] = useState(0);
   const tabLayoutsRef = useRef<({ x: number; width: number } | null)[]>([]);
   const sectionsXRef = useRef<{ left: number; right: number }>({ left: 0, right: 0 });
+
+  const analyticsRef = useRef<View>(null);
+  const walletsRef = useRef<View>(null);
+  const centerRef = useRef<View>(null);
+  const { setTarget } = useCoachTargetsStore();
+
+  const measureTarget = useCallback(
+    (ref: React.RefObject<View | null>, key: 'analytics' | 'wallets' | 'create') => {
+      ref.current?.measureInWindow((x, y, width, height) => {
+        if (width > 0) setTarget(key, { x, y, width, height });
+      });
+    },
+    [setTarget],
+  );
 
   useEffect(() => {
     const layout = tabLayoutsRef.current[state.index];
@@ -219,6 +237,9 @@ export function TabBar({ state, descriptors, navigation, onCreateTransaction }: 
       });
     };
 
+    const tabRef =
+      route.name === 'analytics' ? analyticsRef : route.name === 'wallets' ? walletsRef : undefined;
+
     return (
       <TabButton
         key={route.key}
@@ -228,11 +249,14 @@ export function TabBar({ state, descriptors, navigation, onCreateTransaction }: 
         onLongPress={onLongPress}
         label={typeof label === 'string' ? label : route.name}
         accessibilityLabel={options.tabBarAccessibilityLabel}
+        viewRef={tabRef}
         onLayout={(e) => {
           const { x, width } = e.nativeEvent.layout;
           const sectionX = sectionsXRef.current[section];
           tabLayoutsRef.current[index] = { x: sectionX + x, width };
           setLayoutVersion((v) => v + 1);
+          if (route.name === 'analytics') measureTarget(analyticsRef, 'analytics');
+          if (route.name === 'wallets') measureTarget(walletsRef, 'wallets');
         }}
       />
     );
@@ -253,11 +277,13 @@ export function TabBar({ state, descriptors, navigation, onCreateTransaction }: 
           },
         ]}
       >
-        <BlurView
-          intensity={Platform.OS === 'ios' ? 60 : 80}
-          tint="systemUltraThinMaterialDark"
-          style={StyleSheet.absoluteFillObject}
-        />
+        {Platform.OS === 'ios' && (
+          <BlurView
+            intensity={60}
+            tint="systemUltraThinMaterialDark"
+            style={StyleSheet.absoluteFillObject}
+          />
+        )}
         <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(8,8,8,1)' }]} />
 
         <View
@@ -270,7 +296,11 @@ export function TabBar({ state, descriptors, navigation, onCreateTransaction }: 
           {leftTabs.map((route, index) => renderTabButton(route, index, 'left'))}
         </View>
 
-        <CenterButton onPress={handleCenterButtonPress} />
+        <CenterButton
+          onPress={handleCenterButtonPress}
+          wrapperRef={centerRef}
+          onCenterLayout={() => measureTarget(centerRef, 'create')}
+        />
 
         <View
           style={styles.tabSection}

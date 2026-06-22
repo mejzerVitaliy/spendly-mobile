@@ -2,6 +2,7 @@ import { useCurrencies } from '@/shared/hooks';
 import { useMemo } from 'react';
 import { Control, FieldValues, Path } from 'react-hook-form';
 import { FormPicker, PickerItem } from './form-picker';
+import { useTranslation } from 'react-i18next';
 
 interface FormCurrencyPickerProps<T extends FieldValues> {
   control: Control<T>;
@@ -17,6 +18,7 @@ const FormCurrencyPicker = <T extends FieldValues>({
   error,
 }: FormCurrencyPickerProps<T>) => {
   const { getAllQuery, getFavoritesQuery } = useCurrencies();
+  const { t } = useTranslation();
 
   const items: PickerItem[] = useMemo(() => {
     const currencies = getAllQuery.data?.data ?? [];
@@ -53,9 +55,9 @@ const FormCurrencyPicker = <T extends FieldValues>({
       error={error}
       items={items}
       isLoading={getAllQuery.isLoading || getFavoritesQuery.isLoading}
-      placeholder="Select currency"
-      searchPlaceholder="Search by code or name..."
-      modalTitle="Select Currency"
+      placeholder={t('transaction.selectCurrency')}
+      searchPlaceholder={t('transaction.searchCurrency')}
+      modalTitle={t('transaction.selectCurrency')}
     />
   );
 };

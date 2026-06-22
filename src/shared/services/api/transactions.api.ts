@@ -1,4 +1,4 @@
-import { CreateTransactionRequest, CreateTransactionResponse, GetAllTransactionsResponse, GetTransactionByIdResponse, ParseTextTransactionRequest, ParseTextTransactionResponse, ParseVoiceTransactionResponse, UpdateTransactionRequest, UpdateTransactionResponse } from "@/shared/types";
+import { CreateTransactionRequest, CreateTransactionResponse, CreateTransferRequest, CreateTransferResponse, GetAllTransactionsResponse, GetRecurringDueResponse, GetTransactionByIdResponse, ParseTextTransactionRequest, ParseTextTransactionResponse, ParseVoiceTransactionResponse, PreviewTransactionResponse, ProcessRecurringResponse, UpdateTransactionRequest, UpdateTransactionResponse, UpdateTransferRequest, UpdateTransferResponse } from "@/shared/types";
 import { apiClient } from "./api";
 
 const create = async (request: CreateTransactionRequest): Promise<CreateTransactionResponse> => {
@@ -59,13 +59,64 @@ const parseVoice = async (audioUri: string): Promise<ParseVoiceTransactionRespon
   return response.data;
 };
 
+const previewText = async (text: string): Promise<PreviewTransactionResponse> => {
+  const response = await apiClient.post("/transaction/preview-text", { text });
+  return response.data;
+};
+
+const previewVoice = async (audioUri: string): Promise<PreviewTransactionResponse> => {
+  const formData = new FormData();
+  formData.append('audio', {
+    uri: audioUri,
+    name: 'audio.m4a',
+    type: 'audio/m4a',
+  } as any);
+
+  const response = await apiClient.post("/transaction/preview-voice", formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+const createTransfer = async (request: CreateTransferRequest): Promise<CreateTransferResponse> => {
+  const response = await apiClient.post("/transaction/transfer", request);
+  return response.data;
+};
+
+const updateTransfer = async (transferGroupId: string, request: UpdateTransferRequest): Promise<UpdateTransferResponse> => {
+  const response = await apiClient.put(`/transaction/transfer/${transferGroupId}`, request);
+  return response.data;
+};
+
+const getRecurringDue = async (): Promise<GetRecurringDueResponse> => {
+  const response = await apiClient.get("/transaction/recurring/due");
+  return response.data;
+};
+
+const processRecurring = async (id: string): Promise<ProcessRecurringResponse> => {
+  const response = await apiClient.post(`/transaction/recurring/${id}/process`);
+  return response.data;
+};
+
+const getRecurringProcessedToday = async (): Promise<{ data: { count: number } }> => {
+  const response = await apiClient.get('/transaction/recurring/processed-today');
+  return response.data;
+};
+
 export const transactionsApi = {
   create,
+  createTransfer,
+  updateTransfer,
   getAll,
   getById,
   update,
   remove,
   parseText,
   parseVoice,
+  previewText,
+  previewVoice,
+  getRecurringDue,
+  processRecurring,
+  getRecurringProcessedToday,
 };
 

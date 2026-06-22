@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text } from 'react-native';
 import { Button, Input } from '@/shared/ui';
+import { useTranslation } from 'react-i18next';
 
 interface WalletStepProps {
   initialBalance: number;
@@ -14,6 +15,7 @@ export function WalletStep({ initialBalance, onSetBalance, onFinish, onBack, isL
   const [balanceText, setBalanceText] = useState(
     initialBalance > 0 ? String(initialBalance) : '',
   );
+  const { t } = useTranslation();
 
   const handleChangeBalance = (text: string) => {
     const cleaned = text.replace(/[^0-9]/g, '');
@@ -24,14 +26,14 @@ export function WalletStep({ initialBalance, onSetBalance, onFinish, onBack, isL
   return (
     <View className="flex-1 px-6 pt-8">
       <Text className="text-2xl font-bold text-foreground mb-2">
-        Set up your wallet
+        {t('onboarding.setupWallet')}
       </Text>
       <Text className="text-base text-muted-foreground mb-8">
-        We&apos;ll create a default wallet for you. You can set your current balance.
+        {t('onboarding.setupWalletDesc')}
       </Text>
 
       <Input
-        label="Initial Balance"
+        label={t('onboarding.initialBalance')}
         placeholder="0"
         value={balanceText}
         onChangeText={handleChangeBalance}
@@ -42,10 +44,10 @@ export function WalletStep({ initialBalance, onSetBalance, onFinish, onBack, isL
 
       <View className="flex-row gap-3 pb-8">
         <View className="flex-1">
-          <Button title="Back" variant="outline" onPress={onBack} disabled={isLoading} />
+          <Button title={t('common.back')} variant="outline" onPress={onBack} disabled={isLoading} />
         </View>
         <View className="flex-1">
-          <Button title="Finish" onPress={onFinish} isLoading={isLoading} />
+          <Button title={t('common.continue')} onPress={onFinish} isLoading={isLoading} />
         </View>
       </View>
     </View>

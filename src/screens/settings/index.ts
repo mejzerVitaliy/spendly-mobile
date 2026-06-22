@@ -4,3 +4,4 @@ export * from './currencies-screen';
 export * from './security-screen';
 export * from './data-storage-screen';
 export * from './support-about-screen';
+export * from './limits-screen';

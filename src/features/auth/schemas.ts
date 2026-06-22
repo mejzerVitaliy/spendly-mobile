@@ -32,5 +32,28 @@ export const registerSchema = z.object({
   path: ['confirmPassword'],
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'Email обязателен')
+    .email('Неверный формат email'),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(6, 'Пароль должен быть минимум 6 символов'),
+    confirmPassword: z
+      .string()
+      .min(1, 'Подтвердите пароль'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Пароли не совпадают',
+    path: ['confirmPassword'],
+  });
+
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;

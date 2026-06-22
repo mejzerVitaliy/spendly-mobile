@@ -5,6 +5,7 @@ export type CategoryType = 'INCOME' | 'EXPENSE';
 export interface CategoryDto {
   id: string;
   name: string;
+  nameRu?: string | null;
   color: string;
   type: CategoryType;
   order: number;

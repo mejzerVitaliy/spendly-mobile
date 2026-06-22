@@ -5,7 +5,8 @@ import { CreateTransactionForm } from '@/features/create-transaction/manually/ui
 import { CreateTransactionText } from '@/features/create-transaction/typing/create-transaction-text';
 import { CreateTransactionVoice } from '@/features/create-transaction/voice/create-transaction-voice';
 import { Ionicons } from '@expo/vector-icons';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { useOnboardingStore } from '@/shared/stores';
 import { Modal, Platform, Pressable, Text, View, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Animated, {
@@ -18,39 +19,43 @@ import Animated, {
 } from 'react-native-reanimated';
 import { colors } from '@/shared/theme';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
+import { useOfflineGuard } from '@/shared/hooks';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-const MENU_ITEMS = [
+const MENU_ITEM_CONFIGS = [
   {
-    key: 'manual',
+    key: 'manual' as const,
     icon: 'create-outline' as const,
-    label: 'Manual',
+    labelKey: 'transactionMenu.manual' as const,
     accentColor: colors.primary,
     gradientColors: ['rgba(34,211,238,0.15)', 'rgba(34,211,238,0.05)'] as const,
   },
   {
-    key: 'text',
+    key: 'text' as const,
     icon: 'sparkles' as const,
-    label: 'Text AI',
+    labelKey: 'transactionMenu.textAI' as const,
     accentColor: colors.success,
     gradientColors: ['rgba(34,197,94,0.15)', 'rgba(34,197,94,0.05)'] as const,
   },
   {
-    key: 'voice',
+    key: 'voice' as const,
     icon: 'mic-outline' as const,
-    label: 'Voice AI',
+    labelKey: 'transactionMenu.voiceAI' as const,
     accentColor: '#F97316',
     gradientColors: ['rgba(249,115,22,0.15)', 'rgba(249,115,22,0.05)'] as const,
   },
-] as const;
+];
+
+type MenuItemConfig = (typeof MENU_ITEM_CONFIGS)[number];
 
 function MenuItem({
   item,
   idx,
   onPress,
 }: {
-  item: (typeof MENU_ITEMS)[number];
+  item: MenuItemConfig & { label: string };
   idx: number;
   onPress: () => void;
 }) {
@@ -114,10 +119,12 @@ function MenuItem({
 }
 
 function MenuItems({ onItemPress }: { onItemPress: (key: string) => void }) {
+  const { t } = useTranslation();
+  const menuItems = MENU_ITEM_CONFIGS.map((cfg) => ({ ...cfg, label: t(cfg.labelKey) }));
   return (
     <Animated.View entering={FadeIn.duration(200)} style={styles.menuContainer}>
       <View style={styles.menuRow}>
-        {MENU_ITEMS.map((item, idx) => (
+        {menuItems.map((item, idx) => (
           <MenuItem key={item.key} item={item} idx={idx} onPress={() => onItemPress(item.key)} />
         ))}
       </View>
@@ -130,6 +137,15 @@ export function TabBarWithModal(props: BottomTabBarProps) {
   const manualRef = useRef<BottomSheetRef>(null);
   const textRef = useRef<BottomSheetRef>(null);
   const voiceRef = useRef<BottomSheetRef>(null);
+  const { guard } = useOfflineGuard();
+  const { pendingOpenCreate, setPendingOpenCreate } = useOnboardingStore();
+
+  useEffect(() => {
+    if (!pendingOpenCreate) return;
+    setPendingOpenCreate(false);
+    const t = setTimeout(() => manualRef.current?.open(), 500);
+    return () => clearTimeout(t);
+  }, [pendingOpenCreate]);
 
   const handleItemPress = (key: string) => {
     setMenuVisible(false);
@@ -142,7 +158,7 @@ export function TabBarWithModal(props: BottomTabBarProps) {
 
   return (
     <>
-      <TabBar {...props} onCreateTransaction={() => setMenuVisible(true)} />
+      <TabBar {...props} onCreateTransaction={guard(() => setMenuVisible(true))} />
 
       <Modal
         visible={menuVisible}
@@ -152,20 +168,24 @@ export function TabBarWithModal(props: BottomTabBarProps) {
         statusBarTranslucent
       >
         {Platform.OS === 'ios' ? (
-          <BlurView intensity={50} tint="systemUltraThinMaterialDark" style={styles.backdrop}>
+          <BlurView intensity={70} tint="systemUltraThinMaterialDark" style={styles.backdrop}>
             <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(8,8,8,0.5)' }]} />
             <Pressable style={StyleSheet.absoluteFillObject} onPress={() => setMenuVisible(false)} />
             <MenuItems onItemPress={handleItemPress} />
           </BlurView>
         ) : (
-          <View style={[styles.backdrop, { backgroundColor: 'rgba(8,8,8,0.82)' }]}>
+          <View className='flex-1 bg-black/90'>
             <Pressable style={StyleSheet.absoluteFillObject} onPress={() => setMenuVisible(false)} />
             <MenuItems onItemPress={handleItemPress} />
           </View>
         )}
       </Modal>
 
-      <BottomSheet ref={manualRef}>
+      <BottomSheet
+        ref={manualRef}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+      >
         <CreateTransactionForm onSuccess={() => manualRef.current?.close()} />
       </BottomSheet>
 

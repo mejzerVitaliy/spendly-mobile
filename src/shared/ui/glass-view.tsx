@@ -57,13 +57,7 @@ export function GlassView({
   }
 
   return (
-    <View style={[containerStyle, { overflow: 'hidden' }]} {...props}>
-      <BlurView
-        intensity={blurIntensity}
-        tint="dark"
-        style={[StyleSheet.absoluteFillObject, { borderRadius: radius }]}
-      />
-      <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.backgroundMedium, borderRadius: radius }]} />
+    <View style={[containerStyle, { overflow: 'hidden', backgroundColor: colors.card }]} {...props}>
       {highlight && (
         <LinearGradient
           colors={[colors.glass.highlight, 'transparent']}

@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Button, Input } from '@/shared/ui';
 import { useAuthStore } from '@/shared/stores';
 import { authApi } from '@/shared/services/api/auth.api';
+import { useTranslation } from 'react-i18next';
 
 export function OnboardingLoginScreen() {
   const router = useRouter();
   const { setAuth } = useAuthStore();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,8 +33,8 @@ export function OnboardingLoginScreen() {
       await setAuth(user, accessToken, refreshToken);
     } catch (error: any) {
       const message =
-        error?.response?.data?.message || 'Invalid email or password.';
-      Toast.show({ type: 'error', text1: 'Error', text2: message });
+        error?.response?.data?.message || t('onboardingLogin.invalidCredentials');
+      Toast.show({ type: 'error', text1: t('common.error'), text2: message });
     } finally {
       setIsLoading(false);
     }
@@ -42,40 +44,48 @@ export function OnboardingLoginScreen() {
     <SafeAreaView className="flex-1 bg-background">
       <View className="flex-1 px-6 pt-8">
         <Text className="text-3xl font-bold text-foreground mb-2">
-          Welcome back!
+          {t('onboardingLogin.welcomeBack')}
         </Text>
         <Text className="text-base text-muted-foreground mb-8">
-          Login with your existing account
+          {t('onboardingLogin.subtitle')}
         </Text>
 
         <View className="gap-4">
           <Input
-            label="Email"
-            placeholder="john@example.com"
+            label={t('onboardingLogin.email')}
+            placeholder={t('onboardingLogin.emailPlaceholder')}
             value={email}
             onChangeText={setEmail}
             type="email"
           />
           <Input
-            label="Password"
-            placeholder="Enter your password"
+            label={t('onboardingLogin.password')}
+            placeholder={t('onboardingLogin.passwordPlaceholder')}
             value={password}
             onChangeText={setPassword}
             type="password"
           />
+          <TouchableOpacity
+            className="items-end"
+            onPress={() => router.push('/forgot-password')}
+          >
+            <Text className="text-primary text-sm font-medium">
+              {t('authLogin.forgotPassword')}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <View className="flex-1" />
 
         <View className="gap-3 pb-8">
           <Button
-            title="Login"
+            title={t('onboardingLogin.login')}
             onPress={handleLogin}
             isLoading={isLoading}
             disabled={!isValid}
           />
           <Button
-            title="Back"
+            title={t('onboardingLogin.back')}
             variant="outline"
             onPress={() => router.back()}
             disabled={isLoading}

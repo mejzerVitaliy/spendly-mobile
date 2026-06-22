@@ -18,11 +18,13 @@ import {
 import { BlurView } from 'expo-blur';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
+import { useTranslation } from 'react-i18next';
 
 export function CurrenciesScreen() {
   const { getAllQuery, getFavoritesQuery, updateFavoritesMutation } = useCurrencies();
   const { getMeQuery } = useAuth();
   const { updateSettingsMutation } = useProfile();
+  const { t } = useTranslation();
 
   const [search, setSearch] = useState('');
   const [mainCurrencyTarget, setMainCurrencyTarget] = useState<string | null>(null);
@@ -74,7 +76,7 @@ export function CurrenciesScreen() {
       next = selectedCodes.filter((c) => c !== currencyCode);
     } else {
       if (selectedCodes.length >= 5) {
-        Toast.show({ type: 'info', text1: 'Limit reached', text2: 'Maximum 5 favorites allowed' });
+        Toast.show({ type: 'info', text1: t('currencies.limitReached'), text2: t('currencies.limitReachedDesc') });
         return;
       }
       next = [...selectedCodes, currencyCode];
@@ -85,7 +87,7 @@ export function CurrenciesScreen() {
       await updateFavoritesMutation.mutateAsync({ currencyCodes: next });
     } catch (e: any) {
       setSelectedCodes(previous);
-      Toast.show({ type: 'error', text1: 'Error', text2: e?.response?.data?.message || 'Failed to update' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: e?.response?.data?.message || t('currencies.failedUpdate') });
     }
   };
 
@@ -95,9 +97,9 @@ export function CurrenciesScreen() {
     setMainCurrencyTarget(null);
     try {
       await updateSettingsMutation.mutateAsync({ mainCurrencyCode: code });
-      Toast.show({ type: 'success', text1: 'Main currency updated', text2: `${code} is now your main currency` });
+      Toast.show({ type: 'success', text1: t('currencies.mainUpdated'), text2: t('currencies.mainUpdatedDesc', { code }) });
     } catch (e: any) {
-      Toast.show({ type: 'error', text1: 'Error', text2: e?.response?.data?.message || 'Failed to update main currency' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: e?.response?.data?.message || t('currencies.failedUpdateMain') });
     }
   };
 
@@ -121,11 +123,10 @@ export function CurrenciesScreen() {
       >
         <View className="px-5 py-4">
           <SettingsHeader
-            title="Currencies"
-            description="Choose your main currency and pin favorites for quick wallet creation"
+            title={t('currencies.title')}
+            description={t('currencies.description')}
           />
 
-          {/* Search */}
           <View
             className="flex-row items-center rounded-2xl border px-4 mb-5"
             style={{ backgroundColor: colors.input, borderColor: colors.border }}
@@ -134,7 +135,7 @@ export function CurrenciesScreen() {
             <TextInput
               value={search}
               onChangeText={setSearch}
-              placeholder="Search currencies..."
+              placeholder={t('currencies.searchPlaceholder')}
               placeholderTextColor={colors.mutedForeground}
               style={{
                 flex: 1,
@@ -151,14 +152,12 @@ export function CurrenciesScreen() {
             )}
           </View>
 
-          {/* Loading */}
           {isLoading && (
             <View className="py-12 items-center justify-center">
               <ActivityIndicator size="large" color={colors.primary} />
             </View>
           )}
 
-          {/* Error */}
           {isError && !isLoading && (
             <View
               className="rounded-2xl p-4 items-center mb-4"
@@ -166,19 +165,18 @@ export function CurrenciesScreen() {
             >
               <Ionicons name="alert-circle-outline" size={24} color={colors.destructive} />
               <Text className="text-destructive text-sm font-medium mt-2 text-center">
-                Failed to load currencies
+                {t('currencies.failedLoad')}
               </Text>
             </View>
           )}
 
           {!isLoading && !isError && (
             <>
-              {/* Main Currency Card */}
               {mainCurrency && (
                 <>
                   <View className="flex-row items-center justify-between mb-3">
                     <Text className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
-                      Main Currency
+                      {t('currencies.mainCurrency')}
                     </Text>
                   </View>
                   <View
@@ -214,16 +212,15 @@ export function CurrenciesScreen() {
                       >
                         <Ionicons name="star" size={11} color={colors.primary} />
                         <Text className="text-[11px] font-bold" style={{ color: colors.primary }}>
-                          Main
+                          {t('currencies.main')}
                         </Text>
                       </View>
                     </View>
                   </View>
 
-                  {/* Warning alert */}
                   <AlertBanner
                     icon="information-circle-outline"
-                    message="Changing the main currency recalculates all wallet balances and analytics using current exchange rates."
+                    message={t('currencies.mainCurrencyAlert')}
                     color={colors.info}
                     bg="rgba(14,165,233,0.08)"
                     border="rgba(14,165,233,0.2)"
@@ -231,10 +228,9 @@ export function CurrenciesScreen() {
                 </>
               )}
 
-              {/* Favorites section header */}
               <View className="flex-row items-center justify-between mt-5 mb-3">
                 <Text className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
-                  All Currencies
+                  {t('currencies.allCurrencies')}
                 </Text>
                 <View
                   className="px-2.5 py-0.5 rounded-full"
@@ -257,12 +253,11 @@ export function CurrenciesScreen() {
                 </View>
               </View>
 
-              {/* Currency list */}
               {filteredCurrencies.length === 0 ? (
                 <View className="py-12 items-center">
                   <Ionicons name="search-outline" size={32} color={colors.mutedForeground} />
                   <Text className="text-muted-foreground text-sm mt-3">
-                    No results for &quot;{search}&quot;
+                    {t('currencies.noResults', { query: search })}
                   </Text>
                 </View>
               ) : (
@@ -280,6 +275,8 @@ export function CurrenciesScreen() {
                       onSetMain={() => setMainCurrencyTarget(currency.code)}
                       disabled={updateFavoritesMutation.isPending || updateSettingsMutation.isPending}
                       showSeparator={index < filteredCurrencies.length - 1}
+                      mainLabel={t('currencies.main')}
+                      setMainLabel={t('currencies.setMain')}
                     />
                   ))}
                 </View>
@@ -291,7 +288,6 @@ export function CurrenciesScreen() {
         </View>
       </ScrollView>
 
-      {/* Confirm change main currency */}
       <ChangeCurrencyDialog
         visible={!!mainCurrencyTarget}
         currencyCode={mainCurrencyTarget}
@@ -336,6 +332,8 @@ interface CurrencyRowProps {
   onSetMain: () => void;
   disabled: boolean;
   showSeparator: boolean;
+  mainLabel: string;
+  setMainLabel: string;
 }
 
 function CurrencyRow({
@@ -346,6 +344,8 @@ function CurrencyRow({
   onSetMain,
   disabled,
   showSeparator,
+  mainLabel,
+  setMainLabel,
 }: CurrencyRowProps) {
   return (
     <>
@@ -353,9 +353,8 @@ function CurrencyRow({
         className="flex-row items-center px-4 py-3"
         style={isMain ? { backgroundColor: 'rgba(34,211,238,0.05)' } : undefined}
       >
-        {/* Code badge */}
         <View
-          className="w-10 h-10 rounded-2xl items-center justify-center mr-3"
+          className="w-10 h-10 rounded-xl items-center justify-center mr-3"
           style={{
             backgroundColor: isMain
               ? 'rgba(34,211,238,0.15)'
@@ -384,7 +383,6 @@ function CurrencyRow({
           </Text>
         </View>
 
-        {/* Name + code */}
         <View className="flex-1">
           <Text className="text-[14px] font-semibold text-foreground" numberOfLines={1}>
             {currency.name}
@@ -394,7 +392,6 @@ function CurrencyRow({
           </Text>
         </View>
 
-        {/* Actions */}
         <View className="flex-row items-center gap-2">
           {isMain ? (
             <View
@@ -403,7 +400,7 @@ function CurrencyRow({
             >
               <Ionicons name="star" size={10} color={colors.primary} />
               <Text className="text-[10px] font-bold" style={{ color: colors.primary }}>
-                Main
+                {mainLabel}
               </Text>
             </View>
           ) : (
@@ -415,7 +412,7 @@ function CurrencyRow({
               style={{ backgroundColor: colors.glass.background, borderWidth: 1, borderColor: colors.glass.border }}
             >
               <Text className="text-[11px] font-semibold text-muted-foreground">
-                Set Main
+                {setMainLabel}
               </Text>
             </Pressable>
           )}
@@ -442,9 +439,7 @@ function CurrencyRow({
         </View>
       </View>
 
-      {showSeparator && (
-        <View style={{ height: 1, backgroundColor: colors.glass.border, marginLeft: 60 }} />
-      )}
+      {showSeparator && <View className="h-px bg-border" />}
     </>
   );
 }
@@ -466,11 +461,12 @@ function ChangeCurrencyDialog({
   onConfirm,
   onCancel,
 }: ChangeCurrencyDialogProps) {
+  const { t } = useTranslation();
+
   const content = (
     <View className="w-full bg-card rounded-3xl p-6 border border-white/[0.08]"
       style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 20 }, shadowOpacity: 0.6, shadowRadius: 40, elevation: 20 }}
     >
-      {/* Icon */}
       <View className="w-12 h-12 rounded-2xl items-center justify-center mb-4"
         style={{ backgroundColor: 'rgba(234,179,8,0.12)', borderWidth: 1, borderColor: 'rgba(234,179,8,0.3)' }}
       >
@@ -478,23 +474,18 @@ function ChangeCurrencyDialog({
       </View>
 
       <Text className="text-[18px] font-bold text-foreground mb-2">
-        Change Main Currency
+        {t('currencies.changeMainTitle')}
       </Text>
       <Text className="text-[14px] text-muted-foreground leading-[21px] mb-2">
-        Switch from{' '}
-        <Text className="text-foreground font-semibold">{currentCode}</Text>
-        {' '}to{' '}
-        <Text className="text-foreground font-semibold">{currencyCode}</Text>
-        {' '}as your main currency?
+        {t('currencies.changeMainDesc', { from: currentCode, to: currencyCode })}
       </Text>
 
-      {/* Warning banner */}
       <View className="flex-row items-start gap-2 rounded-xl p-3 mb-6"
         style={{ backgroundColor: 'rgba(234,179,8,0.08)', borderWidth: 1, borderColor: 'rgba(234,179,8,0.2)' }}
       >
         <Ionicons name="warning-outline" size={15} color={colors.warning} style={{ marginTop: 1 }} />
         <Text className="flex-1 text-[12px] leading-[17px]" style={{ color: colors.warning }}>
-          All converted balances and analytics will be recalculated using current exchange rates.
+          {t('currencies.changeMainWarning')}
         </Text>
       </View>
 
@@ -505,7 +496,7 @@ function ChangeCurrencyDialog({
           className="flex-1 py-[13px] rounded-2xl items-center border border-border bg-secondary active:opacity-70"
         >
           <Text className="text-muted-foreground font-semibold text-[15px]">
-            Cancel
+            {t('common.cancel')}
           </Text>
         </Pressable>
 
@@ -516,7 +507,7 @@ function ChangeCurrencyDialog({
           style={{ backgroundColor: colors.warning, opacity: isPending ? 0.7 : 1 }}
         >
           <Text className="font-bold text-[15px]" style={{ color: colors.warningForeground }}>
-            {isPending ? 'Updating...' : 'Confirm'}
+            {isPending ? t('currencies.updating') : t('common.confirm')}
           </Text>
         </Pressable>
       </View>

@@ -1,7 +1,6 @@
 import { formatCompact } from '@/shared/utils';
 import { WalletDto } from '@/shared/types';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { useEffect } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -51,10 +50,6 @@ export function WalletCard({ wallet, typeLabel, isArchived, onLongPress, onActio
         delayLongPress={350}
         style={({ pressed }) => [styles.card, isArchived && { opacity: 0.55 }, pressed && styles.cardPressed]}
       >
-        {Platform.OS === 'ios' ? (
-          <BlurView intensity={40} tint="systemUltraThinMaterialDark" style={StyleSheet.absoluteFillObject} />
-        ) : null}
-
         <LinearGradient
           colors={
             wallet.isDefault
