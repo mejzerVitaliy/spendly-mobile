@@ -87,43 +87,23 @@ export const PeriodSelector = ({ store = 'analytics' }: PeriodSelectorProps) => 
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.navRow}>
+      <View className="flex-row items-center justify-between mb-3">
         <Pressable
           onPress={() => handleNavigate('prev')}
           hitSlop={8}
-          className='w-10 h-10 rounded-xl border border-border items-center justify-center pressed:opacity-60'
+          className={`w-10 h-10 rounded-xl border border-border items-center justify-center pressed:opacity-60 ${Platform.OS === 'ios' ? 'bg-white/[0.05]' : 'bg-secondary'}`}
         >
-          {Platform.OS === 'ios' ? (
-            <>
-              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 12 }]} />
-              <Ionicons name="chevron-back" size={20} color={colors.mutedForeground} />
-            </>
-          ) : (
-            <>
-              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.secondary, borderRadius: 12 }]} />
-              <Ionicons name="chevron-back" size={20} color={colors.mutedForeground} />
-            </>
-          )}
+          <Ionicons name="chevron-back" size={20} color={colors.mutedForeground} />
         </Pressable>
 
-        <Text style={styles.periodTitle}>{formatPeriodLabel(currentDate, periodType)}</Text>
+        <Text className="text-[15px] font-semibold text-foreground">{formatPeriodLabel(currentDate, periodType)}</Text>
 
         <Pressable
           onPress={() => handleNavigate('next')}
           hitSlop={8}
-          className='w-10 h-10 rounded-xl border border-border items-center justify-center pressed:opacity-60'
+          className={`w-10 h-10 rounded-xl border border-border items-center justify-center pressed:opacity-60 ${Platform.OS === 'ios' ? 'bg-white/[0.05]' : 'bg-secondary'}`}
         >
-          {Platform.OS === 'ios' ? (
-            <>
-              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.glass.background, borderRadius: 12 }]} />
-              <Ionicons name="chevron-forward" size={20} color={colors.mutedForeground} />
-            </>
-          ) : (
-            <>
-              <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.secondary, borderRadius: 12 }]} />
-              <Ionicons name="chevron-forward" size={20} color={colors.mutedForeground} />
-            </>
-          )}
+          <Ionicons name="chevron-forward" size={20} color={colors.mutedForeground} />
         </Pressable>
       </View>
 
@@ -152,27 +132,6 @@ export const PeriodSelector = ({ store = 'analytics' }: PeriodSelectorProps) => 
 const styles = StyleSheet.create({
   wrapper: {
     marginBottom: 16,
-  },
-  navRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  navBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  periodTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.foreground,
   },
   tabsContainer: {
     flexDirection: 'row',

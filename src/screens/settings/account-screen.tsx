@@ -165,7 +165,7 @@ export function AccountScreen() {
           </Text>
           <View className="rounded-3xl overflow-hidden mb-5" style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.glass.border }}>
             <ActionRow icon="mail-outline" label={t('account.editEmail')} onPress={handleOpenEditEmail} />
-            <View style={{ height: 1, backgroundColor: colors.glass.border, marginLeft: 56 }} />
+            <View className="h-px bg-border" />
             <ActionRow icon="lock-closed-outline" label={t('account.changePassword')} onPress={handleOpenChangePassword} />
           </View>
 
@@ -346,16 +346,11 @@ function ActionRow({
       className="flex-row items-center px-4 py-4 gap-3 active:opacity-60"
     >
       <View
-        className="w-9 h-9 rounded-2xl items-center justify-center"
-        style={{
-          backgroundColor: destructive ? 'rgba(239,68,68,0.12)' : colors.glass.background,
-          borderWidth: 1,
-          borderColor: destructive ? 'rgba(239,68,68,0.25)' : colors.glass.border,
-        }}
+        className={`w-10 h-10 rounded-xl items-center justify-center ${destructive ? 'bg-red-500/[0.12] border border-red-500/[0.25]' : 'bg-white/[0.05] border border-white/[0.08]'}`}
       >
         {loading
           ? <ActivityIndicator size="small" color={destructive ? colors.destructive : colors.mutedForeground} />
-          : <Ionicons name={icon} size={18} color={destructive ? colors.destructive : colors.mutedForeground} />
+          : <Ionicons name={icon} size={20} color={destructive ? colors.destructive : colors.mutedForeground} />
         }
       </View>
       <Text

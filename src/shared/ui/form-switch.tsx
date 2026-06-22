@@ -1,7 +1,8 @@
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
-import { LayoutChangeEvent, Pressable, Text, View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { LayoutChangeEvent, Platform, Pressable, Text, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
+import { BlurView } from 'expo-blur';
 
 interface SwitchOption<T> {
   label: string;
@@ -31,7 +32,10 @@ function AnimatedSwitch<V extends string>({ value, onChange, options }: Animated
   const segmentWidth = containerWidth > 0 ? containerWidth / Math.max(options.length, 1) : 0;
 
   useEffect(() => {
-    indicatorX.value = withTiming(activeIndex * segmentWidth + indicatorInset, { duration: 220 });
+    indicatorX.value = withSpring(activeIndex * segmentWidth + indicatorInset, {
+      damping: 20,
+      stiffness: 200,
+    });
   }, [activeIndex, segmentWidth, indicatorX]);
 
   const indicatorStyle = useAnimatedStyle(() => ({
@@ -40,12 +44,20 @@ function AnimatedSwitch<V extends string>({ value, onChange, options }: Animated
 
   return (
     <View
-      className="flex-row bg-muted rounded-2xl p-1 relative overflow-hidden"
+      className="flex-row bg-muted rounded-[18px] p-1 overflow-hidden relative"
       onLayout={(e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width)}
     >
+      {Platform.OS === 'ios' && (
+        <BlurView
+          intensity={30}
+          tint="systemUltraThinMaterialDark"
+          className="absolute inset-0"
+        />
+      )}
+
       {segmentWidth > 0 && (
         <Animated.View
-          className="absolute top-1 bottom-1 rounded-xl bg-card"
+          className="absolute top-1 bottom-1 rounded-[14px] bg-white/[0.12] border border-white/[0.08]"
           style={[{ width: Math.max(segmentWidth - indicatorInset * 2, 0) }, indicatorStyle]}
         />
       )}
@@ -56,12 +68,10 @@ function AnimatedSwitch<V extends string>({ value, onChange, options }: Animated
           <Pressable
             key={option.value}
             onPress={() => onChange(option.value)}
-            className="flex-1 py-3 px-4 rounded-xl"
+            className="flex-1 py-2.5 items-center rounded-[14px]"
           >
             <Text
-              className={`text-center font-medium ${
-                isSelected ? 'text-foreground' : 'text-muted-foreground'
-              }`}
+              className={`text-[13px] font-semibold ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}
             >
               {option.label}
             </Text>

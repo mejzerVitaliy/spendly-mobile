@@ -25,3 +25,4 @@ export * from './transaction-form';
 export * from './offline-banner';
 export * from './app-header';
 export * from './recurring-selector';
+export * from './interactive-coach';

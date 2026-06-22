@@ -354,7 +354,7 @@ function CurrencyRow({
         style={isMain ? { backgroundColor: 'rgba(34,211,238,0.05)' } : undefined}
       >
         <View
-          className="w-10 h-10 rounded-2xl items-center justify-center mr-3"
+          className="w-10 h-10 rounded-xl items-center justify-center mr-3"
           style={{
             backgroundColor: isMain
               ? 'rgba(34,211,238,0.15)'
@@ -439,9 +439,7 @@ function CurrencyRow({
         </View>
       </View>
 
-      {showSeparator && (
-        <View style={{ height: 1, backgroundColor: colors.glass.border, marginLeft: 60 }} />
-      )}
+      {showSeparator && <View className="h-px bg-border" />}
     </>
   );
 }

@@ -34,7 +34,7 @@ export function LanguageScreen() {
                     style={selected ? { backgroundColor: 'rgba(34,211,238,0.06)' } : undefined}
                   >
                     <View
-                      className="w-10 h-10 rounded-2xl items-center justify-center mr-3"
+                      className="w-10 h-10 rounded-xl items-center justify-center mr-3"
                       style={{
                         backgroundColor: selected ? 'rgba(34,211,238,0.12)' : colors.glass.background,
                         borderWidth: 1,
@@ -66,9 +66,7 @@ export function LanguageScreen() {
                     )}
                   </Pressable>
 
-                  {index < LANGUAGES.length - 1 && (
-                    <View style={{ height: 1, backgroundColor: colors.glass.border, marginLeft: 60 }} />
-                  )}
+                  {index < LANGUAGES.length - 1 && <View className="h-px bg-border" />}
                 </View>
               );
             })}

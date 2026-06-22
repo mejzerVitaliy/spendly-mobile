@@ -281,15 +281,7 @@ function CategoryRow({ category, selected, onPress, disabled, showSeparator }: C
         )}
       </Pressable>
 
-      {showSeparator && (
-        <View
-          style={{
-            height: 1,
-            backgroundColor: colors.glass.border,
-            marginLeft: 60,
-          }}
-        />
-      )}
+      {showSeparator && <View className="h-px bg-border" />}
     </>
   );
 }

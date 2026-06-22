@@ -23,11 +23,8 @@ function LinkRow({
       onPress={() => Linking.openURL(url)}
       className="flex-row items-center px-4 py-4 gap-3 active:opacity-60"
     >
-      <View
-        className="w-9 h-9 rounded-2xl items-center justify-center"
-        style={{ backgroundColor: colors.glass.background, borderWidth: 1, borderColor: colors.glass.border }}
-      >
-        <Ionicons name={icon} size={18} color={colors.mutedForeground} />
+      <View className="w-10 h-10 rounded-xl items-center justify-center bg-white/[0.05] border border-white/[0.08]">
+        <Ionicons name={icon} size={20} color={colors.mutedForeground} />
       </View>
       <View className="flex-1">
         <Text className="text-[15px] font-semibold text-foreground">{label}</Text>
@@ -78,7 +75,7 @@ export function SupportAboutScreen() {
               label={t('support.privacyPolicy')}
               url="https://spendly-ai.com/privacy"
             />
-            <View style={{ height: 1, backgroundColor: colors.glass.border, marginLeft: 56 }} />
+            <View className="h-px bg-border" />
             <LinkRow
               icon="document-text-outline"
               label={t('support.termsOfUse')}

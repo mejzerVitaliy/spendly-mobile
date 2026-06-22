@@ -58,13 +58,26 @@ const transactionSchema = z.object({
 
 type TransactionFormData = z.infer<typeof transactionSchema>;
 
+interface InitialFormValues {
+  type?: TransactionType;
+  amount?: number;
+  date?: string;
+  currencyCode?: string;
+  categoryId?: string;
+  walletId?: string;
+  fromWalletId?: string;
+  toWalletId?: string;
+  description?: string;
+}
+
 interface TransactionFormProps {
   mode: 'create' | 'edit';
   transactionId?: string;
+  initialValues?: InitialFormValues;
   onSuccess?: () => void;
 }
 
-export function TransactionForm({ mode, transactionId, onSuccess }: TransactionFormProps) {
+export function TransactionForm({ mode, transactionId, initialValues, onSuccess }: TransactionFormProps) {
   const { createMutation, createTransferMutation, updateTransferMutation, updateMutation, removeMutation } = useTransactions();
   const { getMeQuery } = useAuth();
   const { wallets } = useWallets();
@@ -160,6 +173,27 @@ export function TransactionForm({ mode, transactionId, onSuccess }: TransactionF
       setValue('categoryId', '');
     }
   }, [transactionType, mode, setValue]);
+
+  const hasAppliedInitialValues = useRef(false);
+  useEffect(() => {
+    if (mode !== 'create' || !initialValues || hasAppliedInitialValues.current) return;
+    hasAppliedInitialValues.current = true;
+
+    if (initialValues.type !== undefined) setValue('type', initialValues.type);
+    if (initialValues.amount !== undefined) setValue('amount', initialValues.amount);
+    if (initialValues.date !== undefined) setValue('date', initialValues.date);
+    if (initialValues.currencyCode !== undefined) setValue('currencyCode', initialValues.currencyCode);
+    if (initialValues.walletId !== undefined) setValue('walletId', initialValues.walletId);
+    if (initialValues.fromWalletId !== undefined) setValue('fromWalletId', initialValues.fromWalletId);
+    if (initialValues.toWalletId !== undefined) setValue('toWalletId', initialValues.toWalletId);
+    if (initialValues.description !== undefined) setValue('description', initialValues.description);
+    // Apply categoryId after type-change effects have fired to avoid being cleared
+    if (initialValues.categoryId !== undefined) {
+      const id = initialValues.categoryId;
+      setTimeout(() => setValue('categoryId', id), 0);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const isFirstTypeRender = useRef(true);
   useEffect(() => {

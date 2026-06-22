@@ -5,7 +5,8 @@ import { CreateTransactionForm } from '@/features/create-transaction/manually/ui
 import { CreateTransactionText } from '@/features/create-transaction/typing/create-transaction-text';
 import { CreateTransactionVoice } from '@/features/create-transaction/voice/create-transaction-voice';
 import { Ionicons } from '@expo/vector-icons';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { useOnboardingStore } from '@/shared/stores';
 import { Modal, Platform, Pressable, Text, View, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Animated, {
@@ -137,6 +138,14 @@ export function TabBarWithModal(props: BottomTabBarProps) {
   const textRef = useRef<BottomSheetRef>(null);
   const voiceRef = useRef<BottomSheetRef>(null);
   const { guard } = useOfflineGuard();
+  const { pendingOpenCreate, setPendingOpenCreate } = useOnboardingStore();
+
+  useEffect(() => {
+    if (!pendingOpenCreate) return;
+    setPendingOpenCreate(false);
+    const t = setTimeout(() => manualRef.current?.open(), 500);
+    return () => clearTimeout(t);
+  }, [pendingOpenCreate]);
 
   const handleItemPress = (key: string) => {
     setMenuVisible(false);
@@ -159,13 +168,13 @@ export function TabBarWithModal(props: BottomTabBarProps) {
         statusBarTranslucent
       >
         {Platform.OS === 'ios' ? (
-          <BlurView intensity={50} tint="systemUltraThinMaterialDark" style={styles.backdrop}>
+          <BlurView intensity={70} tint="systemUltraThinMaterialDark" style={styles.backdrop}>
             <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(8,8,8,0.5)' }]} />
             <Pressable style={StyleSheet.absoluteFillObject} onPress={() => setMenuVisible(false)} />
             <MenuItems onItemPress={handleItemPress} />
           </BlurView>
         ) : (
-          <View style={[styles.backdrop, { backgroundColor: 'rgba(8,8,8,0.82)' }]}>
+          <View className='flex-1 bg-black/90'>
             <Pressable style={StyleSheet.absoluteFillObject} onPress={() => setMenuVisible(false)} />
             <MenuItems onItemPress={handleItemPress} />
           </View>

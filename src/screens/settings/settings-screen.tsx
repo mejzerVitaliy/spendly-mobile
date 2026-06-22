@@ -61,23 +61,26 @@ export function SettingsScreen() {
           />
 
           {/* Push notifications toggle */}
-          <View className="flex-row items-center px-4 py-5 border-b border-border">
-            <View className="mr-4">
-              <Ionicons name="notifications-outline" size={24} color="#64748b" />
+          <View>
+            <View className="flex-row items-center px-4 py-3.5 gap-3">
+              <View className="w-10 h-10 rounded-xl items-center justify-center bg-white/[0.05] border border-white/[0.08]">
+                <Ionicons name="notifications-outline" size={20} color={colors.mutedForeground} />
+              </View>
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-foreground">{t('settings.pushNotifications')}</Text>
+                {!permissionGranted && (
+                  <Text className="text-xs text-muted-foreground mt-0.5">{t('settings.pushPermissionDenied')}</Text>
+                )}
+              </View>
+              <Switch
+                value={pushNotificationsEnabled && permissionGranted}
+                onValueChange={handlePushToggle}
+                disabled={!permissionGranted}
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor="#fff"
+              />
             </View>
-            <View className="flex-1">
-              <Text className="text-base font-semibold text-foreground">{t('settings.pushNotifications')}</Text>
-              {!permissionGranted && (
-                <Text className="text-xs text-muted-foreground mt-0.5">{t('settings.pushPermissionDenied')}</Text>
-              )}
-            </View>
-            <Switch
-              value={pushNotificationsEnabled && permissionGranted}
-              onValueChange={handlePushToggle}
-              disabled={!permissionGranted}
-              trackColor={{ false: colors.border, true: colors.primary }}
-              thumbColor="#fff"
-            />
+            <View className="h-px bg-border" />
           </View>
 
           <SettingsItem

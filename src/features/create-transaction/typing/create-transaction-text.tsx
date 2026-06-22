@@ -120,6 +120,7 @@ const CreateTransactionText = ({ onSuccess }: CreateTransactionTextProps) => {
         isCreating={createFromPreviewMutation.isPending}
         onConfirm={handleConfirm}
         onCancel={handleCancel}
+        onEditSuccess={onSuccess}
       />
     </>
   );

@@ -143,11 +143,14 @@ apiClient.interceptors.response.use(
         processQueue(refreshError as Error, null);
 
         await tokenStorage.removeTokens();
-        
-        const { useAuthStore } = await import('@/shared/stores');
+
+        const { useAuthStore, useOnboardingStore, useNotificationsStore, useLanguageStore } = await import('@/shared/stores');
+        useOnboardingStore.getState().reset();
+        useNotificationsStore.getState().reset();
+        useLanguageStore.getState().setLanguage('en');
         const { clearAuth } = useAuthStore.getState();
         await clearAuth();
-        
+
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

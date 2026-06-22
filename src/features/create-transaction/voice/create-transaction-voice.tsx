@@ -222,6 +222,7 @@ const CreateTransactionVoice = ({ onSuccess }: CreateTransactionVoiceProps) => {
         isCreating={createFromPreviewMutation.isPending}
         onConfirm={handleConfirm}
         onCancel={handleCancel}
+        onEditSuccess={onSuccess}
       />
     </>
   );

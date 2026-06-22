@@ -47,7 +47,7 @@ export function WalletStep({ initialBalance, onSetBalance, onFinish, onBack, isL
           <Button title={t('common.back')} variant="outline" onPress={onBack} disabled={isLoading} />
         </View>
         <View className="flex-1">
-          <Button title={t('common.finish')} onPress={onFinish} isLoading={isLoading} />
+          <Button title={t('common.continue')} onPress={onFinish} isLoading={isLoading} />
         </View>
       </View>
     </View>

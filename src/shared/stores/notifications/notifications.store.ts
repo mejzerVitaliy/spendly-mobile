@@ -46,6 +46,7 @@ interface NotificationsState {
   setPermissionGranted: (v: boolean) => void;
   setPushNotificationsEnabled: (v: boolean) => void;
   unreadCount: () => number;
+  reset: () => void;
 }
 
 export const useNotificationsStore = create<NotificationsState>()(
@@ -110,6 +111,15 @@ export const useNotificationsStore = create<NotificationsState>()(
       setPushNotificationsEnabled: (v) => set({ pushNotificationsEnabled: v }),
 
       unreadCount: () => get().notifications.filter((n) => !n.read).length,
+
+      reset: () =>
+        set({
+          notifications: [],
+          lastTransactionDate: null,
+          currentStreak: 0,
+          lastStreakDate: null,
+          cooldowns: {},
+        }),
     }),
     {
       name: 'spendly-notifications',

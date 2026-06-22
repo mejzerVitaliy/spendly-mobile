@@ -58,7 +58,7 @@ function UsageCard({
     >
       <View className="flex-row items-center gap-3 mb-4">
         <View
-          className="w-10 h-10 rounded-2xl items-center justify-center"
+          className="w-10 h-10 rounded-xl items-center justify-center"
           style={{
             backgroundColor: atLimit ? `${colors.destructive}20` : `${colors.primary}20`,
             borderWidth: 1,

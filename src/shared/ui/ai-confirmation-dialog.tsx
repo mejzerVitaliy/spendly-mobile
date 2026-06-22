@@ -11,6 +11,8 @@ import { colors } from '@/shared/theme';
 import { BottomSheet, type BottomSheetRef } from './bottom-sheet';
 import { BottomSheetView } from '@gorhom/bottom-sheet';
 import { RecurringSelector } from './recurring-selector';
+import { TransactionForm } from './transaction-form';
+import { TransactionType } from '@/shared/constants';
 
 interface AIConfirmationDialogProps {
   visible: boolean;
@@ -18,9 +20,38 @@ interface AIConfirmationDialogProps {
   isCreating: boolean;
   onConfirm: (recurring: { isRecurring: boolean; recurringPeriod: RecurringPeriod | null }) => void;
   onCancel: () => void;
+  onEditSuccess?: () => void;
 }
 
-function TransactionPreviewRow({ tx }: { tx: ParsedTransactionPreview }) {
+function mapPreviewToFormValues(tx: ParsedTransactionPreview) {
+  if (tx.transactionType === 'TRANSFER') {
+    return {
+      type: TransactionType.TRANSFER,
+      amount: tx.amount / 100,
+      date: tx.date,
+      description: tx.description || '',
+      fromWalletId: tx.walletId ?? undefined,
+      toWalletId: tx.toWalletId ?? undefined,
+    };
+  }
+  return {
+    type: tx.transactionType === 'INCOME' ? TransactionType.INCOME : TransactionType.EXPENSE,
+    amount: tx.amount / 100,
+    date: tx.date,
+    currencyCode: tx.currencyCode,
+    categoryId: tx.categoryId ?? undefined,
+    walletId: tx.walletId ?? undefined,
+    description: tx.description || '',
+  };
+}
+
+function TransactionPreviewRow({
+  tx,
+  onPress,
+}: {
+  tx: ParsedTransactionPreview;
+  onPress: () => void;
+}) {
   const { wallets } = useWallets();
   const { getAllQuery } = useCategories();
   const { i18n } = useTranslation();
@@ -42,7 +73,10 @@ function TransactionPreviewRow({ tx }: { tx: ParsedTransactionPreview }) {
     : null;
 
   return (
-    <View className="flex-row items-center bg-secondary/50 rounded-2xl p-3 mb-2">
+    <Pressable
+      onPress={onPress}
+      className="flex-row items-center bg-secondary/50 rounded-2xl p-3 mb-2 active:opacity-70"
+    >
       <View
         className="w-10 h-10 rounded-full items-center justify-center mr-3"
         style={{ backgroundColor: iconColor + '20' }}
@@ -66,10 +100,12 @@ function TransactionPreviewRow({ tx }: { tx: ParsedTransactionPreview }) {
         )}
       </View>
 
-      <Text className="text-sm font-bold" style={{ color: amountColor }}>
+      <Text className="text-sm font-bold mr-2" style={{ color: amountColor }}>
         {prefix}{formatCompact(tx.amount)} {tx.currencyCode}
       </Text>
-    </View>
+
+      <Ionicons name="pencil" size={14} color={colors.mutedForeground} />
+    </Pressable>
   );
 }
 
@@ -79,11 +115,14 @@ export function AIConfirmationDialog({
   isCreating,
   onConfirm,
   onCancel,
+  onEditSuccess,
 }: AIConfirmationDialogProps) {
   const sheetRef = useRef<BottomSheetRef>(null);
+  const editSheetRef = useRef<BottomSheetRef>(null);
   const { t } = useTranslation();
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringPeriod, setRecurringPeriod] = useState<RecurringPeriod | null>('MONTHLY');
+  const [editingTx, setEditingTx] = useState<ParsedTransactionPreview | null>(null);
 
   useEffect(() => {
     if (visible) {
@@ -93,71 +132,103 @@ export function AIConfirmationDialog({
     }
   }, [visible]);
 
+  const handleEditRow = (tx: ParsedTransactionPreview) => {
+    setEditingTx(tx);
+    setTimeout(() => editSheetRef.current?.open(), 50);
+  };
+
+  const handleEditSuccess = () => {
+    editSheetRef.current?.close();
+    setEditingTx(null);
+    onEditSuccess?.();
+  };
+
   if (!visible && transactions.length === 0) return null;
 
   return (
-    <BottomSheet
-      ref={sheetRef}
-      enableDynamicSizing
-      snapPoints={[]}
-      onOpenChange={(open) => { if (!open) onCancel(); }}
-    >
-      <BottomSheetView>
-        <View className="px-5 pt-2 pb-8">
-          <View className="flex-row items-center gap-2 mb-1">
-            <Ionicons name="sparkles" size={18} color={colors.primary} />
-            <Text className="text-base font-bold text-foreground">
-              {t('aiConfirm.title')}
-            </Text>
-          </View>
-          <Text className="text-sm text-muted-foreground mb-4">
-            {t('aiConfirm.subtitle', { count: transactions.length })}
-          </Text>
-
-          <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 260 }}>
-            {transactions.map((tx, i) => (
-              <TransactionPreviewRow key={i} tx={tx} />
-            ))}
-          </ScrollView>
-
-          <View className="mt-3">
-            <RecurringSelector
-              enabled={isRecurring}
-              period={recurringPeriod}
-              onToggle={setIsRecurring}
-              onPeriodChange={setRecurringPeriod}
-            />
-          </View>
-
-          <View className="flex-row gap-3 mt-1">
-            <Pressable
-              onPress={onCancel}
-              disabled={isCreating}
-              className="flex-1 py-3.5 rounded-2xl border border-border items-center active:opacity-70"
-            >
-              <Text className="text-foreground font-semibold text-sm">
-                {t('aiConfirm.reject')}
+    <>
+      <BottomSheet
+        ref={sheetRef}
+        enableDynamicSizing
+        snapPoints={[]}
+        onOpenChange={(open) => { if (!open) onCancel(); }}
+      >
+        <BottomSheetView>
+          <View className="px-5 pt-2 pb-8">
+            <View className="flex-row items-center gap-2 mb-1">
+              <Ionicons name="sparkles" size={18} color={colors.primary} />
+              <Text className="text-base font-bold text-foreground">
+                {t('aiConfirm.title')}
               </Text>
-            </Pressable>
+            </View>
+            <Text className="text-sm text-muted-foreground mb-4">
+              {t('aiConfirm.subtitle', { count: transactions.length })}
+            </Text>
 
-            <Pressable
-              onPress={() => onConfirm({ isRecurring, recurringPeriod: isRecurring ? recurringPeriod : null })}
-              disabled={isCreating}
-              className={`flex-1 py-3.5 rounded-2xl items-center ${
-                isCreating ? 'bg-primary/50' : 'bg-primary active:bg-primary/90'
-              }`}
-            >
-              {isCreating ? (
-                <ActivityIndicator size="small" color="#ffffff" />
-              ) : (
-                <Text className="text-primary-foreground font-semibold text-sm">
-                  {t('aiConfirm.confirm', { count: transactions.length })}
+            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 260 }}>
+              {transactions.map((tx, i) => (
+                <TransactionPreviewRow key={i} tx={tx} onPress={() => handleEditRow(tx)} />
+              ))}
+            </ScrollView>
+
+            <View className="mt-3">
+              <RecurringSelector
+                enabled={isRecurring}
+                period={recurringPeriod}
+                onToggle={setIsRecurring}
+                onPeriodChange={setRecurringPeriod}
+              />
+            </View>
+
+            <View className="flex-row gap-3 mt-1">
+              <Pressable
+                onPress={onCancel}
+                disabled={isCreating}
+                className="flex-1 py-3.5 rounded-2xl border border-border items-center active:opacity-70"
+              >
+                <Text className="text-foreground font-semibold text-sm">
+                  {t('aiConfirm.reject')}
                 </Text>
-              )}
-            </Pressable>
+              </Pressable>
+
+              <Pressable
+                onPress={() => onConfirm({ isRecurring, recurringPeriod: isRecurring ? recurringPeriod : null })}
+                disabled={isCreating}
+                className={`flex-1 py-3.5 rounded-2xl items-center ${
+                  isCreating ? 'bg-primary/50' : 'bg-primary active:bg-primary/90'
+                }`}
+              >
+                {isCreating ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <Text className="text-primary-foreground font-semibold text-sm">
+                    {t('aiConfirm.confirm', { count: transactions.length })}
+                  </Text>
+                )}
+              </Pressable>
+            </View>
           </View>
-        </View>
-      </BottomSheetView>
-    </BottomSheet>
+        </BottomSheetView>
+      </BottomSheet>
+
+      <BottomSheet
+        ref={editSheetRef}
+        enableDynamicSizing
+        snapPoints={[]}
+        onOpenChange={(open) => { if (!open) setEditingTx(null); }}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+      >
+        <BottomSheetView>
+          {editingTx && (
+            <TransactionForm
+              mode="create"
+              initialValues={mapPreviewToFormValues(editingTx)}
+              onSuccess={handleEditSuccess}
+            />
+          )}
+        </BottomSheetView>
+      </BottomSheet>
+    </>
   );
 }
