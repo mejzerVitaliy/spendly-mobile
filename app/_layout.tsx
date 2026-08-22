@@ -1,4 +1,6 @@
 import '@/shared/i18n';
+import * as Sentry from '@sentry/react-native';
+import { ENV } from '@/shared/constants/config';
 import { useAuthStore, useLanguageStore } from '@/shared/stores';
 import { analytics } from '@/shared/services/analytics';
 import { notificationService } from '@/shared/services/notifications';
@@ -25,6 +27,16 @@ import * as Notifications from 'expo-notifications';
 import { useTranslation } from 'react-i18next';
 
 SplashScreen.preventAutoHideAsync();
+
+Sentry.init({
+  dsn: ENV.SENTRY_DSN,
+  // Only report from real builds (EAS preview/production) - local dev
+  // errors are already visible in the Metro terminal and would just be
+  // noise (and quota) in Sentry.
+  enabled: !__DEV__ && !!ENV.SENTRY_DSN,
+  // Crash/error reporting only for now - no performance tracing.
+  tracesSampleRate: 0,
+});
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -180,7 +192,7 @@ function RootNavigator() {
   );
 }
 
-export default function RootLayout() {
+function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
       <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
@@ -195,3 +207,5 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+export default Sentry.wrap(RootLayout);
