@@ -30,7 +30,8 @@
       "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "pan",
       "predictiveBackGestureEnabled": false,
-      "package": "com.spendlyai.app"
+      "package": "com.spendlyai.app",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
