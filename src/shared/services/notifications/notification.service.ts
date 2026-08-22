@@ -22,7 +22,12 @@ const COOLDOWN_HOURS: Record<string, number> = {
   category_insight: 5 * 24,
   no_income: 7 * 24,
   recurring_due: 20,
+  guest_data_risk: 14 * 24,
 };
+
+// Below this, a guest losing their device isn't losing much - the push
+// exists to warn about real data loss, not to nag a brand new user.
+const GUEST_DATA_RISK_TRANSACTION_THRESHOLD = 15;
 
 const STREAK_MILESTONES = [3, 5, 7, 10, 14, 21, 30];
 
@@ -236,6 +241,31 @@ export const notificationService = {
         'notifications.monthlyRecapBody',
       );
     }
+  },
+
+  /**
+   * Tier 3 of the guest-registration nudge: a push warning a guest that
+   * their data lives only on this device. Called on app open, separately
+   * from syncOnAppOpen, so it can be gated on guest status + transaction
+   * count (context syncOnAppOpen doesn't have) without touching that
+   * method's signature.
+   */
+  async maybeSendGuestDataRiskNotification(
+    i18nFn: (key: string, params?: object) => string,
+    isGuest: boolean,
+    transactionCount: number,
+  ) {
+    if (!isGuest || transactionCount < GUEST_DATA_RISK_TRANSACTION_THRESHOLD) return;
+    if (isOnCooldown('guest_data_risk')) return;
+
+    await sendLocal(
+      'guest_data_risk',
+      i18nFn('notifications.guestDataRiskTitle'),
+      i18nFn('notifications.guestDataRiskBody').replace('{{count}}', String(transactionCount)),
+      'notifications.guestDataRiskTitle',
+      'notifications.guestDataRiskBody',
+      { count: transactionCount },
+    );
   },
 
   /**

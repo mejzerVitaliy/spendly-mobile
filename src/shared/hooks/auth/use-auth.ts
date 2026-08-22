@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi } from "@/shared/services/api";
 import { analytics } from "@/shared/services/analytics/analytics";
-import { useAiInsightsStore, useAuthStore, useLanguageStore, useNotificationsStore, useOnboardingStore } from "@/shared/stores";
+import { useAiInsightsStore, useAuthStore, useGuestPromptStore, useLanguageStore, useNotificationsStore, useOnboardingStore } from "@/shared/stores";
 import { ForgotPasswordRequest, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, ResetPasswordRequest } from "@/shared/types";
 import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -30,6 +30,7 @@ const clearLocalAccountState = async (queryClient: QueryClient) => {
   useOnboardingStore.getState().reset();
   useNotificationsStore.getState().reset();
   useAiInsightsStore.getState().reset();
+  useGuestPromptStore.getState().reset();
   useLanguageStore.getState().setLanguage('en');
 
   await AsyncStorage.multiRemove(KEYS_TO_CLEAR);

@@ -17,7 +17,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
-import { AppHeader, BottomSheet, BottomSheetRef, ConfirmDialog } from '@/shared/ui';
+import { AppHeader, BottomSheet, BottomSheetRef, ConfirmDialog, GuestRegisterBanner } from '@/shared/ui';
 import { BottomSheetView } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import { useTransactions } from '@/shared/hooks';
@@ -175,6 +175,8 @@ export function HomeScreen() {
             <BalanceView startDate={startDate} endDate={endDate} />
           </View>
         </View>
+
+        <GuestRegisterBanner />
 
         <View style={styles.listContainer}>
           <TransactionsList

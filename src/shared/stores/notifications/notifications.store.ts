@@ -11,7 +11,8 @@ export type NotificationType =
   | 'spending_trend'
   | 'category_insight'
   | 'no_income'
-  | 'recurring_due';
+  | 'recurring_due'
+  | 'guest_data_risk';
 
 export interface AppNotification {
   id: string;

@@ -10,6 +10,7 @@ interface User {
   totalBalance: number;
   mainCurrencyCode: string;
   onboardingCompleted: boolean;
+  createdAt: string;
 }
 
 interface AuthStore {

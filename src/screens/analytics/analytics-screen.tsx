@@ -3,11 +3,12 @@ import { InsightsSection } from '@/features/insights';
 import { PeriodSelector } from '@/features/period-selector';
 import { CashFlowChart, CategoryBreakdownChart, IncomeExpenseRatioChart } from '@/features/charts';
 import { AppHeader, SegmentedControl } from '@/shared/ui';
-import { useAnalyticsStore } from '@/shared/stores';
+import { useAnalyticsStore, useAuthStore } from '@/shared/stores';
 import { useReports } from '@/shared/hooks';
+import { guestPromptService } from '@/shared/services/guest-prompt';
 import { TransactionType } from '@/shared/constants';
 import { colors } from '@/shared/theme';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
@@ -43,6 +44,11 @@ export const AnalyticsScreen = () => {
 
   const { startDate, endDate, selectedCategoryTransactionType, setSelectedCategoryTransactionType } =
     useAnalyticsStore();
+  const isGuest = useAuthStore((s) => s.user?.type === 'GUEST');
+
+  useEffect(() => {
+    guestPromptService.maybeShowForAnalyticsView(isGuest);
+  }, [isGuest]);
 
   const { getSummary, getCategoryChart, getCashFlowTrend } = useReports({
     startDate,

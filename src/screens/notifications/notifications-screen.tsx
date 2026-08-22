@@ -17,6 +17,7 @@ const ICON_MAP: Record<NotificationType, { name: string; color: string; bg: stri
   category_insight: { name: 'pie-chart-outline', color: '#60A5FA', bg: 'rgba(96,165,250,0.12)' },
   no_income: { name: 'alert-circle-outline', color: '#FBBF24', bg: 'rgba(251,191,36,0.12)' },
   recurring_due: { name: 'repeat-outline', color: '#22D3EE', bg: 'rgba(34,211,238,0.12)' },
+  guest_data_risk: { name: 'shield-checkmark-outline', color: '#F87171', bg: 'rgba(248,113,113,0.12)' },
 };
 
 function timeAgo(isoDate: string, t: (k: string, p?: Record<string, unknown>) => string): string {

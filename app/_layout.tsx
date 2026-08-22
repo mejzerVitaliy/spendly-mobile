@@ -9,7 +9,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Inter_400Regular, useFonts } from '@expo-google-fonts/inter';
-import { useRecurringSync } from '@/shared/hooks';
+import { useRecurringSync, useReports } from '@/shared/hooks';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -19,7 +19,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from '@/shared/ui/toast-config';
-import { OfflineBanner } from '@/shared/ui';
+import { GuestRegisterModal, OfflineBanner } from '@/shared/ui';
 import '../src/global.css';
 import { colors } from '@/shared/theme';
 import * as Notifications from 'expo-notifications';
@@ -74,9 +74,11 @@ function RootNavigator() {
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
   const { t } = useTranslation();
 
-  const { isAuthenticated, isLoading, initializeAuth } = useAuthStore();
+  const { isAuthenticated, isLoading, initializeAuth, user } = useAuthStore();
   useLanguageStore();
   const { sync: syncRecurring } = useRecurringSync();
+  const isGuest = user?.type === 'GUEST';
+  const { getSummary } = useReports({ enabled: isAuthenticated && isGuest });
 
   useEffect(() => {
     setIsMounted(true);
@@ -112,6 +114,8 @@ function RootNavigator() {
       const type = response.notification.request.content.data?.type;
       if (type === 'weekly_summary' || type === 'monthly_recap' || type === 'spending_trend' || type === 'category_insight') {
         router.push('/(tabs)/analytics' as any);
+      } else if (type === 'guest_data_risk') {
+        router.push('/settings/create-account' as any);
       } else {
         router.push('/notifications' as any);
       }
@@ -122,6 +126,16 @@ function RootNavigator() {
       responseListener.current?.remove();
     };
   }, [isLoading, isMounted, t, router]);
+
+  // Tier 3 of the guest-registration nudge - once the guest's all-time
+  // transaction count is known, maybe warn them their data is device-only.
+  // Separate from the effect above since it depends on report data that
+  // loads asynchronously after auth resolves, not just on mount.
+  useEffect(() => {
+    if (isLoading || !isMounted || !getSummary.data) return;
+    const totalTransactions = getSummary.data.data?.totalTransactions ?? 0;
+    notificationService.maybeSendGuestDataRiskNotification(t as any, isGuest, totalTransactions);
+  }, [isLoading, isMounted, isGuest, getSummary.data, t]);
 
   useEffect(() => {
     if (!fontsLoaded || isLoading) return;
@@ -191,6 +205,7 @@ export default function RootLayout() {
           <View style={{ flex: 1, backgroundColor: colors.background }}>
             <RootNavigator />
             <OfflineBanner />
+            <GuestRegisterModal />
             <Toast config={toastConfig} topOffset={Platform.OS === 'ios' ? 60 : 40} />
           </View>
         </BottomSheetModalProvider>

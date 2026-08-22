@@ -7,12 +7,14 @@ interface UseReportsParams {
   endDate?: string;
   type?: TransactionType;
   language?: string;
+  enabled?: boolean;
 }
 
 export const useReports = (params?: UseReportsParams) => {
   const getSummaryQuery = useQuery({
     queryKey: ['reports', 'summary', params?.startDate, params?.endDate],
     queryFn: () => reportsApi.getSummary({ startDate: params?.startDate, endDate: params?.endDate }),
+    enabled: params?.enabled ?? true,
     staleTime: 30 * 1000,
   });
 

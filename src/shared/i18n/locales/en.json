@@ -540,7 +540,22 @@
     "spendingTrendTitle": "Spending alert 📉",
     "spendingTrendBody": "Your spending changed by {{pct}} compared to last week.",
     "recurringDueTitle": "Recurring transactions",
-    "recurringDueBody": "{{count}} recurring transaction(s) were automatically added."
+    "recurringDueBody": "{{count}} recurring transaction(s) were automatically added.",
+    "guestDataRiskTitle": "Your data lives only on this device ⚠️",
+    "guestDataRiskBody": "{{count}} transactions are stored on this device only. Create a free account to back them up."
+  },
+  "guestPrompt": {
+    "cta": "Create Account",
+    "notNow": "Not Now",
+    "streakTitle": "{{days}}-day streak — don't lose it",
+    "streakMessage": "You're on a roll. Create a free account so your streak and history are backed up, not stuck on one device.",
+    "transactionsTitle": "You've built up real history",
+    "transactionsMessage": "You've logged {{count}} transactions on this device. Create a free account to back them up and access them from anywhere.",
+    "analyticsTitle": "Like what you see?",
+    "analyticsMessage": "These insights only exist on this device right now. Create a free account to keep them safe and see them on any device.",
+    "bannerLowInvestmentTitle": "Using Spendly as a guest",
+    "bannerHighInvestmentTitle": "{{count}} transactions, one device",
+    "bannerSubtitle": "Create a free account to back up your data."
   },
   "recurring": {
     "repeat": "Repeat",
