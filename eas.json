@@ -11,15 +11,13 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://dev-spendly-api-207624620631.europe-central2.run.app/api",
-        "EXPO_PUBLIC_SENTRY_DSN": "https://eed96aaa2250dd7698ce6c4bf8f826fa@o4511955901939712.ingest.de.sentry.io/4511955907641424"
+        "EXPO_PUBLIC_API_URL": "https://dev-spendly-api-207624620631.europe-central2.run.app/api"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://dev-spendly-api-207624620631.europe-central2.run.app/api",
-        "EXPO_PUBLIC_SENTRY_DSN": "https://eed96aaa2250dd7698ce6c4bf8f826fa@o4511955901939712.ingest.de.sentry.io/4511955907641424"
+        "EXPO_PUBLIC_API_URL": "https://dev-spendly-api-207624620631.europe-central2.run.app/api"
       }
     }
   },

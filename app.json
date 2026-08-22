@@ -60,14 +60,6 @@
           "color": "#22D3EE",
           "sounds": []
         }
-      ],
-      [
-        "@sentry/react-native/expo",
-        {
-          "organization": "spendly-ai-dz",
-          "project": "react-native",
-          "url": "https://sentry.io/"
-        }
       ]
     ],
     "experiments": {
