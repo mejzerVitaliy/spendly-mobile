@@ -1,6 +1,7 @@
 import '@/shared/i18n';
 import { useAuthStore, useLanguageStore } from '@/shared/stores';
 import { analytics } from '@/shared/services/analytics';
+import { crashReporting } from '@/shared/services/crash-reporting';
 import { notificationService } from '@/shared/services/notifications';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClient } from '@tanstack/react-query';
@@ -25,6 +26,8 @@ import * as Notifications from 'expo-notifications';
 import { useTranslation } from 'react-i18next';
 
 SplashScreen.preventAutoHideAsync();
+
+crashReporting.init();
 
 const DAY = 24 * 60 * 60 * 1000;
 
