@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useOnboardingStore, useAuthStore } from '@/shared/stores';
 import { authApi } from '@/shared/services/api/auth.api';
+import { analytics } from '@/shared/services/analytics';
 import { ProductSlides } from './slides/product-slides';
 import { CategoriesStep } from './steps/categories-step';
 import { CurrencyStep } from './steps/currency-step';
@@ -36,6 +37,14 @@ export function OnboardingScreen() {
   } = useOnboardingStore();
 
   const { setAuth } = useAuthStore();
+
+  // Aggregate signal for the onboarding funnel (started vs. guest_created/
+  // signup_completed) - fires once per mount of this screen, same
+  // "app_open"-style tracking already used elsewhere, not deduped per
+  // device/session.
+  useEffect(() => {
+    analytics.track('onboarding_started');
+  }, []);
 
   const handleFinish = async (openCreate: boolean) => {
     setIsSubmitting(true);
