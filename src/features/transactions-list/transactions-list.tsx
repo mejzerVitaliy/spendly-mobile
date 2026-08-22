@@ -65,10 +65,11 @@ function TransactionRow({
 
   useEffect(() => {
     const delay = index * 40;
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       opacity.value = withTiming(1, { duration: 300 });
       translateY.value = withTiming(0, { duration: 300 });
     }, delay);
+    return () => clearTimeout(timer);
   }, []);
 
   const style = useAnimatedStyle(() => ({

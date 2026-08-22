@@ -42,9 +42,4 @@ export const tokenStorage = {
   getRefreshToken,
   saveTokens,
   removeTokens,
-  
-  // Для обратной совместимости (deprecated)
-  saveToken: saveRefreshToken,
-  getToken: getAccessToken,
-  removeToken: removeTokens,
 };

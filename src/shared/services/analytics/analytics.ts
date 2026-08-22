@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { ENV } from '@/shared/constants/config';
-import { useAuthStore } from '@/shared/stores';
+import { tokenStorage } from '@/shared/services/storage';
 
 const QUEUE_KEY = '@spendly_analytics_queue';
 const FLUSH_INTERVAL_MS = 30_000;
@@ -31,14 +31,19 @@ const loadQueue = async () => {
 };
 
 const sendBatch = async (batch: QueuedEvent[]) => {
-  const userId = useAuthStore.getState().user?.id ?? null;
+  // The server derives userId from this token (falling back to an
+  // anonymous event if there's none) - it never trusts a client-claimed
+  // userId in the body, so there's no point sending one.
+  const token = await tokenStorage.getAccessToken();
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
   await Promise.all(
     batch.map((item) =>
       axios
         .post(
           `${ENV.API_URL}/analytics/event`,
-          { userId, event: item.event, properties: item.properties ?? {}, timestamp: item.timestamp },
-          { timeout: 5000 },
+          { event: item.event, properties: item.properties ?? {}, timestamp: item.timestamp },
+          { timeout: 5000, headers },
         )
         .catch(() => {}),
     ),
@@ -77,5 +82,19 @@ export const analytics = {
 
   async flush() {
     await flushQueue();
+  },
+
+  /**
+   * Drops any events still queued locally without sending them - used on
+   * logout/account deletion so events queued under the outgoing account
+   * can't end up sent (and attributed) under whichever account logs in
+   * next. Call flush() first if you want a last-chance attempt to send
+   * them under the still-valid outgoing token.
+   */
+  async reset() {
+    queue = [];
+    try {
+      await AsyncStorage.removeItem(QUEUE_KEY);
+    } catch {}
   },
 };

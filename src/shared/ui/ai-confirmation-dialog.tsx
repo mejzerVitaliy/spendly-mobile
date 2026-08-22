@@ -123,6 +123,7 @@ export function AIConfirmationDialog({
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringPeriod, setRecurringPeriod] = useState<RecurringPeriod | null>('MONTHLY');
   const [editingTx, setEditingTx] = useState<ParsedTransactionPreview | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (visible) {
@@ -132,14 +133,16 @@ export function AIConfirmationDialog({
     }
   }, [visible]);
 
-  const handleEditRow = (tx: ParsedTransactionPreview) => {
+  const handleEditRow = (tx: ParsedTransactionPreview, index: number) => {
     setEditingTx(tx);
+    setEditingIndex(index);
     setTimeout(() => editSheetRef.current?.open(), 50);
   };
 
   const handleEditSuccess = () => {
     editSheetRef.current?.close();
     setEditingTx(null);
+    setEditingIndex(null);
     onEditSuccess?.();
   };
 
@@ -167,7 +170,7 @@ export function AIConfirmationDialog({
 
             <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 260 }}>
               {transactions.map((tx, i) => (
-                <TransactionPreviewRow key={i} tx={tx} onPress={() => handleEditRow(tx)} />
+                <TransactionPreviewRow key={i} tx={tx} onPress={() => handleEditRow(tx, i)} />
               ))}
             </ScrollView>
 
@@ -222,6 +225,7 @@ export function AIConfirmationDialog({
         <BottomSheetView>
           {editingTx && (
             <TransactionForm
+              key={editingIndex}
               mode="create"
               initialValues={mapPreviewToFormValues(editingTx)}
               onSuccess={handleEditSuccess}

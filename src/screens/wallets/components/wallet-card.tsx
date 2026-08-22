@@ -6,6 +6,7 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { colors } from '@/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 interface WalletCardProps {
   wallet: WalletDto;
@@ -24,6 +25,7 @@ const WALLET_TYPE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
 };
 
 export function WalletCard({ wallet, typeLabel, isArchived, onLongPress, onActionPress }: WalletCardProps) {
+  const { t } = useTranslation();
   const formattedBalance = formatCompact(wallet.currentBalance);
   const hasConvertedBalance = wallet.convertedBalance !== undefined && wallet.mainCurrencyCode;
   const formattedConvertedBalance = hasConvertedBalance ? formatCompact(wallet.convertedBalance!) : null;
@@ -88,7 +90,7 @@ export function WalletCard({ wallet, typeLabel, isArchived, onLongPress, onActio
             <View style={styles.badges}>
               {wallet.isDefault && (
                 <View style={styles.defaultBadge}>
-                  <Text style={styles.defaultText}>Default</Text>
+                  <Text style={styles.defaultText}>{t('wallets.defaultBadge')}</Text>
                 </View>
               )}
               {!isArchived && (

@@ -12,6 +12,7 @@ interface AiInsightsState {
   cache: Record<string, CachedInsights>;
   setInsights: (key: string, data: CachedInsights) => void;
   getInsights: (key: string) => CachedInsights | undefined;
+  reset: () => void;
 }
 
 export const useAiInsightsStore = create<AiInsightsState>()(
@@ -21,6 +22,7 @@ export const useAiInsightsStore = create<AiInsightsState>()(
       setInsights: (key, data) =>
         set((state) => ({ cache: { ...state.cache, [key]: data } })),
       getInsights: (key) => get().cache[key],
+      reset: () => set({ cache: {} }),
     }),
     {
       name: 'ai-insights-cache',

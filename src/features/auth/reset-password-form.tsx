@@ -63,6 +63,27 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     );
   }
 
+  // A malformed deep link (missing token, or a repeated ?token= query param
+  // that expo-router hands back as an array instead of a string) shouldn't
+  // fall through to a normal-looking form that just fails on submit.
+  if (!token || typeof token !== 'string') {
+    return (
+      <View className="w-full items-center">
+        <View className="w-16 h-16 rounded-full bg-destructive/10 items-center justify-center mb-6">
+          <Text className="text-3xl">⚠️</Text>
+        </View>
+        <Text className="text-sm text-muted-foreground text-center mb-8 leading-5">
+          {t('resetPassword.invalidToken')}
+        </Text>
+        <TouchableOpacity onPress={() => router.replace('/login')}>
+          <Text className="text-primary font-semibold text-base">
+            {t('resetPassword.backToLogin')}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View className="w-full">
       <View className="mb-4">

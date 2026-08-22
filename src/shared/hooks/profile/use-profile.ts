@@ -6,6 +6,7 @@ import {
 } from '@/shared/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/shared/stores';
+import { clearLocalAccountState } from '@/shared/hooks/auth/use-auth';
 
 const useProfile = () => {
   const queryClient = useQueryClient();
@@ -41,7 +42,9 @@ const useProfile = () => {
     mutationKey: ['profile', 'delete'],
     mutationFn: () => profileApi.deleteAccount(),
     onSuccess: async () => {
-      queryClient.clear();
+      // Same cleanup as logout - the account is gone, so nothing tied to
+      // it (cache, streaks, cached AI insights, ...) should linger locally.
+      await clearLocalAccountState(queryClient);
       await clearAuth();
     },
   });

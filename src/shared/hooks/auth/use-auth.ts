@@ -1,14 +1,39 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi } from "@/shared/services/api";
-import { useAuthStore, useLanguageStore, useNotificationsStore, useOnboardingStore } from "@/shared/stores";
+import { analytics } from "@/shared/services/analytics/analytics";
+import { useAiInsightsStore, useAuthStore, useLanguageStore, useNotificationsStore, useOnboardingStore } from "@/shared/stores";
 import { ForgotPasswordRequest, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, ResetPasswordRequest } from "@/shared/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const KEYS_TO_CLEAR = [
   'spendly-query-cache',
   'home-period-store',
   'analytics-period-store',
+  'ai-insights-cache',
 ];
+
+/**
+ * Wipes every piece of local/persisted state tied to the current account -
+ * used on both logout and account deletion so a shared/handed-down device
+ * can't leak one user's data (cached AI insights, query cache, streaks,
+ * notification prefs, ...) to the next person who signs in.
+ */
+const clearLocalAccountState = async (queryClient: QueryClient) => {
+  queryClient.clear();
+
+  // Last-chance send under the still-valid outgoing token, then drop
+  // anything left so it can't get sent (and misattributed) under whoever
+  // logs in next.
+  await analytics.flush().catch(() => {});
+  await analytics.reset();
+
+  useOnboardingStore.getState().reset();
+  useNotificationsStore.getState().reset();
+  useAiInsightsStore.getState().reset();
+  useLanguageStore.getState().setLanguage('en');
+
+  await AsyncStorage.multiRemove(KEYS_TO_CLEAR);
+};
 
 const useAuth = () => {
   const queryClient = useQueryClient()
@@ -52,20 +77,9 @@ const useAuth = () => {
     mutationKey: ['logout'],
     mutationFn: () => authApi.logout(),
     onSuccess: async () => {
-      // 1. Clear in-memory query cache
-      queryClient.clear();
-
-      // 2. Reset all user-specific Zustand stores
-      useOnboardingStore.getState().reset();
-      useNotificationsStore.getState().reset();
-
-      // 3. Reset language to English
-      useLanguageStore.getState().setLanguage('en');
-
-      // 4. Remove persisted AsyncStorage data (query cache + UI preferences)
-      await AsyncStorage.multiRemove(KEYS_TO_CLEAR);
-
-      // 5. Clear auth last — triggers navigation to onboarding
+      // Clear cache/stores/AsyncStorage first, then auth last - clearing
+      // auth triggers navigation to onboarding.
+      await clearLocalAccountState(queryClient);
       await clearAuth();
     },
   });
@@ -90,4 +104,4 @@ const useAuth = () => {
   }
 }
 
-export { useAuth };
+export { useAuth, clearLocalAccountState };

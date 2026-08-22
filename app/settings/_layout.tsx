@@ -10,8 +10,6 @@ export default function SettingsLayout() {
       <Stack.Screen name="account" />
       <Stack.Screen name="categories" />
       <Stack.Screen name="currencies" />
-      <Stack.Screen name="security" />
-      <Stack.Screen name="data-storage" />
       <Stack.Screen name="support-about" />
       <Stack.Screen name="language" />
     </Stack>

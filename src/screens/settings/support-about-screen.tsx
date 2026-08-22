@@ -58,7 +58,7 @@ export function SupportAboutScreen() {
             <LinkRow
               icon="mail-outline"
               label={t('support.emailSupport')}
-              subtitle="support@spendly.app"
+              subtitle="support@spendly-ai.com"
               url="mailto:support@spendly-ai.com"
             />
           </View>
