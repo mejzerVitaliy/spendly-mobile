@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.spendlymobile"
+      "bundleIdentifier": "com.spendlyai.app",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Spendly uses your microphone to let you add transactions by voice."
+      }
     },
     "splash": {
       "resizeMode": "contain",
@@ -26,7 +29,7 @@
       "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "pan",
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.spendlymobile"
+      "package": "com.spendlyai.app"
     },
     "web": {
       "bundler": "metro",
