@@ -5,6 +5,9 @@ import { categoryApi } from '@/shared/services/api/category.api';
 import { CategoryDto } from '@/shared/types';
 import { getCategoryName } from '@/shared/utils';
 import { useTranslation } from 'react-i18next';
+import Toast from 'react-native-toast-message';
+
+const MAX_FAVORITE_CATEGORIES = 10;
 
 interface CategoriesStepProps {
   selected: string[];
@@ -28,9 +31,19 @@ export function CategoriesStep({ selected, onSelect, onNext, onBack }: Categorie
   const toggleCategory = (id: string) => {
     if (selected.includes(id)) {
       onSelect(selected.filter((s) => s !== id));
-    } else {
-      onSelect([...selected, id]);
+      return;
     }
+
+    if (selected.length >= MAX_FAVORITE_CATEGORIES) {
+      Toast.show({
+        type: 'info',
+        text1: t('categories.limitReached'),
+        text2: t('categories.limitReachedDesc'),
+      });
+      return;
+    }
+
+    onSelect([...selected, id]);
   };
 
   if (isLoading) {
@@ -54,6 +67,7 @@ export function CategoriesStep({ selected, onSelect, onNext, onBack }: Categorie
         <View className="flex-row flex-wrap gap-3">
           {categories.map((category) => {
             const isSelected = selected.includes(category.id);
+            const isDisabled = !isSelected && selected.length >= MAX_FAVORITE_CATEGORIES;
             return (
               <Pressable
                 key={category.id}
@@ -62,7 +76,7 @@ export function CategoriesStep({ selected, onSelect, onNext, onBack }: Categorie
                   isSelected
                     ? 'border-primary bg-primary/10'
                     : 'border-border bg-card'
-                }`}
+                } ${isDisabled ? 'opacity-40' : ''}`}
               >
                 <Text
                   className={`text-sm font-medium ${
