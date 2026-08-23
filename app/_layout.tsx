@@ -19,23 +19,22 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from '@/shared/ui/toast-config';
-import { GuestRegisterModal, OfflineBanner } from '@/shared/ui';
+import { AnimatedSplash, GuestRegisterModal, OfflineBanner } from '@/shared/ui';
 import '../src/global.css';
 import { colors } from '@/shared/theme';
 import * as Notifications from 'expo-notifications';
 import { useTranslation } from 'react-i18next';
 
 SplashScreen.preventAutoHideAsync();
-SplashScreen.setOptions({ duration: 700, fade: true });
+// The native splash (app.json) is now just a solid black rect matching
+// AnimatedSplash's own background, so this fade is a tiny safety-net blend
+// for the handoff rather than the primary transition - AnimatedSplash's own
+// sequence is what the user actually sees and waits through.
+SplashScreen.setOptions({ duration: 300, fade: true });
 
 crashReporting.init();
 
 const DAY = 24 * 60 * 60 * 1000;
-// Fonts + auth-check usually resolve near-instantly, which made the splash
-// feel like a flash rather than a deliberate brand moment - hold it visible
-// for at least this long regardless of how fast everything else is ready.
-const MIN_SPLASH_VISIBLE_MS = 1400;
-const appStartedAt = Date.now();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,6 +72,7 @@ function RootNavigator() {
   const router = useRouter();
   const segments = useSegments();
   const [isMounted, setIsMounted] = useState(false);
+  const [splashDone, setSplashDone] = useState(false);
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
   });
@@ -143,14 +143,13 @@ function RootNavigator() {
     notificationService.maybeSendGuestDataRiskNotification(t as any, isGuest, totalTransactions);
   }, [isLoading, isMounted, isGuest, getSummary.data, t]);
 
+  // AnimatedSplash renders its own solid-black background matching the
+  // native splash, so hiding native splash as soon as this component mounts
+  // is a seamless swap - AnimatedSplash's sequence, not the native splash,
+  // is what actually holds the screen while fonts/auth load in the background.
   useEffect(() => {
-    if (!fontsLoaded || isLoading) return;
-
-    const elapsed = Date.now() - appStartedAt;
-    const remaining = Math.max(0, MIN_SPLASH_VISIBLE_MS - elapsed);
-    const timer = setTimeout(() => SplashScreen.hideAsync(), remaining);
-    return () => clearTimeout(timer);
-  }, [fontsLoaded, isLoading]);
+    SplashScreen.hideAsync();
+  }, []);
 
   useEffect(() => {
     const isAndroid = Platform.OS === 'android';
@@ -188,6 +187,10 @@ function RootNavigator() {
       router.replace('/(tabs)' as any);
     }
   }, [isMounted, isAuthenticated, segments, isLoading, router]);
+
+  if (!splashDone) {
+    return <AnimatedSplash onFinish={() => setSplashDone(true)} />;
+  }
 
   if (isLoading || !fontsLoaded) {
     return null;

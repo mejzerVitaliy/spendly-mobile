@@ -28,3 +28,4 @@ export * from './guest-register-modal';
 export * from './app-header';
 export * from './recurring-selector';
 export * from './interactive-coach';
+export * from './animated-splash';

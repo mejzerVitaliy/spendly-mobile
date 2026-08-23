@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   FlatList,
+  Image,
   Pressable,
   Text,
   View,
@@ -75,27 +76,11 @@ function WelcomeIllustration() {
           borderColor: 'rgba(34,211,238,0.35)',
         }}
       >
-        <View
-          className="items-center justify-center rounded-full"
-          style={{
-            width: 110,
-            height: 110,
-            backgroundColor: 'rgba(34,211,238,0.18)',
-            borderWidth: 1.5,
-            borderColor: 'rgba(34,211,238,0.5)',
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 42,
-              fontWeight: '800',
-              color: colors.primary,
-              letterSpacing: -1,
-            }}
-          >
-            S
-          </Text>
-        </View>
+        <Image
+          source={require('../../../../assets/images/icon.png')}
+          style={{ width: 104, height: 104, borderRadius: 24 }}
+          resizeMode="contain"
+        />
       </View>
 
       <View style={{ position: 'absolute', top: 8, right: 40 }}>
