@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { Image, View, Text } from 'react-native';
 import { Button } from '@/shared/ui';
 import { useTranslation } from 'react-i18next';
 
@@ -12,7 +12,11 @@ export function WelcomeStep({ onNext, onLogin }: WelcomeStepProps) {
 
   return (
     <View className="flex-1 justify-center items-center px-8">
-      <Text className="text-4xl font-bold text-foreground mb-4">Spendly</Text>
+      <Image
+        source={require('../../../../assets/images/splash-icon.png')}
+        style={{ width: 180, height: 180, marginBottom: 24, borderRadius: 34 }}
+        resizeMode="contain"
+      />
       <Text className="text-lg text-muted-foreground text-center mb-12">
         {t('onboarding.tagline')}
       </Text>

@@ -1,9 +1,10 @@
 import { SettingsHeader } from '@/shared/ui';
-import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/shared/theme';
 import { useTranslation } from 'react-i18next';
+import Constants from 'expo-constants';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -81,6 +82,17 @@ export function SupportAboutScreen() {
               label={t('support.termsOfUse')}
               url="https://spendly-ai.com/terms"
             />
+          </View>
+
+          <View className="items-center mt-10 mb-4">
+            <Image
+              source={require('../../../assets/images/icon.png')}
+              style={{ width: 56, height: 56, borderRadius: 14, marginBottom: 10 }}
+              resizeMode="contain"
+            />
+            <Text className="text-[12px] text-muted-foreground">
+              {t('support.version', { version: Constants.expoConfig?.version ?? '1.0.0' })}
+            </Text>
           </View>
         </View>
       </ScrollView>

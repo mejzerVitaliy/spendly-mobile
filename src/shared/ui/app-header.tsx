@@ -2,14 +2,19 @@ import { useNotificationsStore } from '@/shared/stores/notifications';
 import { colors } from '@/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 
 export function AppHeader() {
   const unreadCount = useNotificationsStore((s) => s.notifications.filter((n) => !n.read).length);
 
   return (
     <View className="flex-row items-center justify-between px-5 pt-4">
-      <View className="flex-row items-center gap-1.5">
+      <View className="flex-row items-center gap-2">
+        <Image
+          source={require('../../../assets/images/icon.png')}
+          style={{ width: 26, height: 26, borderRadius: 7 }}
+          resizeMode="contain"
+        />
         <Text className="text-[24px] font-bold text-foreground tracking-tight">
           Spendly{' '}
           <Text style={{ color: colors.primary }}>AI</Text>

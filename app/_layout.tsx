@@ -26,10 +26,16 @@ import * as Notifications from 'expo-notifications';
 import { useTranslation } from 'react-i18next';
 
 SplashScreen.preventAutoHideAsync();
+SplashScreen.setOptions({ duration: 700, fade: true });
 
 crashReporting.init();
 
 const DAY = 24 * 60 * 60 * 1000;
+// Fonts + auth-check usually resolve near-instantly, which made the splash
+// feel like a flash rather than a deliberate brand moment - hold it visible
+// for at least this long regardless of how fast everything else is ready.
+const MIN_SPLASH_VISIBLE_MS = 1400;
+const appStartedAt = Date.now();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -140,7 +146,10 @@ function RootNavigator() {
   useEffect(() => {
     if (!fontsLoaded || isLoading) return;
 
-    SplashScreen.hideAsync();
+    const elapsed = Date.now() - appStartedAt;
+    const remaining = Math.max(0, MIN_SPLASH_VISIBLE_MS - elapsed);
+    const timer = setTimeout(() => SplashScreen.hideAsync(), remaining);
+    return () => clearTimeout(timer);
   }, [fontsLoaded, isLoading]);
 
   useEffect(() => {

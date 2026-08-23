@@ -320,7 +320,8 @@
     "emailSupport": "Email Support",
     "legal": "Legal",
     "privacyPolicy": "Privacy Policy",
-    "termsOfUse": "Terms of Use"
+    "termsOfUse": "Terms of Use",
+    "version": "Version {{version}}"
   },
   "onboarding": {
     "tagline": "Track your expenses, manage your finances, and reach your goals.",
