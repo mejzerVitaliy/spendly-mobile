@@ -11,7 +11,6 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.spendlyai.app",
-      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Spendly uses your microphone to let you add transactions by voice."
       }
@@ -30,8 +29,7 @@
       "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "pan",
       "predictiveBackGestureEnabled": false,
-      "package": "com.spendlyai.app",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.spendlyai.app"
     },
     "web": {
       "bundler": "metro",
@@ -62,9 +60,7 @@
           "color": "#22D3EE",
           "sounds": []
         }
-      ],
-      "@react-native-firebase/app",
-      "@react-native-firebase/crashlytics"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
