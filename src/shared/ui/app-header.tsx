@@ -9,16 +9,12 @@ export function AppHeader() {
 
   return (
     <View className="flex-row items-center justify-between px-5 pt-4">
-      <View className="flex-row items-center gap-2">
+      <View className="flex-row items-center">
         <Image
-          source={require('../../../assets/images/icon.png')}
-          style={{ width: 26, height: 26, borderRadius: 7 }}
+          source={require('../../../assets/images/logo-transparent.png')}
+          style={{ width: 56, height: 48 }}
           resizeMode="contain"
         />
-        <Text className="text-[24px] font-bold text-foreground tracking-tight">
-          Spendly{' '}
-          <Text style={{ color: colors.primary }}>AI</Text>
-        </Text>
       </View>
 
       <Pressable

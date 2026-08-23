@@ -86,8 +86,8 @@ export function SupportAboutScreen() {
 
           <View className="items-center mt-10 mb-4">
             <Image
-              source={require('../../../assets/images/icon.png')}
-              style={{ width: 56, height: 56, borderRadius: 14, marginBottom: 10 }}
+              source={require('../../../assets/images/logo-transparent.png')}
+              style={{ width: 140, height: 121, marginBottom: 10 }}
               resizeMode="contain"
             />
             <Text className="text-[12px] text-muted-foreground">

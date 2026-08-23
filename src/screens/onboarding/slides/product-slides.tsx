@@ -66,35 +66,11 @@ function LanguagePicker() {
 function WelcomeIllustration() {
   return (
     <Animated.View entering={FadeIn.duration(600)} className="items-center justify-center flex-1">
-      <View
-        className="items-center justify-center rounded-full"
-        style={{
-          width: 160,
-          height: 160,
-          backgroundColor: 'rgba(34,211,238,0.12)',
-          borderWidth: 1.5,
-          borderColor: 'rgba(34,211,238,0.35)',
-        }}
-      >
-        <Image
-          source={require('../../../../assets/images/icon.png')}
-          style={{ width: 104, height: 104, borderRadius: 24 }}
-          resizeMode="contain"
-        />
-      </View>
-
-      <View style={{ position: 'absolute', top: 8, right: 40 }}>
-        <Ionicons name="sparkles" size={18} color={colors.primary} />
-      </View>
-      <View style={{ position: 'absolute', bottom: 20, left: 28 }}>
-        <Ionicons name="star" size={10} color="rgba(34,211,238,0.6)" />
-      </View>
-      <View style={{ position: 'absolute', top: 30, left: 32 }}>
-        <Ionicons name="star" size={7} color="rgba(34,211,238,0.4)" />
-      </View>
-      <View style={{ position: 'absolute', bottom: 40, right: 20 }}>
-        <Ionicons name="sparkles" size={14} color="rgba(34,211,238,0.5)" />
-      </View>
+      <Image
+        source={require('../../../../assets/images/logo-transparent.png')}
+        style={{ width: 220, height: 190 }}
+        resizeMode="contain"
+      />
     </Animated.View>
   );
 }

@@ -4,6 +4,7 @@ import Animated, {
   Easing,
   runOnJS,
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   withDelay,
   withTiming,
@@ -15,19 +16,22 @@ import { colors } from '@/shared/theme';
 // animated. Native splash screens can only show a single static image with
 // a basic fade, no multi-stage sequencing.
 //
-// Card and bars are two separate PNGs (not the combined splash-icon.png)
-// rendered from the same 1280x1280 source coordinate space, so they line up
-// exactly at any shared scale - see assets/brand/splash-card-layer.svg and
-// splash-bars-crop.svg for how they were derived.
+// Card and bars are two separate PNGs, both rendered from the exact same
+// 1280x1280 source canvas (splash-card-layer.svg / splash-bars-layer.svg,
+// neither cropped), so stacking them at identical size/position lines them
+// up pixel-for-pixel with zero per-asset offset math.
+//
+// The bars reveal via scaleY anchored at their grounding line (where they
+// meet the card), not a clip+translate wipe - clipping a soft glow mid-
+// reveal cuts a hard edge straight through it, which looked like a bug.
+// Scaling the whole (uncropped) image keeps the glow attached to the bars
+// at every frame, so there's nothing to clip.
 const CARD_SIZE = 220;
 const CARD_SCALE = CARD_SIZE / 1280;
-// splash-bars-crop.svg's viewBox is "300 260 640 264" in that same 1280
-// space - these are that box's origin/size converted to CARD_SCALE, i.e.
-// exactly where the bars sit relative to the card's top-left corner.
-const BARS_WIDTH = 640 * CARD_SCALE;
-const BARS_HEIGHT = 264 * CARD_SCALE;
-const BARS_LEFT = 300 * CARD_SCALE;
-const BARS_TOP = 260 * CARD_SCALE;
+// Where the bars meet the top of the card in the shared 1280 coordinate
+// space (see the bar paths in splash-bars-layer.svg - they're all drawn
+// down to y=524) - the scale anchor is this line, converted to display px.
+const BARS_ANCHOR_Y = 524 * CARD_SCALE;
 
 const CARD_DURATION = 550;
 const BARS_DELAY = 400;
@@ -41,7 +45,7 @@ interface AnimatedSplashProps {
 export function AnimatedSplash({ onFinish }: AnimatedSplashProps) {
   const cardOpacity = useSharedValue(0);
   const cardTranslateY = useSharedValue(32);
-  const barsTranslateY = useSharedValue(BARS_HEIGHT);
+  const barsScale = useSharedValue(0);
 
   // A brief pause once the bars settle, so the finished logo actually
   // registers before handing off to the app instead of vanishing instantly.
@@ -50,9 +54,9 @@ export function AnimatedSplash({ onFinish }: AnimatedSplashProps) {
   useEffect(() => {
     cardOpacity.value = withTiming(1, { duration: CARD_DURATION, easing: Easing.out(Easing.cubic) });
     cardTranslateY.value = withTiming(0, { duration: CARD_DURATION, easing: Easing.out(Easing.cubic) });
-    barsTranslateY.value = withDelay(
+    barsScale.value = withDelay(
       BARS_DELAY,
-      withTiming(0, { duration: BARS_DURATION, easing: Easing.out(Easing.back(1.2)) }, (finished) => {
+      withTiming(1, { duration: BARS_DURATION, easing: Easing.out(Easing.back(1.15)) }, (finished) => {
         if (finished) {
           runOnJS(finishAfterHold)();
         }
@@ -66,8 +70,15 @@ export function AnimatedSplash({ onFinish }: AnimatedSplashProps) {
     transform: [{ translateY: cardTranslateY.value }],
   }));
 
+  // Scaling around the view's own center by default - translateY re-anchors
+  // that pivot to BARS_ANCHOR_Y instead, so growth reads as "coming up out
+  // of the card" rather than expanding from the middle of the canvas.
+  const barsTranslateY = useDerivedValue(
+    () => (BARS_ANCHOR_Y - CARD_SIZE / 2) * (1 - barsScale.value),
+  );
+
   const barsStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: barsTranslateY.value }],
+    transform: [{ translateY: barsTranslateY.value }, { scaleY: barsScale.value }],
   }));
 
   return (
@@ -78,22 +89,14 @@ export function AnimatedSplash({ onFinish }: AnimatedSplashProps) {
           style={[{ width: CARD_SIZE, height: CARD_SIZE }, cardStyle]}
           resizeMode="contain"
         />
-        <View
-          style={{
-            position: 'absolute',
-            left: BARS_LEFT,
-            top: BARS_TOP,
-            width: BARS_WIDTH,
-            height: BARS_HEIGHT,
-            overflow: 'hidden',
-          }}
-        >
-          <Animated.Image
-            source={require('../../../../assets/images/splash-bars.png')}
-            style={[{ width: BARS_WIDTH, height: BARS_HEIGHT }, barsStyle]}
-            resizeMode="stretch"
-          />
-        </View>
+        <Animated.Image
+          source={require('../../../../assets/images/splash-bars.png')}
+          style={[
+            { position: 'absolute', top: 0, left: 0, width: CARD_SIZE, height: CARD_SIZE },
+            barsStyle,
+          ]}
+          resizeMode="contain"
+        />
       </View>
     </View>
   );
