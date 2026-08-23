@@ -19,7 +19,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from '@/shared/ui/toast-config';
-import { AnimatedSplash, GuestRegisterModal, OfflineBanner } from '@/shared/ui';
+import { AnimatedSplash, GlobalLoadingOverlay, GuestRegisterModal, OfflineBanner } from '@/shared/ui';
 import '../src/global.css';
 import { colors } from '@/shared/theme';
 import * as Notifications from 'expo-notifications';
@@ -218,6 +218,7 @@ export default function RootLayout() {
             <RootNavigator />
             <OfflineBanner />
             <GuestRegisterModal />
+            <GlobalLoadingOverlay />
             <Toast config={toastConfig} topOffset={Platform.OS === 'ios' ? 60 : 40} />
           </View>
         </BottomSheetModalProvider>

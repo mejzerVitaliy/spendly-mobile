@@ -1,4 +1,4 @@
-import { useLanguageStore } from '@/shared/stores';
+import { useLanguageStore, withGlobalLoading } from '@/shared/stores';
 import { LANGUAGE_NAMES, LANGUAGES, type Language } from '@/shared/i18n';
 import { SettingsHeader } from '@/shared/ui';
 import { colors } from '@/shared/theme';
@@ -10,6 +10,11 @@ import { useTranslation } from 'react-i18next';
 export function LanguageScreen() {
   const { t } = useTranslation();
   const { language, setLanguage } = useLanguageStore();
+
+  const handleSelect = (lang: Language) => {
+    if (lang === language) return;
+    withGlobalLoading(() => setLanguage(lang));
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -29,7 +34,7 @@ export function LanguageScreen() {
               return (
                 <View key={lang}>
                   <Pressable
-                    onPress={() => setLanguage(lang as Language)}
+                    onPress={() => handleSelect(lang as Language)}
                     className="flex-row items-center px-4 py-4 active:opacity-70"
                     style={selected ? { backgroundColor: 'rgba(34,211,238,0.06)' } : undefined}
                   >

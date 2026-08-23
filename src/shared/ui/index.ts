@@ -29,3 +29,4 @@ export * from './app-header';
 export * from './recurring-selector';
 export * from './interactive-coach';
 export * from './animated-splash';
+export * from './global-loading-overlay';

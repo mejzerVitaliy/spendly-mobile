@@ -2,6 +2,7 @@ import { useAuth, useCurrencies, useProfile } from '@/shared/hooks';
 import { SettingsHeader } from '@/shared/ui';
 import { CurrencyDto } from '@/shared/types';
 import { colors } from '@/shared/theme';
+import { withGlobalLoading } from '@/shared/stores';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -96,7 +97,11 @@ export function CurrenciesScreen() {
     const code = mainCurrencyTarget;
     setMainCurrencyTarget(null);
     try {
-      await updateSettingsMutation.mutateAsync({ mainCurrencyCode: code });
+      // Changing the main currency cascades into refetching user/wallets/
+      // transactions/reports (see use-profile.ts) - the whole app's amounts
+      // are about to change under the user's feet, so hold the screen
+      // behind the loading overlay until all of that settles.
+      await withGlobalLoading(() => updateSettingsMutation.mutateAsync({ mainCurrencyCode: code }));
       Toast.show({ type: 'success', text1: t('currencies.mainUpdated'), text2: t('currencies.mainUpdatedDesc', { code }) });
     } catch (e: any) {
       Toast.show({ type: 'error', text1: t('common.error'), text2: e?.response?.data?.message || t('currencies.failedUpdateMain') });

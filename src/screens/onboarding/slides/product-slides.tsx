@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   FlatList,
-  Image,
   Pressable,
   Text,
   View,
@@ -16,11 +15,11 @@ import Animated, {
   withTiming,
   withDelay,
   FadeInUp,
-  FadeIn,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { colors } from '@/shared/theme';
 import { useLanguageStore } from '@/shared/stores';
+import { LogoRevealAnimation } from '@/shared/ui';
 import { LANGUAGES, LANGUAGE_NAMES, type Language } from '@/shared/i18n';
 
 // ─── Language Selector ────────────────────────────────────────────────────────
@@ -65,13 +64,9 @@ function LanguagePicker() {
 
 function WelcomeIllustration() {
   return (
-    <Animated.View entering={FadeIn.duration(600)} className="items-center justify-center flex-1">
-      <Image
-        source={require('../../../../assets/images/logo-transparent.png')}
-        style={{ width: 220, height: 190 }}
-        resizeMode="contain"
-      />
-    </Animated.View>
+    <View className="items-center justify-center flex-1">
+      <LogoRevealAnimation size={280} />
+    </View>
   );
 }
 
@@ -90,9 +85,9 @@ function AiTextIllustration() {
         <View className="flex-row items-center gap-2 mb-3">
           <View
             className="rounded-full items-center justify-center"
-            style={{ width: 28, height: 28, backgroundColor: 'rgba(34,197,94,0.15)' }}
+            style={{ width: 28, height: 28, backgroundColor: 'rgba(34,211,238,0.15)' }}
           >
-            <Ionicons name="sparkles" size={14} color={colors.success} />
+            <Ionicons name="sparkles" size={14} color={colors.primary} />
           </View>
           <Text className="text-muted-foreground text-xs font-medium">AI Input</Text>
         </View>
@@ -167,7 +162,7 @@ function AiVoiceIllustration() {
   const s3 = useAnimatedStyle(() => ({ transform: [{ scale: ring3.value }], opacity: op3.value }));
 
   return (
-    <View className="items-center justify-center flex-1">
+    <Animated.View entering={FadeInUp.duration(500)} className="items-center justify-center flex-1">
       <View style={{ position: 'relative', width: 160, height: 160, alignItems: 'center', justifyContent: 'center' }}>
         <Animated.View
           style={[s3, { position: 'absolute', width: 160, height: 160, borderRadius: 80, borderWidth: 1, borderColor: colors.primary }]}
@@ -194,19 +189,15 @@ function AiVoiceIllustration() {
           <Ionicons name="mic" size={36} color={colors.primary} />
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
 function AnalyticsIllustration() {
-  const bars = [
-    { h: 55, color: colors.primary },
-    { h: 90, color: 'rgba(34,211,238,0.75)' },
-    { h: 42, color: colors.success },
-    { h: 115, color: colors.primary },
-    { h: 72, color: 'rgba(34,211,238,0.6)' },
-    { h: 98, color: colors.success },
-  ];
+  const heights = [55, 90, 42, 115, 72, 98];
+  const minH = Math.min(...heights);
+  const maxH = Math.max(...heights);
+  const barOpacity = (h: number) => 0.45 + ((h - minH) / (maxH - minH)) * 0.55;
 
   return (
     <Animated.View entering={FadeInUp.duration(500)} className="items-center justify-center flex-1 px-4">
@@ -223,9 +214,9 @@ function AnalyticsIllustration() {
         </View>
 
         <View className="flex-row items-end justify-between" style={{ height: 130, gap: 6 }}>
-          {bars.map((bar, i) => (
+          {heights.map((h, i) => (
             <View key={i} className="flex-1 items-center">
-              <View style={{ width: '100%', height: bar.h, backgroundColor: bar.color, borderRadius: 6, opacity: 0.9 }} />
+              <View style={{ width: '100%', height: h, backgroundColor: colors.primary, opacity: barOpacity(h), borderRadius: 6 }} />
             </View>
           ))}
         </View>

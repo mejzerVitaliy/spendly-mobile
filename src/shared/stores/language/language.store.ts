@@ -5,15 +5,15 @@ import i18n, { type Language } from '@/shared/i18n';
 
 interface LanguageState {
   language: Language;
-  setLanguage: (lang: Language) => void;
+  setLanguage: (lang: Language) => Promise<void>;
 }
 
 export const useLanguageStore = create<LanguageState>()(
   persist(
     (set) => ({
       language: 'en',
-      setLanguage: (lang) => {
-        i18n.changeLanguage(lang);
+      setLanguage: async (lang) => {
+        await i18n.changeLanguage(lang);
         set({ language: lang });
       },
     }),
