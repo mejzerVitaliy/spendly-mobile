@@ -6,7 +6,8 @@ Working doc for App Store Connect + Google Play Console submission. Copy blocks 
 
 | Field | Value |
 |---|---|
-| App name | Spendly AI |
+| App / brand name | Spendly AI (in-app wordmark, icon, header) |
+| Store listing name | `Spendly AI: Budget & Expenses` — see ASO section below for why this differs from the plain brand name |
 | iOS bundle ID | `com.spendlyai.app` |
 | Android package | `com.spendlyai.app` |
 | Version | 1.0.0 |
@@ -19,35 +20,50 @@ Working doc for App Store Connect + Google Play Console submission. Copy blocks 
 
 ---
 
-## App Store Connect (Apple)
+## Competitor research (2026-08-24)
+
+Pulled real App Store listings for the closest comparables before rewriting anything below — direct AI-money-coach competitors (Cleo, Copilot) and the closest same-category app (Spendee: multi-wallet, multi-currency, near-identical positioning to Spendly):
+
+| App | Title (30 char field) | Subtitle |
+|---|---|---|
+| Cleo AI | `Cleo AI: Cash Advance & Budget` | `Credit Builder & Savings Goals` |
+| Copilot | `Copilot: Track & Budget Money` | `Spending, investing, net worth` |
+| Spendee | `Expense & Budget App: Spendee` | `Money Tracker & Planner` |
+
+**What all three do that the first draft didn't:** every one of them fills the Name field with a keyword phrase, not a bare brand name — that's the single highest-weighted ASO field on the App Store, and my first pass left 20 of 30 characters unused by keeping it as plain "Spendly AI". The in-app wordmark and the App Store listing name don't have to match (Cleo's app shows "Cleo" everywhere in-app, not the full store title) — so there's no real cost to using the full field. Descriptions also all open with a single punchy hook line (not scene-setting) since that's the only text visible before "more" truncates it.
+
+**Where Spendly actually differs from all three:** Cleo is chat-based coaching/cash-advances, Copilot and Spendee both auto-categorize from **bank-synced** transactions. None of them lead with "describe a purchase in plain language or say it out loud and AI creates the transaction" — that specific mechanic (manual-entry-speed via text/voice, not bank-sync automation) is Spendly's actual white space, so it now carries the subtitle instead of getting buried in a bullet.
+
+Rewritten below accordingly. I didn't copy any competitor's specific wording — just the structural pattern (keyword-loaded title, hook-first description, label-style bullets) and picked words matching what Spendly actually does.
 
 ### Name (30 char max)
 ```
-Spendly AI
+Spendly AI: Budget & Expenses
 ```
-Kept as the plain brand name for consistency with the in-app header and icon. Keyword content goes in the subtitle field instead — Apple indexes both, no need to cram keywords into the name.
+29/30 characters. Leads with brand + "AI" (already distinctive), fills the rest with the two highest-volume finance-app search terms instead of leaving them for the subtitle only.
 
 ### Subtitle (30 char max)
 ```
-AI Expense & Budget Tracker
+Voice & Text Expense Tracker
 ```
+28/30 characters. Carries the differentiator (voice/text entry) that "Budget & Expenses" in the name doesn't cover, plus "Expense Tracker" as a second high-volume phrase.
 
 ### Promotional text (170 char max — editable anytime without a review)
 ```
-Type it or say it — Spendly's AI turns a sentence into a categorized transaction in seconds. Multi-wallet, multi-currency, real insights.
+Say it or type it — Spendly turns a sentence into a categorized transaction. Multi-wallet, multi-currency, AI-powered insights, not just charts.
 ```
 
 ### Description (4000 char max)
 ```
-Spendly AI turns the tedious parts of tracking your money into a two-second habit. Type what you spent in plain language, or just say it out loud — Spendly's AI turns it into a categorized transaction instantly.
+Say it or type it — Spendly turns a sentence into a categorized transaction. No forms, no manual entry, no forgetting what you bought this morning.
 
 TRACK MONEY YOUR WAY
-• Type it: "spent 25 on groceries" becomes a categorized transaction automatically
-• Say it: record a voice note and Spendly transcribes and creates the transaction for you
-• Or add it manually, your choice every time
+• Text: "spent 25 on groceries" becomes a categorized transaction automatically
+• Voice: record a quick note and Spendly transcribes and creates the transaction for you
+• Manual: full control when you want it, transaction by transaction
 
 SEE WHERE IT GOES
-• Visual breakdowns of spending by category, week, month or year
+• Category, week, month and year breakdowns of every dollar
 • Income vs. expense trends over time
 • AI Coach — plain-language insights on your spending and savings, not just charts
 • Multiple wallets — cards, cash, savings — tracked separately and together
@@ -58,7 +74,7 @@ STAY ON TOP OF IT
 • Recurring transactions tracked automatically
 
 BUILT FOR HOW YOU ACTUALLY SPEND
-• Multi-currency support
+• Multi-currency support, auto-converted to your main currency
 • Clean, fast, distraction-free interface
 • Your data, your control — delete your account and data anytime, in-app
 
@@ -67,9 +83,9 @@ Spendly AI — the fastest way to know where your money went.
 
 ### Keywords (100 char max, comma-separated, no spaces after commas)
 ```
-budget,expense tracker,money manager,finance,ai assistant,voice input,wallet,spending,savings
+money manager,finance,ai assistant,wallet,spending,savings,currency,recurring,cash flow
 ```
-93/100 characters — don't repeat words already in the name/subtitle ("Spendly", "AI", "tracker" are already indexed from those fields per Apple's own guidance).
+87/100 characters. Dropped "budget", "expense tracker" and "voice input" from this list since the new name/subtitle already cover budget, expenses, tracker, voice and text — Apple indexes those fields too, so repeating them here would waste the 100-char budget instead of reaching new search terms.
 
 ### Age rating
 Run the questionnaire in App Store Connect answering "None/No" to every content-descriptor question (no violence, no mature content, no gambling, no user-generated public content, no unrestricted web access). That lands at **4+**.
@@ -82,12 +98,12 @@ Play has no separate keywords field — discovery comes from the title + descrip
 
 ### App name (30 char max)
 ```
-Spendly AI
+Spendly AI: Budget & Expenses
 ```
 
 ### Short description (80 char max)
 ```
-Track spending by text or voice — AI-powered budget and wallet tracker.
+Say it or type it — AI logs it. Multi-wallet, multi-currency budget tracker.
 ```
 
 ### Full description (4000 char max)
@@ -207,21 +223,22 @@ The app itself ships English + Russian (`LANGUAGES = ['en', 'ru']`), so it's wor
 
 ### Name / Subtitle (App Store)
 ```
-Spendly AI
-Бюджет и расходы с ИИ
+Spendly AI: Бюджет и расходы
+Учёт трат голосом и текстом
 ```
+Same restructure as the English version — brand + the two highest-volume terms in the name field, the voice/text differentiator in the subtitle instead of leaving the name as bare brand.
 
 ### Description (both stores)
 ```
-Spendly AI превращает рутинный учёт денег в привычку на две секунды. Опишите трату обычными словами или просто скажите вслух — ИИ сам создаст транзакцию с нужной категорией.
+Скажите или напишите — Spendly сам создаст транзакцию с нужной категорией. Без форм, без ручного ввода, без «а на что я вчера потратил».
 
 ВЕДИТЕ УЧЁТ УДОБНО
 • Текстом: «потратил 500 на продукты» становится готовой транзакцией
-• Голосом: запишите голосовую заметку — Spendly распознает речь и создаст транзакцию
-• Вручную — как вам удобнее в моменте
+• Голосом: наговорите заметку — Spendly распознает речь и создаст транзакцию
+• Вручную: полный контроль, когда он нужен
 
 ВИДЬТЕ, КУДА УХОДЯТ ДЕНЬГИ
-• Наглядная разбивка расходов по категориям, неделям, месяцам и годам
+• Разбивка по категориям, неделям, месяцам и годам
 • Динамика доходов и расходов
 • AI Coach — простым языком о ваших тратах и накоплениях, а не только графики
 • Несколько кошельков — карты, наличные, накопления — отдельно и вместе
@@ -232,7 +249,7 @@ Spendly AI превращает рутинный учёт денег в прив
 • Регулярные операции учитываются автоматически
 
 ПОД ВАШИ ПРИВЫЧКИ
-• Поддержка нескольких валют
+• Поддержка нескольких валют с автоконвертацией в основную
 • Быстрый, чистый интерфейс без лишнего
 • Ваши данные под вашим контролем: аккаунт и данные можно удалить в любой момент прямо в приложении
 
@@ -241,15 +258,16 @@ Spendly AI — самый быстрый способ понимать, куда
 
 ### Promotional text (App Store)
 ```
-Опишите трату словами или голосом — ИИ сам создаст транзакцию за секунды. Несколько кошельков, валют и реальная аналитика.
+Скажите или напишите — Spendly создаст транзакцию за секунды. Несколько кошельков, валют и ИИ-инсайты, а не только графики.
 ```
 
 ### Short description (Google Play, 80 char max)
 ```
-Учёт трат текстом или голосом — бюджет и кошельки с ИИ.
+Скажите или напишите — ИИ создаст транзакцию. Кошельки и валюты под контролем.
 ```
 
 ### Keywords (App Store)
 ```
-бюджет,учет расходов,финансы,трекер трат,ии помощник,кошелек,экономия,накопления,голосовой ввод
+менеджер финансов,финансы,ии помощник,кошелек,экономия,накопления,валюта,регулярные платежи
 ```
+Dropped "бюджет", "учет расходов" and "голосовой ввод" for the same reason as the English list — already covered by the new name/subtitle.
