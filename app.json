@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.spendlyai.app",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Spendly uses your microphone to let you add transactions by voice."
