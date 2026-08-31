@@ -8,8 +8,8 @@ Working doc for App Store Connect + Google Play Console submission. Copy blocks 
 |---|---|
 | App / brand name | Spendly AI (in-app wordmark, icon, header) |
 | Store listing name | `Spendly AI: Budget & Expenses` — see ASO section below for why this differs from the plain brand name |
-| iOS bundle ID | `com.spendlyai.app` |
-| Android package | `com.spendlyai.app` |
+| iOS bundle ID | `com.spendlyai.mobile` |
+| Android package | `com.spendlyai.mobile` |
 | Version | 1.0.0 |
 | Primary category | Finance |
 | Tablet support | None — phone only (`supportsTablet` set to `false`) |
@@ -17,6 +17,8 @@ Working doc for App Store Connect + Google Play Console submission. Copy blocks 
 | Support / Marketing URL | https://spendly-ai.com |
 | Privacy Policy | https://spendly-ai.com/privacy |
 | Terms of Use | https://spendly-ai.com/terms |
+
+**2026-08-31:** identifiers changed from `com.spendlyai.app` to `com.spendlyai.mobile` on both platforms. `com.spendlyai.app` turned out to be permanently locked on Google Play (package names aren't released back once used, even by the original account, even after deletion) — Play Console rejected it when creating the app record. Moved both iOS and Android to the same new identifier for consistency, even though iOS wasn't actually blocked (Apple enrollment is still pending, so nothing there was registered yet). Firebase needs new app registrations under both new identifiers in the same project (`spendly-ai-f3ed6`) and fresh `google-services.json` / `GoogleService-Info.plist` downloads — old ones are stale.
 
 ---
 

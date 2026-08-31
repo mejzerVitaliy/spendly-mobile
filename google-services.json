@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:99684039879:android:bca77f75a6ccbcffdc12e2",
+        "mobilesdk_app_id": "1:99684039879:android:ea1121b7e3fd16c4dc12e2",
         "android_client_info": {
-          "package_name": "com.spendlyai.app"
+          "package_name": "com.spendlyai.mobile"
         }
       },
       "oauth_client": [],
