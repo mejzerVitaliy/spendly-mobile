@@ -12,7 +12,8 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.spendlyai.mobile",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "Spendly uses your microphone to let you add transactions by voice."
+        "NSMicrophoneUsageDescription": "Spendly uses your microphone to let you add transactions by voice.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "splash": {
