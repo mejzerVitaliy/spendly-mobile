@@ -39,6 +39,7 @@ export function CurrenciesScreen() {
   };
 
   const mainCurrencyCode = getMeQuery.data?.data?.mainCurrencyCode ?? 'USD';
+  const defaultCurrencyCode = getMeQuery.data?.data?.defaultCurrencyCode ?? null;
 
   useEffect(() => {
     const favorites = getFavoritesQuery.data?.data ?? [];
@@ -88,6 +89,19 @@ export function CurrenciesScreen() {
       await updateFavoritesMutation.mutateAsync({ currencyCodes: next });
     } catch (e: any) {
       setSelectedCodes(previous);
+      Toast.show({ type: 'error', text1: t('common.error'), text2: e?.response?.data?.message || t('currencies.failedUpdate') });
+    }
+  };
+
+  const handleSetDefault = async (code: string) => {
+    // Unlike the main currency, this is a pure pre-fill convenience with no
+    // side effects on existing data - no confirmation needed, same as
+    // toggling a favorite.
+    try {
+      await updateSettingsMutation.mutateAsync({
+        defaultCurrencyCode: code === defaultCurrencyCode ? null : code,
+      });
+    } catch (e: any) {
       Toast.show({ type: 'error', text1: t('common.error'), text2: e?.response?.data?.message || t('currencies.failedUpdate') });
     }
   };
@@ -276,12 +290,16 @@ export function CurrenciesScreen() {
                       currency={currency}
                       isMain={currency.code === mainCurrencyCode}
                       isFavorite={selectedCodes.includes(currency.code)}
+                      isDefault={currency.code === defaultCurrencyCode}
                       onToggleFavorite={() => toggleFavorite(currency.code)}
                       onSetMain={() => setMainCurrencyTarget(currency.code)}
+                      onToggleDefault={() => handleSetDefault(currency.code)}
                       disabled={updateFavoritesMutation.isPending || updateSettingsMutation.isPending}
                       showSeparator={index < filteredCurrencies.length - 1}
                       mainLabel={t('currencies.main')}
                       setMainLabel={t('currencies.setMain')}
+                      defaultLabel={t('currencies.defaultBadge')}
+                      setDefaultLabel={t('currencies.setDefault')}
                     />
                   ))}
                 </View>
@@ -333,24 +351,32 @@ interface CurrencyRowProps {
   currency: CurrencyDto;
   isMain: boolean;
   isFavorite: boolean;
+  isDefault: boolean;
   onToggleFavorite: () => void;
   onSetMain: () => void;
+  onToggleDefault: () => void;
   disabled: boolean;
   showSeparator: boolean;
   mainLabel: string;
   setMainLabel: string;
+  defaultLabel: string;
+  setDefaultLabel: string;
 }
 
 function CurrencyRow({
   currency,
   isMain,
   isFavorite,
+  isDefault,
   onToggleFavorite,
   onSetMain,
+  onToggleDefault,
   disabled,
   showSeparator,
   mainLabel,
   setMainLabel,
+  defaultLabel,
+  setDefaultLabel,
 }: CurrencyRowProps) {
   return (
     <>
@@ -398,6 +424,30 @@ function CurrencyRow({
         </View>
 
         <View className="flex-row items-center gap-2">
+          {isDefault ? (
+            <View
+              className="flex-row items-center gap-1 px-2.5 py-1 rounded-full"
+              style={{ backgroundColor: 'rgba(34,197,94,0.15)', borderWidth: 1, borderColor: 'rgba(34,197,94,0.3)' }}
+            >
+              <Ionicons name="checkmark-circle" size={10} color={colors.success} />
+              <Text className="text-[10px] font-bold" style={{ color: colors.success }}>
+                {defaultLabel}
+              </Text>
+            </View>
+          ) : (
+            <Pressable
+              onPress={onToggleDefault}
+              disabled={disabled}
+              hitSlop={8}
+              className="px-2.5 py-1 rounded-full active:opacity-60"
+              style={{ backgroundColor: colors.glass.background, borderWidth: 1, borderColor: colors.glass.border }}
+            >
+              <Text className="text-[11px] font-semibold text-muted-foreground">
+                {setDefaultLabel}
+              </Text>
+            </Pressable>
+          )}
+
           {isMain ? (
             <View
               className="flex-row items-center gap-1 px-2.5 py-1 rounded-full"

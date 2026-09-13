@@ -1,4 +1,5 @@
 import { useGetAllTransactions } from '@/shared/hooks';
+import { useDisplayPreferencesStore } from '@/shared/stores';
 import { formatCompact, getCategoryName } from '@/shared/utils';
 import { Transaction } from '@/shared/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +14,7 @@ interface TransactionsListProps {
   startDate?: string;
   endDate?: string;
   search?: string;
+  walletId?: string | null;
 }
 
 interface GroupedTransactions {
@@ -78,6 +80,7 @@ function TransactionRow({
   }));
 
   const { i18n, t } = useTranslation();
+  const { roundAmounts } = useDisplayPreferencesStore();
   const isTransfer = !!item.transferGroupId;
   const isIncome = item.type === 'INCOME';
   const amountColor = isIncome ? '#22C55E' : '#EF4444';
@@ -122,11 +125,11 @@ function TransactionRow({
 
         <View className="items-end">
           <Text className="text-sm font-bold" style={{ color: isTransfer ? '#FFFFFF' : amountColor }}>
-            {!isTransfer && (isIncome ? '+' : '-')}{formatCompact(item.amount)} {item.currencyCode}
+            {!isTransfer && (isIncome ? '+' : '-')}{formatCompact(item.amount, roundAmounts)} {item.currencyCode}
           </Text>
           {item.currencyCode !== item.mainCurrencyCode && (
             <Text className="text-xs text-muted-foreground mt-0.5">
-              {formatCompact(item.convertedAmount)} {item.mainCurrencyCode}
+              {formatCompact(item.convertedAmount, roundAmounts)} {item.mainCurrencyCode}
             </Text>
           )}
         </View>
@@ -135,8 +138,8 @@ function TransactionRow({
   );
 }
 
-export function TransactionsList({ onTransactionPress, onTransactionLongPress, startDate, endDate, search }: TransactionsListProps) {
-  const query = useGetAllTransactions({ startDate, endDate, search });
+export function TransactionsList({ onTransactionPress, onTransactionLongPress, startDate, endDate, search, walletId }: TransactionsListProps) {
+  const query = useGetAllTransactions({ startDate, endDate, search, walletId: walletId ?? undefined });
   const { t, i18n } = useTranslation();
 
   const groupedTransactions = useMemo(() => {

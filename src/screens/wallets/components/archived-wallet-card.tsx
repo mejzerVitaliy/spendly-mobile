@@ -1,4 +1,5 @@
 import { WalletDto } from '@/shared/types';
+import { useDisplayPreferencesStore } from '@/shared/stores';
 import { formatCompact } from '@/shared/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, Text, View } from 'react-native';
@@ -21,6 +22,7 @@ interface ArchivedWalletCardProps {
 
 export function ArchivedWalletCard({ wallet, typeLabel, onUnarchive }: ArchivedWalletCardProps) {
   const { t } = useTranslation();
+  const { roundAmounts } = useDisplayPreferencesStore();
   const icon = WALLET_TYPE_ICONS[wallet.type] ?? 'wallet-outline';
 
   return (
@@ -41,7 +43,7 @@ export function ArchivedWalletCard({ wallet, typeLabel, onUnarchive }: ArchivedW
             {wallet.name}
           </Text>
           <Text className="text-[13px] text-muted-foreground mt-0.5">
-            {formatCompact(wallet.currentBalance)} {wallet.currencyCode}
+            {formatCompact(wallet.currentBalance, roundAmounts)} {wallet.currencyCode}
           </Text>
         </View>
 

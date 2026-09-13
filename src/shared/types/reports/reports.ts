@@ -20,6 +20,7 @@ interface TrendPoint {
 interface ReportsSummaryRequest {
   startDate?: string
   endDate?: string
+  walletId?: string
 }
 
 interface ReportsSummaryResponse
@@ -44,6 +45,7 @@ interface ReportsCategoryChartRequest {
   endDate?: string
   type?: TransactionType
   language?: string
+  walletId?: string
 }
 
 interface ReportsCategoryChartResponse
@@ -57,6 +59,7 @@ interface ReportsCategoryChartResponse
 interface ReportsCashFlowTrendRequest {
   startDate?: string
   endDate?: string
+  walletId?: string
 }
 
 interface ReportsCashFlowTrendResponse

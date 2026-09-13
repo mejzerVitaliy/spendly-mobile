@@ -7,11 +7,12 @@ import { colors } from '@/shared/theme';
 import { useTranslation } from 'react-i18next';
 
 interface TransactionSearchProps {
+  value: string;
   onSearchChange: (search: string) => void;
+  onFocusChange?: (focused: boolean) => void;
 }
 
-export function TransactionSearch({ onSearchChange }: TransactionSearchProps) {
-  const [value, setValue] = useState('');
+export function TransactionSearch({ value, onSearchChange, onFocusChange }: TransactionSearchProps) {
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const borderOpacity = useSharedValue(0);
@@ -26,12 +27,20 @@ export function TransactionSearch({ onSearchChange }: TransactionSearchProps) {
   }));
 
   const handleChange = (text: string) => {
-    setValue(text);
     onSearchChange(text);
   };
 
+  const handleFocus = () => {
+    setIsFocused(true);
+    onFocusChange?.(true);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    onFocusChange?.(false);
+  };
+
   const handleClear = () => {
-    setValue('');
     onSearchChange('');
     inputRef.current?.focus();
   };
@@ -43,8 +52,8 @@ export function TransactionSearch({ onSearchChange }: TransactionSearchProps) {
         ref={inputRef}
         value={value}
         onChangeText={handleChange}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         placeholder={t('search.placeholder')}
         placeholderTextColor={colors.mutedForeground}
         style={styles.input}

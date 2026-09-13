@@ -2,6 +2,7 @@ import { ParsedTransactionPreview } from '@/shared/types';
 import { RecurringPeriod } from '@/shared/types/transactions/transactions';
 import { useWallets } from '@/shared/hooks';
 import { useCategories } from '@/shared/hooks/categories';
+import { useDisplayPreferencesStore } from '@/shared/stores';
 import { formatCompact } from '@/shared/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { useRef, useEffect, useState } from 'react';
@@ -55,6 +56,7 @@ function TransactionPreviewRow({
   const { wallets } = useWallets();
   const { getAllQuery } = useCategories();
   const { i18n } = useTranslation();
+  const { roundAmounts } = useDisplayPreferencesStore();
 
   const fromWallet = wallets.find(w => w.id === tx.walletId);
   const toWallet = wallets.find(w => w.id === tx.toWalletId);
@@ -101,7 +103,7 @@ function TransactionPreviewRow({
       </View>
 
       <Text className="text-sm font-bold mr-2" style={{ color: amountColor }}>
-        {prefix}{formatCompact(tx.amount)} {tx.currencyCode}
+        {prefix}{formatCompact(tx.amount, roundAmounts)} {tx.currencyCode}
       </Text>
 
       <Ionicons name="pencil" size={14} color={colors.mutedForeground} />

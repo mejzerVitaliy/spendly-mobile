@@ -1,4 +1,5 @@
 import { useAuth, useReports, useWallets } from '@/shared/hooks';
+import { useDisplayPreferencesStore } from '@/shared/stores';
 import { formatCompact } from '@/shared/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect } from 'react';
@@ -18,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 interface BalanceViewProps {
   startDate?: string;
   endDate?: string;
+  walletId?: string | null;
 }
 
 function SkeletonBlock({ width, height }: { width: number; height: number }) {
@@ -67,6 +69,7 @@ function StatCard({
   isLoading: boolean;
 }) {
   const opacity = useSharedValue(0);
+  const { roundAmounts } = useDisplayPreferencesStore();
 
   useEffect(() => {
     if (!isLoading) {
@@ -90,7 +93,7 @@ function StatCard({
         <SkeletonBlock width={96} height={22} />
       ) : (
         <Animated.Text style={[styles.statAmount, { color }, animStyle]}>
-          {formatCompact(amount)}{' '}
+          {formatCompact(amount, roundAmounts)}{' '}
           <Text style={styles.statCurrency}>{currency}</Text>
         </Animated.Text>
       )}
@@ -124,15 +127,19 @@ function StatCard({
   );
 }
 
-const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
-  const { getSummary } = useReports({ startDate, endDate });
+const BalanceView = ({ startDate, endDate, walletId }: BalanceViewProps) => {
+  const { getSummary } = useReports({ startDate, endDate, walletId: walletId ?? undefined });
   const { totalBalance: walletTotalBalance, isLoading: isWalletsLoading } = useWallets();
   const { getMeQuery } = useAuth();
   const { t } = useTranslation();
+  const { roundAmounts } = useDisplayPreferencesStore();
 
   const isLoading = getSummary.isLoading || isWalletsLoading;
   const data = getSummary?.data?.data;
-  const totalBalance = walletTotalBalance?.totalBalance ?? 0;
+  // getSummary.totalBalance is wallet-aware server-side (see reports.service);
+  // useWallets().totalBalance is always the whole-account figure, so only
+  // fall back to it when no single wallet is selected.
+  const totalBalance = walletId ? (data?.totalBalance ?? 0) : (walletTotalBalance?.totalBalance ?? 0);
   const totalIncome = data?.totalIncome ?? 0;
   const totalExpenses = data?.totalExpense ?? 0;
   const mainCurrencyCode = getMeQuery?.data?.data?.mainCurrencyCode ?? 'USD';
@@ -156,7 +163,7 @@ const BalanceView = ({ startDate, endDate }: BalanceViewProps) => {
         <SkeletonBlock width={200} height={44} />
       ) : (
         <Animated.Text style={[styles.balanceAmount, balanceStyle]}>
-          {formatCompact(totalBalance)}{' '}
+          {formatCompact(totalBalance, roundAmounts)}{' '}
           <Text style={styles.balanceCurrency}>{mainCurrencyCode}</Text>
         </Animated.Text>
       )}

@@ -1,3 +1,4 @@
+import { useDisplayPreferencesStore } from '@/shared/stores';
 import { formatCompact } from '@/shared/utils';
 import { useEffect, useState } from 'react';
 import { LayoutChangeEvent, Text, View } from 'react-native';
@@ -11,6 +12,7 @@ interface RatioChartProps {
 
 export function IncomeExpenseRatioChart({ totalIncome, totalExpense, currencyCode }: RatioChartProps) {
   const [barWidth, setBarWidth] = useState(0);
+  const { roundAmounts } = useDisplayPreferencesStore();
   const total = totalIncome + totalExpense;
   const incomeRatio = total > 0 ? totalIncome / total : 0.5;
 
@@ -69,7 +71,7 @@ export function IncomeExpenseRatioChart({ totalIncome, totalExpense, currencyCod
           <View>
             <Text className="text-xs text-muted-foreground">Income</Text>
             <Text className="text-sm font-semibold text-foreground">
-              {currencyCode} {formatCompact(totalIncome)}
+              {currencyCode} {formatCompact(totalIncome, roundAmounts)}
             </Text>
           </View>
         </View>
@@ -77,7 +79,7 @@ export function IncomeExpenseRatioChart({ totalIncome, totalExpense, currencyCod
           <View>
             <Text className="text-xs text-muted-foreground text-right">Expense</Text>
             <Text className="text-sm font-semibold text-foreground text-right">
-              {currencyCode} {formatCompact(totalExpense)}
+              {currencyCode} {formatCompact(totalExpense, roundAmounts)}
             </Text>
           </View>
           <View className="w-2.5 h-2.5 rounded-full bg-red-500" />

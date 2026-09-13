@@ -3,6 +3,7 @@ import { Pressable, Text, TextInput, TextInputProps, TouchableOpacity, View } fr
 import { Ionicons } from '@expo/vector-icons';
 import { NumericKeyboard } from './numeric-keyboard';
 import { useNumericKeyboard } from './use-numeric-keyboard';
+import { appendNumericKey, deleteNumericKey, evaluateNumericExpression } from './numeric-input';
 import { colors } from '@/shared/theme';
 
 interface InputProps extends Omit<TextInputProps, 'secureTextEntry'> {
@@ -41,15 +42,15 @@ const Input = ({
   const secureTextEntry = type === 'password' && !isPasswordVisible;
 
   const handleNumericKey = (key: string) => {
-    const current = value ?? '';
-    if (key === '.' && current.includes('.')) return;
-    if (key === '.' && current === '') { onChangeText?.('0.'); return; }
-    onChangeText?.(current + key);
+    onChangeText?.(appendNumericKey(value ?? '', key));
   };
 
   const handleNumericDelete = () => {
-    const current = value ?? '';
-    onChangeText?.(current.slice(0, -1));
+    onChangeText?.(deleteNumericKey(value ?? ''));
+  };
+
+  const handleNumericConfirm = () => {
+    onChangeText?.(evaluateNumericExpression(value ?? ''));
   };
 
   const borderColor = error
@@ -158,6 +159,7 @@ const Input = ({
           value={value}
           onKeyPress={handleNumericKey}
           onDelete={handleNumericDelete}
+          onConfirm={handleNumericConfirm}
           onClose={kb.close}
           onClosed={kb.onClosed}
         />

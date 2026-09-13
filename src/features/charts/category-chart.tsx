@@ -1,3 +1,4 @@
+import { useDisplayPreferencesStore } from '@/shared/stores';
 import { formatCompact } from '@/shared/utils';
 import { CategoryChartItem } from '@/shared/types';
 import { useEffect } from 'react';
@@ -48,6 +49,7 @@ const UNKNOWN_LABELS = new Set(['Unknown', 'Неизвестно']);
 
 export function CategoryBreakdownChart({ data, total, currencyCode }: CategoryChartProps) {
   const { t } = useTranslation();
+  const { roundAmounts } = useDisplayPreferencesStore();
 
   if (!data || data.length === 0) {
     return (
@@ -70,7 +72,7 @@ export function CategoryBreakdownChart({ data, total, currencyCode }: CategoryCh
       <View className="mt-2 pt-2 border-t border-border flex-row justify-between">
         <Text className="text-xs text-muted-foreground">Total</Text>
         <Text className="text-xs font-semibold text-foreground">
-          {currencyCode} {formatCompact(total)}
+          {currencyCode} {formatCompact(total, roundAmounts)}
         </Text>
       </View>
     </View>

@@ -1,7 +1,7 @@
 import { useTransactions } from '@/shared/hooks/transactions/use-transactions';
 import { ParsedTransactionPreview } from '@/shared/types';
 import { useState } from 'react';
-import { ActivityIndicator, Keyboard, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
@@ -90,8 +90,11 @@ const CreateTransactionText = ({ onSuccess }: CreateTransactionTextProps) => {
             editable={!isPreviewing}
             autoFocus
             returnKeyType="done"
+            // blurOnSubmit alone hides the keyboard here (blur → OS hides it)
+            // without an imperative Keyboard.dismiss() call - see the comment
+            // in handleSubmit below on why that matters for this sheet's
+            // keyboardBlurBehavior="restore".
             blurOnSubmit
-            onSubmitEditing={Keyboard.dismiss}
             multiline={false}
           />
 

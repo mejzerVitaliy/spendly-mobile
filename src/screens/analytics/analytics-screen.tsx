@@ -2,8 +2,9 @@ import { BalanceView } from '@/features/balance-view';
 import { InsightsSection } from '@/features/insights';
 import { PeriodSelector } from '@/features/period-selector';
 import { CashFlowChart, CategoryBreakdownChart, IncomeExpenseRatioChart } from '@/features/charts';
+import { WalletFilterSelector } from '@/features/wallet-filter';
 import { AppHeader, SegmentedControl } from '@/shared/ui';
-import { useAnalyticsStore, useAuthStore } from '@/shared/stores';
+import { useAnalyticsStore, useAuthStore, useWalletFilterStore } from '@/shared/stores';
 import { useReports } from '@/shared/hooks';
 import { guestPromptService } from '@/shared/services/guest-prompt';
 import { TransactionType } from '@/shared/constants';
@@ -45,6 +46,7 @@ export const AnalyticsScreen = () => {
   const { startDate, endDate, selectedCategoryTransactionType, setSelectedCategoryTransactionType } =
     useAnalyticsStore();
   const isGuest = useAuthStore((s) => s.user?.type === 'GUEST');
+  const { selectedWalletId } = useWalletFilterStore();
 
   useEffect(() => {
     guestPromptService.maybeShowForAnalyticsView(isGuest);
@@ -55,6 +57,7 @@ export const AnalyticsScreen = () => {
     endDate,
     type: selectedCategoryTransactionType,
     language: i18n.language,
+    walletId: selectedWalletId ?? undefined,
   });
 
   const summary = getSummary.data?.data;
@@ -114,9 +117,13 @@ export const AnalyticsScreen = () => {
 
           <PeriodSelector />
 
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 }}>
+            <WalletFilterSelector />
+          </View>
+
           {activeTab === 'analytics' && (
             <>
-              <BalanceView startDate={startDate} endDate={endDate} />
+              <BalanceView startDate={startDate} endDate={endDate} walletId={selectedWalletId} />
 
               <View style={{ height: 8 }} />
 

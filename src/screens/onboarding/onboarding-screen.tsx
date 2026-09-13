@@ -4,6 +4,7 @@ import Toast from 'react-native-toast-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useOnboardingStore, useAuthStore } from '@/shared/stores';
+import { ensureAccountLocalState } from '@/shared/hooks/auth/use-auth';
 import { authApi } from '@/shared/services/api/auth.api';
 import { analytics } from '@/shared/services/analytics';
 import { ProductSlides } from './slides/product-slides';
@@ -33,7 +34,6 @@ export function OnboardingScreen() {
     setWalletInitialBalance,
     setCompleted,
     setPendingOpenCreate,
-    setHasSeenCoach,
   } = useOnboardingStore();
 
   const { setAuth } = useAuthStore();
@@ -57,7 +57,10 @@ export function OnboardingScreen() {
 
       const { user, accessToken, refreshToken } = response.data;
 
-      setHasSeenCoach(false); // reset so coach shows for every new account
+      // This is always a brand-new guest account, so ensureAccountLocalState
+      // will see a different (or no) previous user id here and reset the
+      // coach-guide flag along with notification history/cooldowns.
+      await ensureAccountLocalState(user.id);
       if (openCreate) setPendingOpenCreate(true);
 
       await setAuth(user, accessToken, refreshToken);

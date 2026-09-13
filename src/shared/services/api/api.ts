@@ -67,8 +67,28 @@ apiClient.interceptors.response.use(
     };
 
     if (error.response?.status === 429) {
-      if (!limitAlertVisible) {
+      // The API returns 429 for two unrelated reasons: the user's actual
+      // monthly AI usage quota (LimitReachedError, code LIMIT_REACHED), and
+      // Fastify's generic per-IP rate limiter tripping on ordinary traffic
+      // bursts (no `code` field). Only the former is something the user can
+      // act on - showing "your limits are exhausted" for the latter is just
+      // wrong and confusing.
+      const isUsageLimit =
+        (error.response.data as { code?: string } | undefined)?.code === 'LIMIT_REACHED';
+
+      if (isUsageLimit && !limitAlertVisible) {
         limitAlertVisible = true;
+        const resetLimitAlertVisible = () => { limitAlertVisible = false; };
+        // Safety net: Alert.alert's onDismiss only fires for Android
+        // back-button/outside-tap dismissal, not for every possible way an
+        // alert can go away. Without this, one missed dismissal path leaves
+        // limitAlertVisible stuck `true` and silently swallows every future
+        // 429 alert for the rest of the session.
+        const unstickTimer = setTimeout(resetLimitAlertVisible, 60_000);
+        const clearAndReset = () => {
+          clearTimeout(unstickTimer);
+          resetLimitAlertVisible();
+        };
         Alert.alert(
           i18n.t('limits.limitReachedTitle'),
           i18n.t('limits.limitReachedBody'),
@@ -76,16 +96,17 @@ apiClient.interceptors.response.use(
             {
               text: i18n.t('common.cancel'),
               style: 'cancel',
-              onPress: () => { limitAlertVisible = false; },
+              onPress: clearAndReset,
             },
             {
               text: i18n.t('limits.viewUsage'),
               onPress: () => {
-                limitAlertVisible = false;
+                clearAndReset();
                 router.push('/settings/limits' as any);
               },
             },
           ],
+          { onDismiss: clearAndReset },
         );
       }
       return Promise.reject(error);
@@ -144,9 +165,12 @@ apiClient.interceptors.response.use(
 
         await tokenStorage.removeTokens();
 
-        const { useAuthStore, useOnboardingStore, useNotificationsStore, useLanguageStore } = await import('@/shared/stores');
-        useOnboardingStore.getState().reset();
-        useNotificationsStore.getState().reset();
+        // Notification history and the coach-guide flag are deliberately left
+        // alone here - they're only wiped at the *next* login, and only if
+        // that login turns out to be a different account (see
+        // ensureAccountLocalState in use-auth.ts). This is a silent session
+        // expiry, not a user-initiated logout.
+        const { useAuthStore, useLanguageStore } = await import('@/shared/stores');
         useLanguageStore.getState().setLanguage('en');
         const { clearAuth } = useAuthStore.getState();
         await clearAuth();

@@ -1,5 +1,6 @@
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Dimensions, Modal, Platform, Pressable, Text, View } from 'react-native';
 import Animated, {
@@ -10,6 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { colors } from '@/shared/theme';
 
 interface NumericKeyboardProps {
   visible: boolean;
@@ -18,6 +20,12 @@ interface NumericKeyboardProps {
   onDelete: () => void;
   onClose: () => void;
   /**
+   * Called right before onClose when the user taps confirm - use it to
+   * evaluate a running calculator expression (see evaluateNumericExpression
+   * in numeric-input.ts) into the final amount before the keyboard closes.
+   */
+  onConfirm?: () => void;
+  /**
    * Called after the close animation completes.
    * Use useNumericKeyboard().onClosed here — it blurs the input and
    * releases the guard that prevents onFocus from reopening the keyboard.
@@ -25,16 +33,41 @@ interface NumericKeyboardProps {
   onClosed?: () => void;
 }
 
-// Grid:
-// [1] [2] [3]
-// [4] [5] [6]
-// [7] [8] [9]
-// [⌫] [0] [✓]
-const NUMBER_ROWS = [
-  ['1', '2', '3'],
-  ['4', '5', '6'],
-  ['7', '8', '9'],
-] as const;
+// Grid (basic four-function calculator, left-to-right evaluation, no
+// precedence - see evaluateNumericExpression):
+// [7] [8] [9] [÷]
+// [4] [5] [6] [×]
+// [1] [2] [3] [−]
+// [.] [0] [⌫] [+]
+// [        ✓        ]
+type KeyDef = { key: string; label: string; kind: 'digit' | 'operator' | 'delete' };
+
+const GRID: readonly (readonly KeyDef[])[] = [
+  [
+    { key: '7', label: '7', kind: 'digit' },
+    { key: '8', label: '8', kind: 'digit' },
+    { key: '9', label: '9', kind: 'digit' },
+    { key: '/', label: '÷', kind: 'operator' },
+  ],
+  [
+    { key: '4', label: '4', kind: 'digit' },
+    { key: '5', label: '5', kind: 'digit' },
+    { key: '6', label: '6', kind: 'digit' },
+    { key: '*', label: '×', kind: 'operator' },
+  ],
+  [
+    { key: '1', label: '1', kind: 'digit' },
+    { key: '2', label: '2', kind: 'digit' },
+    { key: '3', label: '3', kind: 'digit' },
+    { key: '-', label: '−', kind: 'operator' },
+  ],
+  [
+    { key: '.', label: '.', kind: 'digit' },
+    { key: '0', label: '0', kind: 'digit' },
+    { key: '__delete__', label: '', kind: 'delete' },
+    { key: '+', label: '+', kind: 'operator' },
+  ],
+];
 
 export function NumericKeyboard({
   visible,
@@ -42,6 +75,7 @@ export function NumericKeyboard({
   onKeyPress,
   onDelete,
   onClose,
+  onConfirm,
   onClosed,
 }: NumericKeyboardProps) {
   const insets = useSafeAreaInsets();
@@ -90,11 +124,29 @@ export function NumericKeyboard({
     transform: [{ translateY: translateY.value }],
   }));
 
+  // onConfirm runs on every dismissal path (✓ button or backdrop tap), not
+  // just the checkmark - an expression like "12+5" needs to be evaluated
+  // into a final number regardless of how the user leaves the keyboard, or
+  // the raw unevaluated string would leak out to whatever reads the value
+  // next (e.g. parseFloat("12+5") silently truncates to 12).
   const handleClose = () => {
     if (!closingRef.current) {
+      onConfirm?.();
       onClose();
     }
   };
+
+  // Light haptic tap on every key so the keyboard feels more responsive -
+  // it has no other tactile/visual feedback beyond the active: style.
+  const pressKey = useCallback((key: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onKeyPress(key);
+  }, [onKeyPress]);
+
+  const pressDelete = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onDelete();
+  }, [onDelete]);
 
   return (
     <Modal visible={modalVisible} transparent animationType="none" statusBarTranslucent>
@@ -151,48 +203,51 @@ export function NumericKeyboard({
         {/* Keys — fill remaining height */}
         <View className="flex-1 px-3 gap-2">
 
-          {/* Rows 1–9 */}
-          {NUMBER_ROWS.map((row, rowIndex) => (
+          {GRID.map((row, rowIndex) => (
             <View key={rowIndex} className="flex-1 flex-row gap-2">
-              {row.map((digit) => (
-                <Pressable
-                  key={digit}
-                  onPress={() => onKeyPress(digit)}
-                  className="flex-1 items-center justify-center rounded-[16px] bg-white/[0.08] border border-white/[0.09] active:bg-white/20 active:border-white/25"
-                >
-                  <Text className="text-[22px] font-medium text-foreground">
-                    {digit}
-                  </Text>
-                </Pressable>
-              ))}
+              {row.map((k) => {
+                if (k.kind === 'delete') {
+                  return (
+                    <Pressable
+                      key={k.key}
+                      onPress={pressDelete}
+                      className="flex-1 items-center justify-center rounded-[16px] bg-white/[0.05] border border-white/[0.06] active:bg-white/[0.16] active:border-white/20"
+                    >
+                      <Ionicons name="backspace-outline" size={22} color="#F2F2F2" />
+                    </Pressable>
+                  );
+                }
+                const isOperator = k.kind === 'operator';
+                return (
+                  <Pressable
+                    key={k.key}
+                    onPress={() => pressKey(k.key)}
+                    className={
+                      isOperator
+                        ? 'flex-1 items-center justify-center rounded-[16px] bg-white/[0.05] border border-white/[0.06] active:bg-white/[0.16] active:border-white/20'
+                        : 'flex-1 items-center justify-center rounded-[16px] bg-white/[0.08] border border-white/[0.09] active:bg-white/20 active:border-white/25'
+                    }
+                  >
+                    <Text
+                      className="text-[22px] font-medium"
+                      style={{ color: isOperator ? colors.primary : colors.foreground }}
+                    >
+                      {k.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
           ))}
 
-          {/* Bottom row: ⌫ · 0 · ✓ */}
-          <View className="flex-1 flex-row gap-2">
-
-            {/* Backspace */}
-            <Pressable
-              onPress={onDelete}
-              className="flex-1 items-center justify-center rounded-[16px] bg-white/[0.05] border border-white/[0.06] active:bg-white/[0.16] active:border-white/20"
-            >
-              <Ionicons name="backspace-outline" size={22} color="#F2F2F2" />
-            </Pressable>
-
-            {/* 0 */}
-            <Pressable
-              onPress={() => onKeyPress('0')}
-              className="flex-1 items-center justify-center rounded-[16px] bg-white/[0.08] border border-white/[0.09] active:bg-white/20 active:border-white/25"
-            >
-              <Text className="text-[22px] font-medium text-foreground">0</Text>
-            </Pressable>
-
-            {/* Confirm ✓ */}
+          {/* Confirm ✓ - its own full-width row rather than a 5th column, so
+              it stays a comfortably large tap target. */}
+          <View className="flex-[0.7] flex-row">
             <Pressable
               onPress={handleClose}
               className="flex-1 items-center justify-center rounded-[16px] bg-primary active:opacity-70"
             >
-              <Ionicons name="checkmark" size={26} color="#080808" />
+              <Ionicons name="checkmark" size={24} color="#080808" />
             </Pressable>
           </View>
         </View>

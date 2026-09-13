@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BottomSheet, FormCurrencyPicker, NumericKeyboard, useNumericKeyboard } from '@/shared/ui';
+import { BottomSheet, FormCurrencyPicker, NumericKeyboard, useNumericKeyboard, appendNumericKey, deleteNumericKey, evaluateNumericExpression } from '@/shared/ui';
 import { WalletType } from '@/shared/types';
 import { useWallets } from '@/shared/hooks';
 import { useAuthStore } from '@/shared/stores';
@@ -155,8 +155,9 @@ export function CreateWalletModal({ visible, onClose }: CreateWalletModalProps) 
         <NumericKeyboard
           visible={balanceKb.visible}
           value={initialBalance}
-          onKeyPress={(key) => setInitialBalance(prev => prev + key)}
-          onDelete={() => setInitialBalance(prev => prev.slice(0, -1))}
+          onKeyPress={(key) => setInitialBalance(prev => appendNumericKey(prev, key))}
+          onDelete={() => setInitialBalance(prev => deleteNumericKey(prev))}
+          onConfirm={() => setInitialBalance(prev => evaluateNumericExpression(prev))}
           onClose={balanceKb.close}
           onClosed={balanceKb.onClosed}
         />

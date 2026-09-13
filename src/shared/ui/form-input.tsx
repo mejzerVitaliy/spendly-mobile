@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, TextInputProps, View } from 'react-native'
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { NumericKeyboard } from './numeric-keyboard';
 import { useNumericKeyboard } from './use-numeric-keyboard';
+import { appendNumericKey, deleteNumericKey, evaluateNumericExpression } from './numeric-input';
 import { colors } from '@/shared/theme';
 
 interface FormInputProps<T extends FieldValues> extends Omit<TextInputProps, 'value' | 'onChangeText'> {
@@ -66,12 +67,13 @@ const FormInput = <T extends FieldValues>({
                 visible={kb.visible}
                 value={value?.toString() || ''}
                 onKeyPress={(key) => {
-                  const current = value?.toString() || '';
-                  onChange(current + key);
+                  onChange(appendNumericKey(value?.toString() || '', key));
                 }}
                 onDelete={() => {
-                  const current = value?.toString() || '';
-                  onChange(current.slice(0, -1));
+                  onChange(deleteNumericKey(value?.toString() || ''));
+                }}
+                onConfirm={() => {
+                  onChange(evaluateNumericExpression(value?.toString() || ''));
                 }}
                 onClose={kb.close}
                 onClosed={() => { onBlur(); kb.onClosed(); }}

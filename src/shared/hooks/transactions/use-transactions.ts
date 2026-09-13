@@ -2,12 +2,12 @@ import { transactionsApi } from "@/shared/services/api";
 import { notificationService } from "@/shared/services/notifications";
 import { CreateTransactionRequest, CreateTransferRequest, ParsedTransactionPreview, UpdateTransactionRequest, UpdateTransferRequest } from "@/shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 
 interface GetAllTransactionsParams {
   startDate?: string;
   endDate?: string;
   search?: string;
+  walletId?: string;
 }
 
 const invalidateAll = (queryClient: ReturnType<typeof useQueryClient>) => {
@@ -29,14 +29,13 @@ const invalidateUsage = (queryClient: ReturnType<typeof useQueryClient>) =>
 
 const useTransactions = () => {
   const queryClient = useQueryClient()
-  const { t } = useTranslation()
 
   const createMutation = useMutation({
     mutationKey: ['transactions', 'create'],
     mutationFn: (request: CreateTransactionRequest) => transactionsApi.create(request),
     onSuccess: async () => {
       await invalidateAll(queryClient)
-      notificationService.onTransactionCreated(t)
+      notificationService.onTransactionCreated()
     },
   })
 
@@ -79,7 +78,7 @@ const useTransactions = () => {
     mutationFn: (text: string) => transactionsApi.parseText({ text }),
     onSuccess: async () => {
       await Promise.all([invalidateAll(queryClient), invalidateUsage(queryClient)])
-      notificationService.onTransactionCreated(t)
+      notificationService.onTransactionCreated()
     },
   })
 
@@ -88,7 +87,7 @@ const useTransactions = () => {
     mutationFn: (audioUri: string) => transactionsApi.parseVoice(audioUri),
     onSuccess: async () => {
       await Promise.all([invalidateAll(queryClient), invalidateUsage(queryClient)])
-      notificationService.onTransactionCreated(t)
+      notificationService.onTransactionCreated()
     },
   })
 

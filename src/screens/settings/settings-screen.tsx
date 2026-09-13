@@ -1,5 +1,6 @@
 import { SettingsItem } from '@/shared/ui';
 import { useNotificationsStore } from '@/shared/stores/notifications';
+import { useDisplayPreferencesStore } from '@/shared/stores';
 import { notificationService } from '@/shared/services/notifications';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +13,7 @@ export function SettingsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { pushNotificationsEnabled, permissionGranted } = useNotificationsStore();
+  const { roundAmounts, setRoundAmounts } = useDisplayPreferencesStore();
 
   const handlePushToggle = (value: boolean) => {
     if (value) {
@@ -76,6 +78,26 @@ export function SettingsScreen() {
                 value={pushNotificationsEnabled && permissionGranted}
                 onValueChange={handlePushToggle}
                 disabled={!permissionGranted}
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor="#fff"
+              />
+            </View>
+            <View className="h-px bg-border" />
+          </View>
+
+          {/* Round amounts to whole numbers toggle */}
+          <View>
+            <View className="flex-row items-center px-4 py-3.5 gap-3">
+              <View className="w-10 h-10 rounded-xl items-center justify-center bg-white/[0.05] border border-white/[0.08]">
+                <Ionicons name="calculator-outline" size={20} color={colors.mutedForeground} />
+              </View>
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-foreground">{t('settings.roundAmounts')}</Text>
+                <Text className="text-xs text-muted-foreground mt-0.5">{t('settings.roundAmountsDesc')}</Text>
+              </View>
+              <Switch
+                value={roundAmounts}
+                onValueChange={setRoundAmounts}
                 trackColor={{ false: colors.border, true: colors.primary }}
                 thumbColor="#fff"
               />
