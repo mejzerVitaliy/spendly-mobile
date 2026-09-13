@@ -211,9 +211,13 @@ export function WalletsScreen() {
 
             <View className='p-6 h-full flex justify-center'>
               <Text style={styles.heroLabel}>{t('wallets.totalBalance')}</Text>
-              <Text style={styles.heroAmount}>
+              <Text
+                style={[styles.heroAmount, { fontSize: showFullAmounts ? 30 : 38 }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+              >
                 {formatCompact(displayBalance, showFullAmounts)}{' '}
-                <Text style={styles.heroCurrency}>{mainCurrency}</Text>
+                <Text style={[styles.heroCurrency, showFullAmounts && { fontSize: 16 }]}>{mainCurrency}</Text>
               </Text>
               <Text style={styles.heroMeta}>
                 {activeWallets.length} {activeWallets.length !== 1 ? t('wallets.activeWallets') : t('wallets.activeWallet')}

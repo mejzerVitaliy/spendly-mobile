@@ -109,9 +109,13 @@ export function WalletCard({ wallet, typeLabel, isArchived, onLongPress, onActio
 
           <View style={styles.balanceDivider} />
           <View style={styles.balanceRow}>
-            <Text style={styles.balanceAmount}>
+            <Text
+              style={[styles.balanceAmount, { fontSize: showFullAmounts ? 24 : 28 }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
               {formattedBalance}{' '}
-              <Text style={styles.balanceCurrency}>{wallet.currencyCode}</Text>
+              <Text style={[styles.balanceCurrency, showFullAmounts && { fontSize: 14 }]}>{wallet.currencyCode}</Text>
             </Text>
             {hasConvertedBalance && wallet.currencyCode !== wallet.mainCurrencyCode && (
               <Text style={styles.convertedBalance}>

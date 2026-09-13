@@ -93,9 +93,13 @@ function StatCard({
       {isLoading ? (
         <SkeletonBlock width={96} height={22} />
       ) : (
-        <Animated.Text style={[styles.statAmount, { color }, animStyle]}>
+        <Animated.Text
+          style={[styles.statAmount, { color, fontSize: showFullAmounts ? 15 : 18 }, animStyle]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        >
           {formatCompact(amount, showFullAmounts)}{' '}
-          <Text style={styles.statCurrency}>{currency}</Text>
+          <Text style={[styles.statCurrency, showFullAmounts && { fontSize: 12 }]}>{currency}</Text>
         </Animated.Text>
       )}
     </>
@@ -166,9 +170,13 @@ const BalanceView = ({ startDate, endDate, walletId }: BalanceViewProps) => {
       {isLoading ? (
         <SkeletonBlock width={200} height={44} />
       ) : (
-        <Animated.Text style={[styles.balanceAmount, balanceStyle]}>
+        <Animated.Text
+          style={[styles.balanceAmount, { fontSize: showFullAmounts ? 32 : 40 }, balanceStyle]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        >
           {formatCompact(totalBalance, showFullAmounts)}{' '}
-          <Text style={styles.balanceCurrency}>{mainCurrencyCode}</Text>
+          <Text style={[styles.balanceCurrency, showFullAmounts && { fontSize: 16 }]}>{mainCurrencyCode}</Text>
         </Animated.Text>
       )}
     </>
