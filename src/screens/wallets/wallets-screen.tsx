@@ -111,7 +111,7 @@ function WalletActionSheet({
 
 export function WalletsScreen() {
   const { t } = useTranslation();
-  const { roundAmounts } = useDisplayPreferencesStore();
+  const { showFullAmounts } = useDisplayPreferencesStore();
   const { guard } = useOfflineGuard();
   const [showArchived, setShowArchived] = useState(false);
   const {
@@ -212,7 +212,7 @@ export function WalletsScreen() {
             <View className='p-6 h-full flex justify-center'>
               <Text style={styles.heroLabel}>{t('wallets.totalBalance')}</Text>
               <Text style={styles.heroAmount}>
-                {formatCompact(displayBalance, roundAmounts)}{' '}
+                {formatCompact(displayBalance, showFullAmounts)}{' '}
                 <Text style={styles.heroCurrency}>{mainCurrency}</Text>
               </Text>
               <Text style={styles.heroMeta}>

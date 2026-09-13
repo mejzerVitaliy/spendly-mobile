@@ -27,10 +27,10 @@ const WALLET_TYPE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
 
 export function WalletCard({ wallet, typeLabel, isArchived, onLongPress, onActionPress }: WalletCardProps) {
   const { t } = useTranslation();
-  const { roundAmounts } = useDisplayPreferencesStore();
-  const formattedBalance = formatCompact(wallet.currentBalance, roundAmounts);
+  const { showFullAmounts } = useDisplayPreferencesStore();
+  const formattedBalance = formatCompact(wallet.currentBalance, showFullAmounts);
   const hasConvertedBalance = wallet.convertedBalance !== undefined && wallet.mainCurrencyCode;
-  const formattedConvertedBalance = hasConvertedBalance ? formatCompact(wallet.convertedBalance!, roundAmounts) : null;
+  const formattedConvertedBalance = hasConvertedBalance ? formatCompact(wallet.convertedBalance!, showFullAmounts) : null;
 
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(10);

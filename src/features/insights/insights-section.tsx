@@ -54,7 +54,7 @@ function useRuleInsights(
   trendData: ReturnType<typeof useReports>['getCashFlowTrend']['data'],
 ): RuleInsight[] {
   const { t } = useTranslation();
-  const { roundAmounts } = useDisplayPreferencesStore();
+  const { showFullAmounts } = useDisplayPreferencesStore();
 
   return useMemo(() => {
     const s = summary?.data;
@@ -85,7 +85,7 @@ function useRuleInsights(
         severity: 'success',
         title: t('insights.rules.positiveCashFlow.title'),
         description: t('insights.rules.positiveCashFlow.desc', {
-          amount: formatCompact(absChange, roundAmounts),
+          amount: formatCompact(absChange, showFullAmounts),
           currency,
         }),
       });
@@ -96,7 +96,7 @@ function useRuleInsights(
         severity: 'danger',
         title: t('insights.rules.negativeCashFlow.title'),
         description: t('insights.rules.negativeCashFlow.desc', {
-          amount: formatCompact(absChange, roundAmounts),
+          amount: formatCompact(absChange, showFullAmounts),
           currency,
         }),
       });
@@ -185,7 +185,7 @@ function useRuleInsights(
           title: t('insights.rules.spendingPeak.title'),
           description: t('insights.rules.spendingPeak.desc', {
             date: peak.label,
-            amount: formatCompact(peak.value, roundAmounts),
+            amount: formatCompact(peak.value, showFullAmounts),
             currency: trend.currencyCode,
           }),
         });
@@ -213,7 +213,7 @@ function useRuleInsights(
     }
 
     return insights;
-  }, [summary, categoryData, trendData, t, roundAmounts]);
+  }, [summary, categoryData, trendData, t, showFullAmounts]);
 }
 
 // ─── Skeleton card ────────────────────────────────────────────────────────────

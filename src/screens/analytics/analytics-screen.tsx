@@ -2,7 +2,6 @@ import { BalanceView } from '@/features/balance-view';
 import { InsightsSection } from '@/features/insights';
 import { PeriodSelector } from '@/features/period-selector';
 import { CashFlowChart, CategoryBreakdownChart, IncomeExpenseRatioChart } from '@/features/charts';
-import { WalletFilterSelector } from '@/features/wallet-filter';
 import { AppHeader, SegmentedControl } from '@/shared/ui';
 import { useAnalyticsStore, useAuthStore, useWalletFilterStore } from '@/shared/stores';
 import { useReports } from '@/shared/hooks';
@@ -116,10 +115,6 @@ export const AnalyticsScreen = () => {
           <View style={{ height: 20 }} />
 
           <PeriodSelector />
-
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 }}>
-            <WalletFilterSelector />
-          </View>
 
           {activeTab === 'analytics' && (
             <>

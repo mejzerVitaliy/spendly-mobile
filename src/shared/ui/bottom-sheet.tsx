@@ -5,7 +5,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import type { PropsWithChildren, ReactNode } from 'react';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Keyboard, Platform, StyleSheet, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { colors } from '@/shared/theme';
 
@@ -125,6 +125,22 @@ const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProp
       if (open) openSheet(openIndex);
       else closeSheet();
     }, [open, openIndex, openSheet, closeSheet]);
+
+    // keyboardBlurBehavior="restore" is supposed to make @gorhom/bottom-sheet
+    // animate back to its snap point once the keyboard closes, but this
+    // turned out not to be reliable on a real device (confirmed: the sheet
+    // stayed exactly where the keyboard had pushed it, both on a fixed
+    // snap point and a dynamically-sized sheet). Forcing a re-snap
+    // ourselves on keyboardDidHide is a blunter but guaranteed fix,
+    // independent of whatever the library's own restore logic is doing.
+    useEffect(() => {
+      const sub = Keyboard.addListener('keyboardDidHide', () => {
+        if (currentIndexRef.current !== -1) {
+          bottomSheetRef.current?.snapToIndex(openIndex);
+        }
+      });
+      return () => sub.remove();
+    }, [openIndex]);
 
     const renderBackdrop = useCallback(
       (props: any) => (

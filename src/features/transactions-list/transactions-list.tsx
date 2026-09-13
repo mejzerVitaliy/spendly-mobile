@@ -80,7 +80,7 @@ function TransactionRow({
   }));
 
   const { i18n, t } = useTranslation();
-  const { roundAmounts } = useDisplayPreferencesStore();
+  const { showFullAmounts } = useDisplayPreferencesStore();
   const isTransfer = !!item.transferGroupId;
   const isIncome = item.type === 'INCOME';
   const amountColor = isIncome ? '#22C55E' : '#EF4444';
@@ -125,11 +125,11 @@ function TransactionRow({
 
         <View className="items-end">
           <Text className="text-sm font-bold" style={{ color: isTransfer ? '#FFFFFF' : amountColor }}>
-            {!isTransfer && (isIncome ? '+' : '-')}{formatCompact(item.amount, roundAmounts)} {item.currencyCode}
+            {!isTransfer && (isIncome ? '+' : '-')}{formatCompact(item.amount, showFullAmounts)} {item.currencyCode}
           </Text>
           {item.currencyCode !== item.mainCurrencyCode && (
             <Text className="text-xs text-muted-foreground mt-0.5">
-              {formatCompact(item.convertedAmount, roundAmounts)} {item.mainCurrencyCode}
+              {formatCompact(item.convertedAmount, showFullAmounts)} {item.mainCurrencyCode}
             </Text>
           )}
         </View>

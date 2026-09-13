@@ -1,5 +1,6 @@
 import { useAuth, useReports, useWallets } from '@/shared/hooks';
 import { useDisplayPreferencesStore } from '@/shared/stores';
+import { WalletFilterSelector } from '@/features/wallet-filter';
 import { formatCompact } from '@/shared/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect } from 'react';
@@ -69,7 +70,7 @@ function StatCard({
   isLoading: boolean;
 }) {
   const opacity = useSharedValue(0);
-  const { roundAmounts } = useDisplayPreferencesStore();
+  const { showFullAmounts } = useDisplayPreferencesStore();
 
   useEffect(() => {
     if (!isLoading) {
@@ -93,7 +94,7 @@ function StatCard({
         <SkeletonBlock width={96} height={22} />
       ) : (
         <Animated.Text style={[styles.statAmount, { color }, animStyle]}>
-          {formatCompact(amount, roundAmounts)}{' '}
+          {formatCompact(amount, showFullAmounts)}{' '}
           <Text style={styles.statCurrency}>{currency}</Text>
         </Animated.Text>
       )}
@@ -132,7 +133,7 @@ const BalanceView = ({ startDate, endDate, walletId }: BalanceViewProps) => {
   const { totalBalance: walletTotalBalance, isLoading: isWalletsLoading } = useWallets();
   const { getMeQuery } = useAuth();
   const { t } = useTranslation();
-  const { roundAmounts } = useDisplayPreferencesStore();
+  const { showFullAmounts } = useDisplayPreferencesStore();
 
   const isLoading = getSummary.isLoading || isWalletsLoading;
   const data = getSummary?.data?.data;
@@ -158,12 +159,15 @@ const BalanceView = ({ startDate, endDate, walletId }: BalanceViewProps) => {
 
   const balanceCard = (
     <>
-      <Text style={styles.balanceLabel}>{t('balance.totalBalance')}</Text>
+      <View style={styles.balanceHeaderRow}>
+        <Text style={styles.balanceLabel}>{t('balance.totalBalance')}</Text>
+        <WalletFilterSelector />
+      </View>
       {isLoading ? (
         <SkeletonBlock width={200} height={44} />
       ) : (
         <Animated.Text style={[styles.balanceAmount, balanceStyle]}>
-          {formatCompact(totalBalance, roundAmounts)}{' '}
+          {formatCompact(totalBalance, showFullAmounts)}{' '}
           <Text style={styles.balanceCurrency}>{mainCurrencyCode}</Text>
         </Animated.Text>
       )}
@@ -232,11 +236,16 @@ const styles = StyleSheet.create({
   mainCardContent: {
     padding: 20,
   },
+  balanceHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
   balanceLabel: {
     fontSize: 11,
     fontWeight: '600',
     color: colors.mutedForeground,
-    marginBottom: 6,
     textTransform: 'uppercase',
     letterSpacing: 1.2,
   },

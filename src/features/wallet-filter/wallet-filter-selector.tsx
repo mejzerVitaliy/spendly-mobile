@@ -49,7 +49,7 @@ export function WalletFilterSelector() {
         <Ionicons name="chevron-down" size={14} color={colors.mutedForeground} />
       </Pressable>
 
-      <BottomSheet ref={sheetRef} snapPoints={['55%']} noWrapper>
+      <BottomSheet ref={sheetRef} enableDynamicSizing maxDynamicContentSize={520} noWrapper>
         <BottomSheetScrollView contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
           <Text className="text-lg font-bold text-foreground mb-4">{t('walletFilter.title')}</Text>
 
