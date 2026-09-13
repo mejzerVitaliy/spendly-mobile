@@ -1,7 +1,8 @@
 import { useAuth, useCategories, useProfile } from '@/shared/hooks';
 import { CategoryDto } from '@/shared/types';
 import { getCategoryName } from '@/shared/utils';
-import { SegmentedControl, SettingsHeader } from '@/shared/ui';
+import { BottomSheet, SegmentedControl, SettingsHeader } from '@/shared/ui';
+import { BottomSheetView } from '@gorhom/bottom-sheet';
 import { colors } from '@/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useMemo, useState } from 'react';
@@ -26,6 +27,7 @@ export function CategoriesScreen() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'EXPENSE' | 'INCOME'>('EXPENSE');
   const [refreshing, setRefreshing] = useState(false);
+  const [actionSheetCategory, setActionSheetCategory] = useState<CategoryDto | null>(null);
   const { t } = useTranslation();
 
   const handleRefresh = async () => {
@@ -224,13 +226,10 @@ export function CategoriesScreen() {
                       key={category.id}
                       category={category}
                       selected={selectedIds.includes(category.id)}
-                      isDefault={category.id === defaultCategoryId}
                       onPress={() => toggleFavorite(category.id)}
-                      onToggleDefault={() => handleSetDefault(category.id)}
-                      disabled={updateFavoritesMutation.isPending || updateSettingsMutation.isPending}
+                      onOpenActions={() => setActionSheetCategory(category)}
+                      disabled={updateFavoritesMutation.isPending}
                       showSeparator={index < filteredCategories.length - 1}
-                      defaultLabel={t('categories.defaultBadge')}
-                      setDefaultLabel={t('categories.setDefault')}
                     />
                   ))}
                 </View>
@@ -241,32 +240,87 @@ export function CategoriesScreen() {
           <View className="h-8" />
         </View>
       </ScrollView>
+
+      <CategoryActionSheet
+        category={actionSheetCategory}
+        isDefault={!!actionSheetCategory && actionSheetCategory.id === defaultCategoryId}
+        isPending={updateSettingsMutation.isPending}
+        onSetDefault={() => {
+          if (actionSheetCategory) handleSetDefault(actionSheetCategory.id);
+          setActionSheetCategory(null);
+        }}
+        onClose={() => setActionSheetCategory(null)}
+      />
     </SafeAreaView>
+  );
+}
+
+interface CategoryActionSheetProps {
+  category: CategoryDto | null;
+  isDefault: boolean;
+  isPending: boolean;
+  onSetDefault: () => void;
+  onClose: () => void;
+}
+
+function CategoryActionSheet({ category, isDefault, isPending, onSetDefault, onClose }: CategoryActionSheetProps) {
+  const { t, i18n } = useTranslation();
+  return (
+    <BottomSheet open={!!category} onOpenChange={(open) => { if (!open) onClose(); }} noWrapper>
+      <BottomSheetView>
+        <View className="px-4 pt-1 pb-10 gap-2.5">
+          <View className="px-1 pb-4 border-b border-white/10 mb-1">
+            <Text className="text-[20px] font-bold text-foreground">
+              {category ? getCategoryName(category, i18n.language) : ''}
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={onSetDefault}
+            disabled={isPending}
+            className="flex-row items-center gap-3.5 py-[15px] px-4 rounded-[18px] bg-card border border-white/10 active:opacity-65"
+          >
+            <View
+              className="w-10 h-10 rounded-[13px] items-center justify-center"
+              style={{ backgroundColor: isDefault ? 'rgba(34,197,94,0.15)' : 'rgba(34,211,238,0.1)' }}
+            >
+              <Ionicons
+                name={isDefault ? 'checkmark-circle' : 'flag-outline'}
+                size={20}
+                color={isDefault ? colors.success : colors.primary}
+              />
+            </View>
+            <View className="flex-1">
+              <Text className="text-[15px] font-semibold text-foreground">
+                {t('categories.setAsDefault')}
+              </Text>
+              {isDefault && (
+                <Text className="text-[11px] text-muted-foreground mt-0.5">{t('categories.tapToUnsetDefault')}</Text>
+              )}
+            </View>
+          </Pressable>
+        </View>
+      </BottomSheetView>
+    </BottomSheet>
   );
 }
 
 interface CategoryRowProps {
   category: CategoryDto;
   selected: boolean;
-  isDefault: boolean;
   onPress: () => void;
-  onToggleDefault: () => void;
+  onOpenActions: () => void;
   disabled: boolean;
   showSeparator: boolean;
-  defaultLabel: string;
-  setDefaultLabel: string;
 }
 
 function CategoryRow({
   category,
   selected,
-  isDefault,
   onPress,
-  onToggleDefault,
+  onOpenActions,
   disabled,
   showSeparator,
-  defaultLabel,
-  setDefaultLabel,
 }: CategoryRowProps) {
   const { i18n } = useTranslation();
   return (
@@ -300,22 +354,12 @@ function CategoryRow({
         </Text>
 
         <Pressable
-          onPress={(e) => { e.stopPropagation(); onToggleDefault(); }}
+          onPress={(e) => { e.stopPropagation(); onOpenActions(); }}
           disabled={disabled}
           hitSlop={8}
-          className="px-2.5 py-1 rounded-full mr-2 active:opacity-60"
-          style={{
-            backgroundColor: isDefault ? 'rgba(34,197,94,0.15)' : colors.glass.background,
-            borderWidth: 1,
-            borderColor: isDefault ? 'rgba(34,197,94,0.3)' : colors.glass.border,
-          }}
+          className="w-8 h-8 rounded-full items-center justify-center mr-2 active:opacity-60"
         >
-          <Text
-            className="text-[10px] font-bold"
-            style={{ color: isDefault ? colors.success : colors.mutedForeground }}
-          >
-            {isDefault ? defaultLabel : setDefaultLabel}
-          </Text>
+          <Ionicons name="ellipsis-horizontal" size={16} color={colors.mutedForeground} />
         </Pressable>
 
         {selected ? (

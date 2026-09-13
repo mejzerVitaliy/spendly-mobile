@@ -1,5 +1,6 @@
 import { useAuth, useCurrencies, useProfile } from '@/shared/hooks';
-import { SettingsHeader } from '@/shared/ui';
+import { BottomSheet, SettingsHeader } from '@/shared/ui';
+import { BottomSheetView } from '@gorhom/bottom-sheet';
 import { CurrencyDto } from '@/shared/types';
 import { colors } from '@/shared/theme';
 import { withGlobalLoading } from '@/shared/stores';
@@ -31,6 +32,7 @@ export function CurrenciesScreen() {
   const [mainCurrencyTarget, setMainCurrencyTarget] = useState<string | null>(null);
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [actionSheetCurrency, setActionSheetCurrency] = useState<CurrencyDto | null>(null);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -291,15 +293,8 @@ export function CurrenciesScreen() {
                       isMain={currency.code === mainCurrencyCode}
                       isFavorite={selectedCodes.includes(currency.code)}
                       isDefault={currency.code === defaultCurrencyCode}
-                      onToggleFavorite={() => toggleFavorite(currency.code)}
-                      onSetMain={() => setMainCurrencyTarget(currency.code)}
-                      onToggleDefault={() => handleSetDefault(currency.code)}
-                      disabled={updateFavoritesMutation.isPending || updateSettingsMutation.isPending}
+                      onOpenActions={() => setActionSheetCurrency(currency)}
                       showSeparator={index < filteredCurrencies.length - 1}
-                      mainLabel={t('currencies.main')}
-                      setMainLabel={t('currencies.setMain')}
-                      defaultLabel={t('currencies.defaultBadge')}
-                      setDefaultLabel={t('currencies.setDefault')}
                     />
                   ))}
                 </View>
@@ -318,6 +313,27 @@ export function CurrenciesScreen() {
         isPending={updateSettingsMutation.isPending}
         onConfirm={handleMainCurrencyConfirm}
         onCancel={() => setMainCurrencyTarget(null)}
+      />
+
+      <CurrencyActionSheet
+        currency={actionSheetCurrency}
+        isMain={!!actionSheetCurrency && actionSheetCurrency.code === mainCurrencyCode}
+        isFavorite={!!actionSheetCurrency && selectedCodes.includes(actionSheetCurrency.code)}
+        isDefault={!!actionSheetCurrency && actionSheetCurrency.code === defaultCurrencyCode}
+        isPending={updateFavoritesMutation.isPending || updateSettingsMutation.isPending}
+        onSetMain={() => {
+          if (actionSheetCurrency) setMainCurrencyTarget(actionSheetCurrency.code);
+          setActionSheetCurrency(null);
+        }}
+        onToggleDefault={() => {
+          if (actionSheetCurrency) handleSetDefault(actionSheetCurrency.code);
+          setActionSheetCurrency(null);
+        }}
+        onToggleFavorite={() => {
+          if (actionSheetCurrency) toggleFavorite(actionSheetCurrency.code);
+          setActionSheetCurrency(null);
+        }}
+        onClose={() => setActionSheetCurrency(null)}
       />
     </SafeAreaView>
   );
@@ -352,15 +368,8 @@ interface CurrencyRowProps {
   isMain: boolean;
   isFavorite: boolean;
   isDefault: boolean;
-  onToggleFavorite: () => void;
-  onSetMain: () => void;
-  onToggleDefault: () => void;
-  disabled: boolean;
+  onOpenActions: () => void;
   showSeparator: boolean;
-  mainLabel: string;
-  setMainLabel: string;
-  defaultLabel: string;
-  setDefaultLabel: string;
 }
 
 function CurrencyRow({
@@ -368,15 +377,8 @@ function CurrencyRow({
   isMain,
   isFavorite,
   isDefault,
-  onToggleFavorite,
-  onSetMain,
-  onToggleDefault,
-  disabled,
+  onOpenActions,
   showSeparator,
-  mainLabel,
-  setMainLabel,
-  defaultLabel,
-  setDefaultLabel,
 }: CurrencyRowProps) {
   return (
     <>
@@ -423,79 +425,109 @@ function CurrencyRow({
           </Text>
         </View>
 
-        <View className="flex-row items-center gap-2">
-          {isDefault ? (
-            <View
-              className="flex-row items-center gap-1 px-2.5 py-1 rounded-full"
-              style={{ backgroundColor: 'rgba(34,197,94,0.15)', borderWidth: 1, borderColor: 'rgba(34,197,94,0.3)' }}
-            >
-              <Ionicons name="checkmark-circle" size={10} color={colors.success} />
-              <Text className="text-[10px] font-bold" style={{ color: colors.success }}>
-                {defaultLabel}
-              </Text>
-            </View>
-          ) : (
-            <Pressable
-              onPress={onToggleDefault}
-              disabled={disabled}
-              hitSlop={8}
-              className="px-2.5 py-1 rounded-full active:opacity-60"
-              style={{ backgroundColor: colors.glass.background, borderWidth: 1, borderColor: colors.glass.border }}
-            >
-              <Text className="text-[11px] font-semibold text-muted-foreground">
-                {setDefaultLabel}
-              </Text>
-            </Pressable>
-          )}
+        {(isDefault || isMain) && (
+          <View className="flex-row items-center gap-1.5 mr-1">
+            {isMain && <Ionicons name="star" size={13} color={colors.primary} />}
+            {isDefault && <Ionicons name="checkmark-circle" size={13} color={colors.success} />}
+          </View>
+        )}
 
-          {isMain ? (
-            <View
-              className="flex-row items-center gap-1 px-2.5 py-1 rounded-full"
-              style={{ backgroundColor: 'rgba(34,211,238,0.15)', borderWidth: 1, borderColor: 'rgba(34,211,238,0.3)' }}
-            >
-              <Ionicons name="star" size={10} color={colors.primary} />
-              <Text className="text-[10px] font-bold" style={{ color: colors.primary }}>
-                {mainLabel}
-              </Text>
-            </View>
-          ) : (
-            <Pressable
-              onPress={onSetMain}
-              disabled={disabled}
-              hitSlop={8}
-              className="px-2.5 py-1 rounded-full active:opacity-60"
-              style={{ backgroundColor: colors.glass.background, borderWidth: 1, borderColor: colors.glass.border }}
-            >
-              <Text className="text-[11px] font-semibold text-muted-foreground">
-                {setMainLabel}
-              </Text>
-            </Pressable>
-          )}
-
-          {!isMain && (
-            <Pressable
-              onPress={onToggleFavorite}
-              disabled={disabled}
-              hitSlop={8}
-              className="w-8 h-8 rounded-full items-center justify-center active:opacity-60"
-              style={{
-                backgroundColor: isFavorite ? 'rgba(234,179,8,0.12)' : colors.glass.background,
-                borderWidth: 1,
-                borderColor: isFavorite ? 'rgba(234,179,8,0.3)' : colors.glass.border,
-              }}
-            >
-              <Ionicons
-                name={isFavorite ? 'star' : 'star-outline'}
-                size={15}
-                color={isFavorite ? colors.warning : colors.mutedForeground}
-              />
-            </Pressable>
-          )}
-        </View>
+        <Pressable
+          onPress={onOpenActions}
+          hitSlop={8}
+          className="w-8 h-8 rounded-full items-center justify-center active:opacity-60"
+        >
+          <Ionicons name="ellipsis-horizontal" size={16} color={colors.mutedForeground} />
+        </Pressable>
       </View>
 
       {showSeparator && <View className="h-px bg-border" />}
     </>
+  );
+}
+
+interface CurrencyActionSheetProps {
+  currency: CurrencyDto | null;
+  isMain: boolean;
+  isFavorite: boolean;
+  isDefault: boolean;
+  isPending: boolean;
+  onSetMain: () => void;
+  onToggleDefault: () => void;
+  onToggleFavorite: () => void;
+  onClose: () => void;
+}
+
+function CurrencyActionSheet({
+  currency,
+  isMain,
+  isFavorite,
+  isDefault,
+  isPending,
+  onSetMain,
+  onToggleDefault,
+  onToggleFavorite,
+  onClose,
+}: CurrencyActionSheetProps) {
+  const { t } = useTranslation();
+  return (
+    <BottomSheet open={!!currency} onOpenChange={(open) => { if (!open) onClose(); }} noWrapper>
+      <BottomSheetView>
+        <View className="px-4 pt-1 pb-10 gap-2.5">
+          <View className="px-1 pb-4 border-b border-white/10 mb-1">
+            <Text className="text-[20px] font-bold text-foreground">{currency?.name}</Text>
+            <Text className="text-[13px] text-muted-foreground mt-0.5">{currency?.code}</Text>
+          </View>
+
+          <Pressable
+            onPress={isMain ? undefined : onSetMain}
+            disabled={isPending}
+            className={`flex-row items-center gap-3.5 py-[15px] px-4 rounded-[18px] bg-card border border-white/10 ${isMain ? 'opacity-60' : 'active:opacity-65'}`}
+          >
+            <View className="w-10 h-10 rounded-[13px] items-center justify-center" style={{ backgroundColor: 'rgba(34,211,238,0.1)' }}>
+              <Ionicons name={isMain ? 'checkmark-circle' : 'star-outline'} size={20} color={colors.primary} />
+            </View>
+            <Text className={`flex-1 text-[15px] font-semibold ${isMain ? 'text-muted-foreground' : 'text-foreground'}`}>
+              {isMain ? t('currencies.alreadyMain') : t('currencies.setMain')}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={onToggleDefault}
+            disabled={isPending}
+            className="flex-row items-center gap-3.5 py-[15px] px-4 rounded-[18px] bg-card border border-white/10 active:opacity-65"
+          >
+            <View
+              className="w-10 h-10 rounded-[13px] items-center justify-center"
+              style={{ backgroundColor: isDefault ? 'rgba(34,197,94,0.15)' : 'rgba(34,211,238,0.1)' }}
+            >
+              <Ionicons name={isDefault ? 'checkmark-circle' : 'flag-outline'} size={20} color={isDefault ? colors.success : colors.primary} />
+            </View>
+            <View className="flex-1">
+              <Text className="text-[15px] font-semibold text-foreground">{t('currencies.setAsDefault')}</Text>
+              {isDefault && (
+                <Text className="text-[11px] text-muted-foreground mt-0.5">{t('currencies.tapToUnsetDefault')}</Text>
+              )}
+            </View>
+          </Pressable>
+
+          {!isMain && (
+            <Pressable
+              onPress={onToggleFavorite}
+              disabled={isPending}
+              className="flex-row items-center gap-3.5 py-[15px] px-4 rounded-[18px] bg-card border border-white/10 active:opacity-65"
+            >
+              <View className="w-10 h-10 rounded-[13px] items-center justify-center" style={{ backgroundColor: 'rgba(234,179,8,0.12)' }}>
+                <Ionicons name={isFavorite ? 'star' : 'star-outline'} size={20} color="#FBBF24" />
+              </View>
+              <Text className="flex-1 text-[15px] font-semibold text-foreground">
+                {isFavorite ? t('currencies.removeFavorite') : t('currencies.addFavorite')}
+              </Text>
+            </Pressable>
+          )}
+        </View>
+      </BottomSheetView>
+    </BottomSheet>
   );
 }
 

@@ -13,7 +13,7 @@ export function SettingsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { pushNotificationsEnabled, permissionGranted } = useNotificationsStore();
-  const { roundAmounts, setRoundAmounts } = useDisplayPreferencesStore();
+  const { showFullAmounts, setShowFullAmounts } = useDisplayPreferencesStore();
 
   const handlePushToggle = (value: boolean) => {
     if (value) {
@@ -85,19 +85,19 @@ export function SettingsScreen() {
             <View className="h-px bg-border" />
           </View>
 
-          {/* Round amounts to whole numbers toggle */}
+          {/* Show full, non-abbreviated amounts toggle */}
           <View>
             <View className="flex-row items-center px-4 py-3.5 gap-3">
               <View className="w-10 h-10 rounded-xl items-center justify-center bg-white/[0.05] border border-white/[0.08]">
-                <Ionicons name="calculator-outline" size={20} color={colors.mutedForeground} />
+                <Ionicons name="eye-outline" size={20} color={colors.mutedForeground} />
               </View>
               <View className="flex-1">
-                <Text className="text-base font-semibold text-foreground">{t('settings.roundAmounts')}</Text>
-                <Text className="text-xs text-muted-foreground mt-0.5">{t('settings.roundAmountsDesc')}</Text>
+                <Text className="text-base font-semibold text-foreground">{t('settings.showFullAmounts')}</Text>
+                <Text className="text-xs text-muted-foreground mt-0.5">{t('settings.showFullAmountsDesc')}</Text>
               </View>
               <Switch
-                value={roundAmounts}
-                onValueChange={setRoundAmounts}
+                value={showFullAmounts}
+                onValueChange={setShowFullAmounts}
                 trackColor={{ false: colors.border, true: colors.primary }}
                 thumbColor="#fff"
               />

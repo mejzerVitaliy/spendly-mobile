@@ -56,7 +56,7 @@ function TransactionPreviewRow({
   const { wallets } = useWallets();
   const { getAllQuery } = useCategories();
   const { i18n } = useTranslation();
-  const { roundAmounts } = useDisplayPreferencesStore();
+  const { showFullAmounts } = useDisplayPreferencesStore();
 
   const fromWallet = wallets.find(w => w.id === tx.walletId);
   const toWallet = wallets.find(w => w.id === tx.toWalletId);
@@ -103,7 +103,7 @@ function TransactionPreviewRow({
       </View>
 
       <Text className="text-sm font-bold mr-2" style={{ color: amountColor }}>
-        {prefix}{formatCompact(tx.amount, roundAmounts)} {tx.currencyCode}
+        {prefix}{formatCompact(tx.amount, showFullAmounts)} {tx.currencyCode}
       </Text>
 
       <Ionicons name="pencil" size={14} color={colors.mutedForeground} />

@@ -3,15 +3,15 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 interface DisplayPreferencesState {
-  roundAmounts: boolean;
-  setRoundAmounts: (value: boolean) => void;
+  showFullAmounts: boolean;
+  setShowFullAmounts: (value: boolean) => void;
 }
 
 export const useDisplayPreferencesStore = create<DisplayPreferencesState>()(
   persist(
     (set) => ({
-      roundAmounts: false,
-      setRoundAmounts: (value) => set({ roundAmounts: value }),
+      showFullAmounts: false,
+      setShowFullAmounts: (value) => set({ showFullAmounts: value }),
     }),
     {
       name: 'spendly-display-preferences',

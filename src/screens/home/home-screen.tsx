@@ -3,7 +3,6 @@ import { EditTransaction, EditTransactionRef } from '@/features/edit-transaction
 import { PeriodSelector } from '@/features/period-selector';
 import { TransactionSearch } from '@/features/transaction-search';
 import { TransactionsList } from '@/features/transactions-list';
-import { WalletFilterSelector } from '@/features/wallet-filter';
 import { useHomeStore, useWalletFilterStore } from '@/shared/stores';
 import { Transaction } from '@/shared/types';
 import { getDateRangeForPeriod } from '@/shared/utils';
@@ -182,9 +181,6 @@ export function HomeScreen() {
           <View style={styles.scrollableHeader}>
             <PeriodSelector store="home" />
             <TransactionSearch value={search} onSearchChange={handleSearchChange} />
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 }}>
-              <WalletFilterSelector />
-            </View>
           </View>
           <View style={styles.balanceSection}>
             <BalanceView startDate={startDate} endDate={endDate} walletId={selectedWalletId} />

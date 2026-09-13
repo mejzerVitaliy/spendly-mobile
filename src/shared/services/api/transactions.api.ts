@@ -41,8 +41,20 @@ const remove = async (id: string): Promise<void> => {
   await apiClient.delete(`/transaction/${id}`);
 };
 
+// The shared client times out at 10s, which is the right budget for a plain
+// CRUD call but shorter than what an AI round-trip can legitimately take
+// (model call plus one server-side retry). With the global value these
+// requests were being aborted on the client while the server was still
+// working and about to answer - the user saw a generic failure for a request
+// that had in fact succeeded. Voice gets more again: it uploads audio and
+// pays for a transcription pass before the parse even starts.
+const AI_TEXT_TIMEOUT_MS = 30000;
+const AI_VOICE_TIMEOUT_MS = 45000;
+
 const parseText = async (request: ParseTextTransactionRequest): Promise<ParseTextTransactionResponse> => {
-  const response = await apiClient.post("/transaction/parse-text", request);
+  const response = await apiClient.post("/transaction/parse-text", request, {
+    timeout: AI_TEXT_TIMEOUT_MS,
+  });
   return response.data;
 };
 
@@ -56,12 +68,15 @@ const parseVoice = async (audioUri: string): Promise<ParseVoiceTransactionRespon
 
   const response = await apiClient.post("/transaction/parse-voice", formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: AI_VOICE_TIMEOUT_MS,
   });
   return response.data;
 };
 
 const previewText = async (text: string): Promise<PreviewTransactionResponse> => {
-  const response = await apiClient.post("/transaction/preview-text", { text });
+  const response = await apiClient.post("/transaction/preview-text", { text }, {
+    timeout: AI_TEXT_TIMEOUT_MS,
+  });
   return response.data;
 };
 
@@ -75,6 +90,7 @@ const previewVoice = async (audioUri: string): Promise<PreviewTransactionRespons
 
   const response = await apiClient.post("/transaction/preview-voice", formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: AI_VOICE_TIMEOUT_MS,
   });
   return response.data;
 };

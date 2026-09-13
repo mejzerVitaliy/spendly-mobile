@@ -49,7 +49,7 @@ const UNKNOWN_LABELS = new Set(['Unknown', 'Неизвестно']);
 
 export function CategoryBreakdownChart({ data, total, currencyCode }: CategoryChartProps) {
   const { t } = useTranslation();
-  const { roundAmounts } = useDisplayPreferencesStore();
+  const { showFullAmounts } = useDisplayPreferencesStore();
 
   if (!data || data.length === 0) {
     return (
@@ -72,7 +72,7 @@ export function CategoryBreakdownChart({ data, total, currencyCode }: CategoryCh
       <View className="mt-2 pt-2 border-t border-border flex-row justify-between">
         <Text className="text-xs text-muted-foreground">Total</Text>
         <Text className="text-xs font-semibold text-foreground">
-          {currencyCode} {formatCompact(total, roundAmounts)}
+          {currencyCode} {formatCompact(total, showFullAmounts)}
         </Text>
       </View>
     </View>

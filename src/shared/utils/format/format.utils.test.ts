@@ -29,13 +29,12 @@ describe('formatCompact', () => {
     expect(formatCompact(0)).toBe('0.00');
   });
 
-  it('rounds small amounts to a whole number when roundToWhole is set', () => {
-    expect(formatCompact(12345, true)).toBe('123');
-    expect(formatCompact(12399, true)).toBe('124');
+  it('never abbreviates when showFullAmount is set, even above 1000', () => {
+    expect(formatCompact(150_000, true)).toBe('1500.00');
+    expect(formatCompact(2_500_000_00, true)).toBe('2500000.00');
   });
 
-  it('drops the compact-suffix decimal when roundToWhole is set', () => {
-    expect(formatCompact(150_000, true)).toBe('2K');
-    expect(formatCompact(2_500_000_00, true)).toBe('3M');
+  it('still shows plain decimals under 1000 when showFullAmount is set', () => {
+    expect(formatCompact(12345, true)).toBe('123.45');
   });
 });
