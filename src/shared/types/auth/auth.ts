@@ -9,6 +9,9 @@ interface User {
   avatarUrl?: string;
   totalBalance: number;
   mainCurrencyCode: string;
+  defaultIncomeCategoryId?: string | null;
+  defaultExpenseCategoryId?: string | null;
+  defaultCurrencyCode?: string | null;
   onboardingCompleted: boolean;
   createdAt: string;
 }
@@ -87,7 +90,10 @@ interface GetMeResponse
   extends ApiResponse<User> {}
 
 interface UpdateSettingsRequest {
-  mainCurrencyCode: string;
+  mainCurrencyCode?: string;
+  defaultIncomeCategoryId?: string | null;
+  defaultExpenseCategoryId?: string | null;
+  defaultCurrencyCode?: string | null;
 }
 interface UpdateSettingsResponse extends ApiResponse<null> {}
 

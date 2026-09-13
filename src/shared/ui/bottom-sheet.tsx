@@ -71,7 +71,12 @@ const BottomSheet = forwardRef<BottomSheetRef, PropsWithChildren<BottomSheetProp
       enableOverDrag = false,
       backdropOpacity = 0.6,
       keyboardBehavior,
-      keyboardBlurBehavior,
+      // @gorhom/bottom-sheet defaults this to 'none' - i.e. leave the sheet
+      // wherever the keyboard pushed it. Every sheet in this app wants the
+      // opposite (animate back to its snap point once the keyboard closes),
+      // so default to 'restore' here and let a caller override if it ever
+      // genuinely needs 'none'.
+      keyboardBlurBehavior = 'restore',
       android_keyboardInputMode,
       noWrapper = false,
       children,

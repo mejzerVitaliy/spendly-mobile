@@ -1,5 +1,7 @@
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { useNotificationsStore , NotificationType } from '@/shared/stores/notifications';
+import { notificationsApi } from '@/shared/services/api';
 
 // Configure how notifications appear when app is in foreground
 Notifications.setNotificationHandler({
@@ -12,12 +14,11 @@ Notifications.setNotificationHandler({
   }),
 });
 
+// weekly_summary/monthly_recap/streak/inactivity used to have entries here
+// too, but this client no longer sends those itself (see syncOnAppOpen) -
+// the server's own, separate cooldown table now owns them.
 const COOLDOWN_HOURS: Record<string, number> = {
   daily_checkin: 20,
-  weekly_summary: 6 * 24,
-  monthly_recap: 20 * 24,
-  streak: 23,
-  inactivity: 22,
   spending_trend: 5 * 24,
   category_insight: 5 * 24,
   no_income: 7 * 24,
@@ -28,8 +29,6 @@ const COOLDOWN_HOURS: Record<string, number> = {
 // Below this, a guest losing their device isn't losing much - the push
 // exists to warn about real data loss, not to nag a brand new user.
 const GUEST_DATA_RISK_TRANSACTION_THRESHOLD = 15;
-
-const STREAK_MILESTONES = [3, 5, 7, 10, 14, 21, 30];
 
 function isOnCooldown(type: string): boolean {
   const cooldowns = useNotificationsStore.getState().cooldowns;
@@ -87,6 +86,25 @@ async function sendLocal(
 }
 
 export const notificationService = {
+  /**
+   * Called when the OS actually delivers a notification this client didn't
+   * just add to the in-app list itself when sending it - either the daily
+   * check-in (the one local type genuinely scheduled ahead via a real
+   * TIME_INTERVAL trigger) or a real server-dispatched push (streak/
+   * inactivity/weekly/monthly - see notification-dispatch.service.ts on the
+   * API), which carries its own titleKey/bodyKey/bodyParams in `data` for
+   * exactly this. Every other local type already added its entry
+   * synchronously inside sendLocal, so this only runs for these two cases.
+   */
+  recordRemoteNotificationDelivered(data: Record<string, unknown> | undefined) {
+    const type = data?.type as NotificationType | undefined;
+    const titleKey = data?.titleKey as string | undefined;
+    const bodyKey = data?.bodyKey as string | undefined;
+    if (!type || !titleKey || !bodyKey) return;
+
+    addInAppNotification(type, titleKey, bodyKey, data?.bodyParams as Record<string, string | number> | undefined);
+  },
+
   async sendRecurringDueNotification(i18nFn: (key: string, params?: object) => string, count: number) {
     await sendLocal(
       'recurring_due',
@@ -106,6 +124,41 @@ export const notificationService = {
   async enablePush(i18nFn: (key: string) => string) {
     useNotificationsStore.getState().setPushNotificationsEnabled(true);
     await this.scheduleDailyCheckIn(i18nFn);
+  },
+
+  /**
+   * Registers this device for real server-dispatched push (streak/
+   * inactivity/weekly/monthly - see notification-dispatch.service.ts on the
+   * API) so those can reach the user even when the app is fully closed,
+   * unlike the rest of this file's local, app-open-only notifications.
+   * Best-effort: no permission, no EAS project id, or a network hiccup here
+   * should never block anything else the app is doing.
+   */
+  async registerForServerPush(language?: 'en' | 'ru') {
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') return;
+
+      const projectId = Constants.expoConfig?.extra?.eas?.projectId as string | undefined;
+      if (!projectId) return;
+
+      const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
+      await notificationsApi.registerPushToken({ token, language });
+    } catch {
+      // best-effort - local notifications still work regardless
+    }
+  },
+
+  async unregisterForServerPush() {
+    try {
+      const projectId = Constants.expoConfig?.extra?.eas?.projectId as string | undefined;
+      if (!projectId) return;
+
+      const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
+      await notificationsApi.unregisterPushToken({ token });
+    } catch {
+      // best-effort - logout should never be blocked by this
+    }
   },
 
   async requestPermissions(): Promise<boolean> {
@@ -144,7 +197,11 @@ export const notificationService = {
         title: i18nFn('notifications.dailyCheckinTitle'),
         body: i18nFn('notifications.dailyCheckinBody'),
         sound: true,
-        data: { type: 'daily_checkin' },
+        data: {
+          type: 'daily_checkin',
+          titleKey: 'notifications.dailyCheckinTitle',
+          bodyKey: 'notifications.dailyCheckinBody',
+        },
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
@@ -161,8 +218,18 @@ export const notificationService = {
 
   /**
    * Called after each transaction creation to update tracking data.
+   *
+   * The streak *push* used to be sent from right here, locally - it now
+   * comes from the server's daily dispatch job instead (see
+   * notification-dispatch.service.ts on the API), which is the only way a
+   * streak/inactivity/weekly/monthly notification can reach a closed app.
+   * currentStreak/lastTransactionDate are still tracked locally because
+   * other client-only features read them (the daily check-in scheduling
+   * below, and the guest-registration nudge in guest-register-modal.tsx) -
+   * only the redundant local push send was removed, to avoid the same
+   * milestone firing twice from two independently-cooldown'd systems.
    */
-  async onTransactionCreated(i18nFn: (key: string) => string) {
+  async onTransactionCreated() {
     const today = new Date().toISOString().slice(0, 10);
     const store = useNotificationsStore.getState();
     store.setLastTransactionDate(today);
@@ -170,29 +237,21 @@ export const notificationService = {
 
     // Cancel today's daily reminder — user already tracked
     await this.cancelDailyCheckIn();
-
-    // Streak milestone notification
-    const streak = useNotificationsStore.getState().currentStreak;
-    if (STREAK_MILESTONES.includes(streak) && !isOnCooldown('streak')) {
-      await sendLocal(
-        'streak',
-        i18nFn('notifications.streakTitle'),
-        i18nFn('notifications.streakBody').replace('{{days}}', String(streak)),
-        'notifications.streakTitle',
-        'notifications.streakBody',
-        { days: streak },
-      );
-    }
   },
 
   /**
-   * Called on app open — evaluates all rules and schedules/cancels notifications.
+   * Called on app open. Used to also fire the inactivity/weekly/monthly
+   * pushes locally - those are now the server's job (see
+   * notification-dispatch.service.ts on the API), since a local, app-open-
+   * only send can never reach a closed app in the first place, and running
+   * both would just double-send the same milestone under two independent
+   * cooldowns. This now only handles the daily check-in reminder, which
+   * stays a genuine local OS-scheduled trigger.
    */
   async syncOnAppOpen(i18nFn: (key: string, params?: object) => string) {
     const store = useNotificationsStore.getState();
     const lastTx = store.lastTransactionDate;
 
-    // Days since last transaction — null means user never tracked anything, skip inactivity
     const daysSinceTx = lastTx
       ? Math.floor((Date.now() - new Date(lastTx).getTime()) / 86400000)
       : null;
@@ -202,44 +261,6 @@ export const notificationService = {
       await this.cancelDailyCheckIn();
     } else {
       await this.scheduleDailyCheckIn(i18nFn);
-    }
-
-    // Inactivity re-engagement — only if user has tracked before AND hasn't for 2+ days
-    if (daysSinceTx !== null && daysSinceTx >= 2 && !isOnCooldown('inactivity')) {
-      const estimatedMissed = daysSinceTx * 3; // rough estimate
-      await sendLocal(
-        'inactivity',
-        i18nFn('notifications.inactivityTitle'),
-        i18nFn('notifications.inactivityBody').replace('{{days}}', String(daysSinceTx)),
-        'notifications.inactivityTitle',
-        'notifications.inactivityBody',
-        { days: daysSinceTx, estimated: estimatedMissed },
-      );
-    }
-
-    // Weekly summary — only on Sundays
-    const dayOfWeek = new Date().getDay();
-    if (dayOfWeek === 0 && !isOnCooldown('weekly_summary')) {
-      await sendLocal(
-        'weekly_summary',
-        i18nFn('notifications.weeklySummaryTitle'),
-        i18nFn('notifications.weeklySummaryBody'),
-        'notifications.weeklySummaryTitle',
-        'notifications.weeklySummaryBody',
-      );
-    }
-
-    // Monthly recap — last 3 days of month
-    const date = new Date();
-    const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-    if (date.getDate() >= lastDayOfMonth - 2 && !isOnCooldown('monthly_recap')) {
-      await sendLocal(
-        'monthly_recap',
-        i18nFn('notifications.monthlyRecapTitle'),
-        i18nFn('notifications.monthlyRecapBody'),
-        'notifications.monthlyRecapTitle',
-        'notifications.monthlyRecapBody',
-      );
     }
   },
 

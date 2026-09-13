@@ -16,6 +16,7 @@ export * from './icon-switch';
 export * from './input';
 export * from './numeric-keyboard';
 export * from './use-numeric-keyboard';
+export * from './numeric-input';
 export * from './separator';
 export * from './segmented-control';
 export * from './settings-header';

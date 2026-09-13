@@ -3,7 +3,8 @@ import { EditTransaction, EditTransactionRef } from '@/features/edit-transaction
 import { PeriodSelector } from '@/features/period-selector';
 import { TransactionSearch } from '@/features/transaction-search';
 import { TransactionsList } from '@/features/transactions-list';
-import { useHomeStore } from '@/shared/stores';
+import { WalletFilterSelector } from '@/features/wallet-filter';
+import { useHomeStore, useWalletFilterStore } from '@/shared/stores';
 import { Transaction } from '@/shared/types';
 import { getDateRangeForPeriod } from '@/shared/utils';
 import { colors } from '@/shared/theme';
@@ -30,6 +31,7 @@ export function HomeScreen() {
   const actionSheetRef = useRef<BottomSheetRef>(null);
   const queryClient = useQueryClient();
   const { periodType, currentDate, startDate, endDate, setDateRange } = useHomeStore();
+  const { selectedWalletId } = useWalletFilterStore();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -42,6 +44,12 @@ export function HomeScreen() {
   // Animated sticky header
   const scrollY = useSharedValue(0);
   const stickyThreshold = useSharedValue(300);
+  // Pins the sticky search bar visible while it has focus, regardless of
+  // scroll position - without this, filtering transactions shrinks the
+  // scrollable content, which can pull scrollY back under stickyThreshold
+  // and hide (pointerEvents: 'none') the exact search box the user is
+  // typing into.
+  const isStickySearchFocused = useSharedValue(false);
 
   const scrollHandler = useAnimatedScrollHandler((event) => {
     'worklet';
@@ -50,7 +58,7 @@ export function HomeScreen() {
 
   const stickyStyle = useAnimatedStyle(() => {
     'worklet';
-    const show = scrollY.value > stickyThreshold.value;
+    const show = scrollY.value > stickyThreshold.value || isStickySearchFocused.value;
     return {
       opacity: withTiming(show ? 1 : 0, { duration: 220 }),
       transform: [{ translateY: withTiming(show ? 0 : -56, { duration: 220 }) }],
@@ -142,7 +150,11 @@ export function HomeScreen() {
       <Animated.View style={[styles.stickyHeader, { top: insets.top }, stickyStyle]}>
         <View style={styles.stickyHeaderContent}>
           <PeriodSelector store="home" />
-          <TransactionSearch onSearchChange={handleSearchChange} />
+          <TransactionSearch
+            value={search}
+            onSearchChange={handleSearchChange}
+            onFocusChange={(focused) => { isStickySearchFocused.value = focused; }}
+          />
         </View>
       </Animated.View>
 
@@ -169,10 +181,13 @@ export function HomeScreen() {
           <AppHeader />
           <View style={styles.scrollableHeader}>
             <PeriodSelector store="home" />
-            <TransactionSearch onSearchChange={handleSearchChange} />
+            <TransactionSearch value={search} onSearchChange={handleSearchChange} />
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 }}>
+              <WalletFilterSelector />
+            </View>
           </View>
           <View style={styles.balanceSection}>
-            <BalanceView startDate={startDate} endDate={endDate} />
+            <BalanceView startDate={startDate} endDate={endDate} walletId={selectedWalletId} />
           </View>
         </View>
 
@@ -185,6 +200,7 @@ export function HomeScreen() {
             startDate={startDate}
             endDate={endDate}
             search={debouncedSearch}
+            walletId={selectedWalletId}
           />
         </View>
       </Animated.ScrollView>

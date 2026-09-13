@@ -49,6 +49,10 @@
     "income": "Доходы",
     "expenses": "Расходы"
   },
+  "walletFilter": {
+    "allWallets": "Все кошельки",
+    "title": "Фильтр по кошельку"
+  },
   "wallets": {
     "title": "Кошельки",
     "subtitle": "Управляйте картами и балансами",
@@ -188,6 +192,8 @@
     "limits": "Лимиты и использование",
     "pushNotifications": "Push-уведомления",
     "pushPermissionDenied": "Включите в настройках устройства",
+    "roundAmounts": "Целые числа",
+    "roundAmountsDesc": "Показывать суммы округлёнными до целых, без копеек",
     "supportAbout": "Поддержка и о приложении"
   },
   "limits": {
@@ -281,6 +287,8 @@
     "title": "Категории",
     "description": "Закрепите до 10 избранных для быстрого доступа при добавлении транзакций",
     "searchPlaceholder": "Поиск категорий...",
+    "defaultBadge": "По умолчанию",
+    "setDefault": "Сделать дефолтной",
     "expenses": "Расходы",
     "income": "Доходы",
     "favorites": "Избранные",
@@ -299,6 +307,8 @@
     "allCurrencies": "Все валюты",
     "main": "Основная",
     "setMain": "Сделать основной",
+    "defaultBadge": "По умолчанию",
+    "setDefault": "Сделать дефолтной",
     "noResults": "Нет результатов для «{{query}}»",
     "limitReached": "Лимит достигнут",
     "limitReachedDesc": "Максимум 5 избранных",

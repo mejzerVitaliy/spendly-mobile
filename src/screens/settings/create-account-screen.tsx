@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Button, Input, SettingsHeader } from '@/shared/ui';
 import { useAuthStore } from '@/shared/stores';
+import { ensureAccountLocalState } from '@/shared/hooks/auth/use-auth';
 import { authApi } from '@/shared/services/api/auth.api';
 import { useTranslation } from 'react-i18next';
 
@@ -39,6 +40,7 @@ export function CreateAccountScreen() {
       });
 
       const { user, accessToken, refreshToken } = response.data;
+      await ensureAccountLocalState(user.id);
       await setAuth(user, accessToken, refreshToken);
       router.back();
     } catch (error: any) {

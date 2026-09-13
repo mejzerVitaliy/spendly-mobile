@@ -49,6 +49,10 @@
     "income": "Income",
     "expenses": "Expenses"
   },
+  "walletFilter": {
+    "allWallets": "All Wallets",
+    "title": "Filter by Wallet"
+  },
   "wallets": {
     "title": "Wallets",
     "subtitle": "Manage your cards and balances",
@@ -188,6 +192,8 @@
     "limits": "Limits & Usage",
     "pushNotifications": "Push Notifications",
     "pushPermissionDenied": "Enable in device Settings to receive alerts",
+    "roundAmounts": "Whole Numbers",
+    "roundAmountsDesc": "Show amounts rounded to whole numbers, no cents",
     "supportAbout": "Support & About"
   },
   "limits": {
@@ -281,6 +287,8 @@
     "title": "Categories",
     "description": "Pin up to 10 favorites for quick access when adding transactions",
     "searchPlaceholder": "Search categories...",
+    "defaultBadge": "Default",
+    "setDefault": "Set Default",
     "expenses": "Expenses",
     "income": "Income",
     "favorites": "Favorites",
@@ -299,6 +307,8 @@
     "allCurrencies": "All Currencies",
     "main": "Main",
     "setMain": "Set Main",
+    "defaultBadge": "Default",
+    "setDefault": "Set Default",
     "noResults": "No results for \"{{query}}\"",
     "limitReached": "Limit reached",
     "limitReachedDesc": "Maximum 5 favorites allowed",

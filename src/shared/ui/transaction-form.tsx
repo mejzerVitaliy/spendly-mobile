@@ -88,6 +88,13 @@ export function TransactionForm({ mode, transactionId, initialValues, onSuccess 
   const { t } = useTranslation();
 
   const userMainCurrency = getMeQuery.data?.data?.mainCurrencyCode || 'USD';
+  // User-configured defaults (Settings > Categories/Currencies) - pre-fill
+  // new transactions with these unless an explicit initialValue overrides
+  // them (e.g. an AI-parsed preview that already found a specific category
+  // or currency in the text).
+  const defaultIncomeCategoryId = getMeQuery.data?.data?.defaultIncomeCategoryId ?? null;
+  const defaultExpenseCategoryId = getMeQuery.data?.data?.defaultExpenseCategoryId ?? null;
+  const defaultCurrencyCodePref = getMeQuery.data?.data?.defaultCurrencyCode ?? null;
 
   const { data: transactionData, isLoading: isLoadingTransaction, isError } =
     useGetTransactionById(mode === 'edit' && transactionId ? transactionId : '');
@@ -170,27 +177,43 @@ export function TransactionForm({ mode, transactionId, initialValues, onSuccess 
 
   useEffect(() => {
     if (mode === 'create') {
-      setValue('categoryId', '');
+      const fallback = transactionType === TransactionType.INCOME
+        ? defaultIncomeCategoryId
+        : defaultExpenseCategoryId;
+      setValue('categoryId', fallback ?? '');
     }
-  }, [transactionType, mode, setValue]);
+  }, [transactionType, mode, setValue, defaultIncomeCategoryId, defaultExpenseCategoryId]);
 
   const hasAppliedInitialValues = useRef(false);
   useEffect(() => {
-    if (mode !== 'create' || !initialValues || hasAppliedInitialValues.current) return;
+    if (mode !== 'create' || hasAppliedInitialValues.current) return;
     hasAppliedInitialValues.current = true;
 
-    if (initialValues.type !== undefined) setValue('type', initialValues.type);
-    if (initialValues.amount !== undefined) setValue('amount', initialValues.amount);
-    if (initialValues.date !== undefined) setValue('date', initialValues.date);
-    if (initialValues.currencyCode !== undefined) setValue('currencyCode', initialValues.currencyCode);
-    if (initialValues.walletId !== undefined) setValue('walletId', initialValues.walletId);
-    if (initialValues.fromWalletId !== undefined) setValue('fromWalletId', initialValues.fromWalletId);
-    if (initialValues.toWalletId !== undefined) setValue('toWalletId', initialValues.toWalletId);
-    if (initialValues.description !== undefined) setValue('description', initialValues.description);
-    // Apply categoryId after type-change effects have fired to avoid being cleared
-    if (initialValues.categoryId !== undefined) {
-      const id = initialValues.categoryId;
-      setTimeout(() => setValue('categoryId', id), 0);
+    if (initialValues?.type !== undefined) setValue('type', initialValues.type);
+    if (initialValues?.amount !== undefined) setValue('amount', initialValues.amount);
+    if (initialValues?.date !== undefined) setValue('date', initialValues.date);
+    if (initialValues?.walletId !== undefined) setValue('walletId', initialValues.walletId);
+    if (initialValues?.fromWalletId !== undefined) setValue('fromWalletId', initialValues.fromWalletId);
+    if (initialValues?.toWalletId !== undefined) setValue('toWalletId', initialValues.toWalletId);
+    if (initialValues?.description !== undefined) setValue('description', initialValues.description);
+
+    // An explicit initial currency (e.g. AI found one in the parsed text)
+    // wins; otherwise fall back to the user's configured default currency.
+    const currencyCode = initialValues?.currencyCode ?? defaultCurrencyCodePref;
+    if (currencyCode) setValue('currencyCode', currencyCode);
+
+    // Apply categoryId after type-change effects have fired to avoid being
+    // cleared - same precedence as currency: explicit initial value wins,
+    // otherwise fall back to the type-appropriate default (which the
+    // type-change effect above already applied, but re-apply here in case
+    // initialValues.type changed the effective type after that effect ran).
+    const effectiveType = initialValues?.type ?? transactionType;
+    const categoryFallback = effectiveType === TransactionType.INCOME
+      ? defaultIncomeCategoryId
+      : defaultExpenseCategoryId;
+    const categoryId = initialValues?.categoryId ?? categoryFallback;
+    if (categoryId) {
+      setTimeout(() => setValue('categoryId', categoryId), 0);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

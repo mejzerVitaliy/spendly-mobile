@@ -9,6 +9,7 @@ import * as Haptics from 'expo-haptics';
 import { BottomSheetView } from '@gorhom/bottom-sheet';
 import { useWallets, useOfflineGuard } from '@/shared/hooks';
 import { WalletDto } from '@/shared/types';
+import { useDisplayPreferencesStore } from '@/shared/stores';
 import { formatCompact } from '@/shared/utils';
 import Toast from 'react-native-toast-message';
 import { CreateWalletModal, EditWalletModal } from './components';
@@ -110,6 +111,7 @@ function WalletActionSheet({
 
 export function WalletsScreen() {
   const { t } = useTranslation();
+  const { roundAmounts } = useDisplayPreferencesStore();
   const { guard } = useOfflineGuard();
   const [showArchived, setShowArchived] = useState(false);
   const {
@@ -210,7 +212,7 @@ export function WalletsScreen() {
             <View className='p-6 h-full flex justify-center'>
               <Text style={styles.heroLabel}>{t('wallets.totalBalance')}</Text>
               <Text style={styles.heroAmount}>
-                {formatCompact(displayBalance)}{' '}
+                {formatCompact(displayBalance, roundAmounts)}{' '}
                 <Text style={styles.heroCurrency}>{mainCurrency}</Text>
               </Text>
               <Text style={styles.heroMeta}>

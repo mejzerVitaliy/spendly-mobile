@@ -1,4 +1,4 @@
-import { useCategories } from '@/shared/hooks';
+import { useAuth, useCategories, useProfile } from '@/shared/hooks';
 import { CategoryDto } from '@/shared/types';
 import { getCategoryName } from '@/shared/utils';
 import { SegmentedControl, SettingsHeader } from '@/shared/ui';
@@ -20,6 +20,8 @@ import { useTranslation } from 'react-i18next';
 
 export function CategoriesScreen() {
   const { getAllQuery, getFavoritesQuery, updateFavoritesMutation } = useCategories();
+  const { getMeQuery } = useAuth();
+  const { updateSettingsMutation } = useProfile();
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'EXPENSE' | 'INCOME'>('EXPENSE');
@@ -54,6 +56,20 @@ export function CategoriesScreen() {
       return a.order - b.order;
     });
   }, [getAllQuery.data, search, selectedIds, activeTab]);
+
+  const defaultCategoryId = activeTab === 'EXPENSE'
+    ? getMeQuery.data?.data?.defaultExpenseCategoryId ?? null
+    : getMeQuery.data?.data?.defaultIncomeCategoryId ?? null;
+
+  const handleSetDefault = async (categoryId: string) => {
+    const nextId = categoryId === defaultCategoryId ? null : categoryId;
+    const field = activeTab === 'EXPENSE' ? 'defaultExpenseCategoryId' : 'defaultIncomeCategoryId';
+    try {
+      await updateSettingsMutation.mutateAsync({ [field]: nextId });
+    } catch (e: any) {
+      Toast.show({ type: 'error', text1: t('common.error'), text2: e?.response?.data?.message || t('categories.failedUpdate') });
+    }
+  };
 
   const toggleFavorite = async (categoryId: string) => {
     const wasSelected = selectedIds.includes(categoryId);
@@ -208,9 +224,13 @@ export function CategoriesScreen() {
                       key={category.id}
                       category={category}
                       selected={selectedIds.includes(category.id)}
+                      isDefault={category.id === defaultCategoryId}
                       onPress={() => toggleFavorite(category.id)}
-                      disabled={updateFavoritesMutation.isPending}
+                      onToggleDefault={() => handleSetDefault(category.id)}
+                      disabled={updateFavoritesMutation.isPending || updateSettingsMutation.isPending}
                       showSeparator={index < filteredCategories.length - 1}
+                      defaultLabel={t('categories.defaultBadge')}
+                      setDefaultLabel={t('categories.setDefault')}
                     />
                   ))}
                 </View>
@@ -228,12 +248,26 @@ export function CategoriesScreen() {
 interface CategoryRowProps {
   category: CategoryDto;
   selected: boolean;
+  isDefault: boolean;
   onPress: () => void;
+  onToggleDefault: () => void;
   disabled: boolean;
   showSeparator: boolean;
+  defaultLabel: string;
+  setDefaultLabel: string;
 }
 
-function CategoryRow({ category, selected, onPress, disabled, showSeparator }: CategoryRowProps) {
+function CategoryRow({
+  category,
+  selected,
+  isDefault,
+  onPress,
+  onToggleDefault,
+  disabled,
+  showSeparator,
+  defaultLabel,
+  setDefaultLabel,
+}: CategoryRowProps) {
   const { i18n } = useTranslation();
   return (
     <>
@@ -260,9 +294,29 @@ function CategoryRow({ category, selected, onPress, disabled, showSeparator }: C
         <Text
           className="flex-1 text-[15px] font-semibold"
           style={{ color: selected ? colors.foreground : colors.secondaryForeground }}
+          numberOfLines={1}
         >
           {getCategoryName(category, i18n.language)}
         </Text>
+
+        <Pressable
+          onPress={(e) => { e.stopPropagation(); onToggleDefault(); }}
+          disabled={disabled}
+          hitSlop={8}
+          className="px-2.5 py-1 rounded-full mr-2 active:opacity-60"
+          style={{
+            backgroundColor: isDefault ? 'rgba(34,197,94,0.15)' : colors.glass.background,
+            borderWidth: 1,
+            borderColor: isDefault ? 'rgba(34,197,94,0.3)' : colors.glass.border,
+          }}
+        >
+          <Text
+            className="text-[10px] font-bold"
+            style={{ color: isDefault ? colors.success : colors.mutedForeground }}
+          >
+            {isDefault ? defaultLabel : setDefaultLabel}
+          </Text>
+        </Pressable>
 
         {selected ? (
           <View

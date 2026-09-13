@@ -1,6 +1,6 @@
 import { insightsApi } from '@/shared/services/api';
 import { useReports, useAiUsage } from '@/shared/hooks';
-import { useAiInsightsStore } from '@/shared/stores';
+import { useAiInsightsStore, useDisplayPreferencesStore } from '@/shared/stores';
 import { formatCompact } from '@/shared/utils';
 import { colors } from '@/shared/theme';
 import { TransactionType } from '@/shared/constants';
@@ -54,6 +54,7 @@ function useRuleInsights(
   trendData: ReturnType<typeof useReports>['getCashFlowTrend']['data'],
 ): RuleInsight[] {
   const { t } = useTranslation();
+  const { roundAmounts } = useDisplayPreferencesStore();
 
   return useMemo(() => {
     const s = summary?.data;
@@ -84,7 +85,7 @@ function useRuleInsights(
         severity: 'success',
         title: t('insights.rules.positiveCashFlow.title'),
         description: t('insights.rules.positiveCashFlow.desc', {
-          amount: formatCompact(absChange),
+          amount: formatCompact(absChange, roundAmounts),
           currency,
         }),
       });
@@ -95,7 +96,7 @@ function useRuleInsights(
         severity: 'danger',
         title: t('insights.rules.negativeCashFlow.title'),
         description: t('insights.rules.negativeCashFlow.desc', {
-          amount: formatCompact(absChange),
+          amount: formatCompact(absChange, roundAmounts),
           currency,
         }),
       });
@@ -184,7 +185,7 @@ function useRuleInsights(
           title: t('insights.rules.spendingPeak.title'),
           description: t('insights.rules.spendingPeak.desc', {
             date: peak.label,
-            amount: formatCompact(peak.value),
+            amount: formatCompact(peak.value, roundAmounts),
             currency: trend.currencyCode,
           }),
         });
@@ -212,7 +213,7 @@ function useRuleInsights(
     }
 
     return insights;
-  }, [summary, categoryData, trendData, t]);
+  }, [summary, categoryData, trendData, t, roundAmounts]);
 }
 
 // ─── Skeleton card ────────────────────────────────────────────────────────────

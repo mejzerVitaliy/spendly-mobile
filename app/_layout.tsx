@@ -81,10 +81,19 @@ function RootNavigator() {
   const { t } = useTranslation();
 
   const { isAuthenticated, isLoading, initializeAuth, user } = useAuthStore();
-  useLanguageStore();
+  const { language } = useLanguageStore();
   const { sync: syncRecurring } = useRecurringSync();
   const isGuest = user?.type === 'GUEST';
   const { getSummary } = useReports({ enabled: isAuthenticated && isGuest });
+
+  const routerRef = useRef(router);
+  routerRef.current = router;
+  const tRef = useRef(t);
+  tRef.current = t;
+  const syncRecurringRef = useRef(syncRecurring);
+  syncRecurringRef.current = syncRecurring;
+  const languageRef = useRef(language);
+  languageRef.current = language;
 
   useEffect(() => {
     setIsMounted(true);
@@ -100,30 +109,31 @@ function RootNavigator() {
     init();
   }, [initializeAuth]);
 
-  // Initialize notifications after auth is resolved
+  // Notification tap handling is independent of auth state (a stray
+  // already-scheduled local notification could be tapped while logged out)
+  // and only needs to register once - kept in its own effect, with router
+  // read from a ref, so it doesn't re-subscribe on every navigation.
   useEffect(() => {
-    if (isLoading || !isMounted) return;
-
-    notificationService.requestPermissions().then(() => {
-      notificationService.syncOnAppOpen(t as any);
+    notificationListener.current = Notifications.addNotificationReceivedListener((event) => {
+      // Only the daily check-in (real local OS trigger) and real
+      // server-dispatched pushes (streak/inactivity/weekly/monthly) arrive
+      // here without already having an in-app entry - see
+      // recordRemoteNotificationDelivered for why. It no-ops for anything
+      // else (missing titleKey/bodyKey), so this is safe to call
+      // unconditionally.
+      notificationService.recordRemoteNotificationDelivered(
+        event.request.content.data as Record<string, unknown> | undefined,
+      );
     });
 
-    if (isAuthenticated) {
-      syncRecurring();
-    }
-
-    // Handle notification tap when app is in foreground
-    notificationListener.current = Notifications.addNotificationReceivedListener(() => {});
-
-    // Handle tap on notification (opens app or brings to foreground)
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
       const type = response.notification.request.content.data?.type;
       if (type === 'weekly_summary' || type === 'monthly_recap' || type === 'spending_trend' || type === 'category_insight') {
-        router.push('/(tabs)/analytics' as any);
+        routerRef.current.push('/(tabs)/analytics' as any);
       } else if (type === 'guest_data_risk') {
-        router.push('/settings/create-account' as any);
+        routerRef.current.push('/settings/create-account' as any);
       } else {
-        router.push('/notifications' as any);
+        routerRef.current.push('/notifications' as any);
       }
     });
 
@@ -131,7 +141,25 @@ function RootNavigator() {
       notificationListener.current?.remove();
       responseListener.current?.remove();
     };
-  }, [isLoading, isMounted, t, router]);
+  }, []);
+
+  // Evaluate/schedule notifications and sync recurring transactions only once
+  // auth has actually resolved to a logged-in user - this used to run
+  // regardless of auth state (firing during onboarding/logout) and re-ran on
+  // every `t`/`router` reference change (e.g. the language reset that
+  // happens on logout), which is what caused notification bursts right after
+  // logging out. t/syncRecurring are read from refs so a language change
+  // doesn't re-trigger this effect while still using fresh values inside it.
+  useEffect(() => {
+    if (isLoading || !isMounted || !isAuthenticated) return;
+
+    notificationService.requestPermissions().then(() => {
+      notificationService.syncOnAppOpen(tRef.current as any);
+      notificationService.registerForServerPush(languageRef.current as 'en' | 'ru');
+    });
+
+    syncRecurringRef.current();
+  }, [isLoading, isMounted, isAuthenticated]);
 
   // Tier 3 of the guest-registration nudge - once the guest's all-time
   // transaction count is known, maybe warn them their data is device-only.
@@ -174,25 +202,38 @@ function RootNavigator() {
     TextInputWithDefaults.defaultProps.maxFontSizeMultiplier = 1;
   }, []);
 
+  // Computed during render (not inside the effect below) so the redirect
+  // check below can use it to skip rendering the Stack for the one frame
+  // before the effect actually fires the navigation - router.replace() is a
+  // side effect and has to happen in an effect, but knowing a redirect is
+  // needed doesn't, and gating render on it is what actually avoids the
+  // flash of the wrong route (e.g. onboarding briefly showing for an
+  // already-authenticated user before the effect below replaces it).
+  const inAuthGroup = segments[0] === '(auth)';
+  const inOnboarding = (segments[0] as string) === '(onboarding)';
+  const inPasswordReset = inAuthGroup && (segments[1] === 'forgot-password' || segments[1] === 'reset-password');
+  const needsOnboardingRedirect = !isAuthenticated && !inAuthGroup && !inOnboarding;
+  const needsTabsRedirect = isAuthenticated && !inPasswordReset && (inAuthGroup || inOnboarding || segments[0] === undefined);
+
   useEffect(() => {
     if (!isMounted || isLoading) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
-    const inOnboarding = (segments[0] as string) === '(onboarding)';
-    const inPasswordReset = inAuthGroup && (segments[1] === 'forgot-password' || segments[1] === 'reset-password');
-
-    if (!isAuthenticated && !inAuthGroup && !inOnboarding) {
+    if (needsOnboardingRedirect) {
       router.replace('/(onboarding)' as any);
-    } else if (isAuthenticated && !inPasswordReset && (inAuthGroup || inOnboarding || segments[0] === undefined)) {
+    } else if (needsTabsRedirect) {
       router.replace('/(tabs)' as any);
     }
-  }, [isMounted, isAuthenticated, segments, isLoading, router]);
+  }, [isMounted, isLoading, needsOnboardingRedirect, needsTabsRedirect, router]);
 
   if (!splashDone) {
     return <AnimatedSplash onFinish={() => setSplashDone(true)} />;
   }
 
   if (isLoading || !fontsLoaded) {
+    return null;
+  }
+
+  if (isMounted && (needsOnboardingRedirect || needsTabsRedirect)) {
     return null;
   }
 

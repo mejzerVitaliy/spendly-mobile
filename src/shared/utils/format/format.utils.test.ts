@@ -28,4 +28,14 @@ describe('formatCompact', () => {
   it('handles zero', () => {
     expect(formatCompact(0)).toBe('0.00');
   });
+
+  it('rounds small amounts to a whole number when roundToWhole is set', () => {
+    expect(formatCompact(12345, true)).toBe('123');
+    expect(formatCompact(12399, true)).toBe('124');
+  });
+
+  it('drops the compact-suffix decimal when roundToWhole is set', () => {
+    expect(formatCompact(150_000, true)).toBe('2K');
+    expect(formatCompact(2_500_000_00, true)).toBe('3M');
+  });
 });

@@ -14,6 +14,7 @@ interface GetAllTransactionsParams {
   startDate?: string;
   endDate?: string;
   search?: string;
+  walletId?: string;
 }
 
 const getAll = async (params?: GetAllTransactionsParams): Promise<GetAllTransactionsResponse> => {
