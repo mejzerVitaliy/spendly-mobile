@@ -3,7 +3,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { tokenStorage } from '../storage';
 import { getIsOnline } from '@/shared/lib/network-state';
 import Toast from 'react-native-toast-message';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { router } from 'expo-router';
 import i18n from '@/shared/i18n';
 
@@ -14,6 +14,7 @@ const apiClient = axios.create({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    'X-Platform': Platform.OS,
   },
 });
 

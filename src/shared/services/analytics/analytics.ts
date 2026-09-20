@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { Platform } from 'react-native';
 import { ENV } from '@/shared/constants/config';
 import { tokenStorage } from '@/shared/services/storage';
 
@@ -35,7 +36,10 @@ const sendBatch = async (batch: QueuedEvent[]) => {
   // anonymous event if there's none) - it never trusts a client-claimed
   // userId in the body, so there's no point sending one.
   const token = await tokenStorage.getAccessToken();
-  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+  const headers: Record<string, string> = {
+    'X-Platform': Platform.OS,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
 
   await Promise.all(
     batch.map((item) =>
