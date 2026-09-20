@@ -1,5 +1,6 @@
 import { transactionsApi } from "@/shared/services/api";
 import { notificationService } from "@/shared/services/notifications";
+import { reviewPromptService } from "@/shared/services/review-prompt";
 import { CreateTransactionRequest, CreateTransferRequest, ParsedTransactionPreview, UpdateTransactionRequest, UpdateTransferRequest } from "@/shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -27,6 +28,15 @@ const invalidateAll = (queryClient: ReturnType<typeof useQueryClient>) => {
 const invalidateUsage = (queryClient: ReturnType<typeof useQueryClient>) =>
   queryClient.invalidateQueries({ queryKey: ['usage'], exact: false, refetchType: 'all' })
 
+// Shared by every path that successfully adds a transaction to the user's
+// data (manual, transfer, AI text/voice via createFromPreviewMutation below)
+// - streak tracking and the native review-prompt check both belong on every
+// one of those, not just the manual-entry form they originally shipped with.
+const onTransactionSuccess = () => {
+  notificationService.onTransactionCreated()
+  reviewPromptService.maybePromptForReview()
+}
+
 const useTransactions = () => {
   const queryClient = useQueryClient()
 
@@ -35,7 +45,7 @@ const useTransactions = () => {
     mutationFn: (request: CreateTransactionRequest) => transactionsApi.create(request),
     onSuccess: async () => {
       await invalidateAll(queryClient)
-      notificationService.onTransactionCreated()
+      onTransactionSuccess()
     },
   })
 
@@ -61,6 +71,7 @@ const useTransactions = () => {
     mutationFn: (request: CreateTransferRequest) => transactionsApi.createTransfer(request),
     onSuccess: async () => {
       await invalidateAll(queryClient)
+      onTransactionSuccess()
     },
   })
 
@@ -78,7 +89,7 @@ const useTransactions = () => {
     mutationFn: (text: string) => transactionsApi.parseText({ text }),
     onSuccess: async () => {
       await Promise.all([invalidateAll(queryClient), invalidateUsage(queryClient)])
-      notificationService.onTransactionCreated()
+      onTransactionSuccess()
     },
   })
 
@@ -87,7 +98,7 @@ const useTransactions = () => {
     mutationFn: (audioUri: string) => transactionsApi.parseVoice(audioUri),
     onSuccess: async () => {
       await Promise.all([invalidateAll(queryClient), invalidateUsage(queryClient)])
-      notificationService.onTransactionCreated()
+      onTransactionSuccess()
     },
   })
 
@@ -141,6 +152,11 @@ const useTransactions = () => {
     },
     onSuccess: async () => {
       await invalidateAll(queryClient)
+      // This is the actual creation step for both AI text and AI voice
+      // entry (they preview first, then confirm through here) - it was
+      // missing this call entirely, so streak tracking and the review
+      // prompt silently never fired for either AI path.
+      onTransactionSuccess()
     },
   })
 
