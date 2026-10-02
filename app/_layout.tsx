@@ -88,8 +88,6 @@ function RootNavigator() {
 
   const routerRef = useRef(router);
   routerRef.current = router;
-  const tRef = useRef(t);
-  tRef.current = t;
   const syncRecurringRef = useRef(syncRecurring);
   syncRecurringRef.current = syncRecurring;
   const languageRef = useRef(language);
@@ -148,14 +146,15 @@ function RootNavigator() {
   // regardless of auth state (firing during onboarding/logout) and re-ran on
   // every `t`/`router` reference change (e.g. the language reset that
   // happens on logout), which is what caused notification bursts right after
-  // logging out. t/syncRecurring are read from refs so a language change
-  // doesn't re-trigger this effect while still using fresh values inside it.
+  // logging out. syncRecurring/language are read from refs so a language
+  // change doesn't re-trigger this effect while still using fresh values
+  // inside it.
   useEffect(() => {
     if (isLoading || !isMounted || !isAuthenticated) return;
 
     notificationService.requestPermissions().then(() => {
-      notificationService.syncOnAppOpen(tRef.current as any);
       notificationService.registerForServerPush(languageRef.current as 'en' | 'ru');
+      notificationService.syncNotificationHistory();
     });
 
     syncRecurringRef.current();

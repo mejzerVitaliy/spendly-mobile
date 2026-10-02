@@ -14,11 +14,14 @@ Notifications.setNotificationHandler({
   }),
 });
 
-// weekly_summary/monthly_recap/streak/inactivity used to have entries here
-// too, but this client no longer sends those itself (see syncOnAppOpen) -
-// the server's own, separate cooldown table now owns them.
+// weekly_summary/monthly_recap/streak/inactivity/daily_checkin used to have
+// entries here too, but this client no longer sends any of those itself -
+// the server's own, separate cooldown table now owns them (daily_checkin,
+// the "remind me to log a transaction" push, moved server-side because a
+// local schedule only ever re-armed itself when the user reopened the app,
+// so it silently stopped firing at all for anyone who went quiet - see
+// notification-dispatch.service.ts dispatchDueReminders on the API).
 const COOLDOWN_HOURS: Record<string, number> = {
-  daily_checkin: 20,
   spending_trend: 5 * 24,
   category_insight: 5 * 24,
   no_income: 7 * 24,
@@ -63,7 +66,6 @@ async function sendLocal(
   titleKey: string,
   bodyKey: string,
   bodyParams?: Record<string, string | number>,
-  scheduleSeconds?: number,
 ) {
   if (isOnCooldown(type)) return;
   recordCooldown(type);
@@ -72,29 +74,27 @@ async function sendLocal(
 
   if (!isPushAllowed()) return;
 
-  if (scheduleSeconds && scheduleSeconds > 0) {
-    await Notifications.scheduleNotificationAsync({
-      content: { title, body, sound: true, data: { type } },
-      trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: scheduleSeconds },
-    });
-  } else {
-    await Notifications.scheduleNotificationAsync({
-      content: { title, body, sound: true, data: { type } },
-      trigger: null,
-    });
-  }
+  // Every remaining local type fires immediately (trigger: null) - nothing
+  // left here schedules ahead of time (the one that did, the daily
+  // check-in reminder, is now a server-dispatched push instead).
+  await Notifications.scheduleNotificationAsync({
+    content: { title, body, sound: true, data: { type } },
+    trigger: null,
+  });
 }
 
 export const notificationService = {
   /**
    * Called when the OS actually delivers a notification this client didn't
-   * just add to the in-app list itself when sending it - either the daily
-   * check-in (the one local type genuinely scheduled ahead via a real
-   * TIME_INTERVAL trigger) or a real server-dispatched push (streak/
-   * inactivity/weekly/monthly - see notification-dispatch.service.ts on the
-   * API), which carries its own titleKey/bodyKey/bodyParams in `data` for
-   * exactly this. Every other local type already added its entry
-   * synchronously inside sendLocal, so this only runs for these two cases.
+   * just add to the in-app list itself when sending it - i.e. a real
+   * server-dispatched push (reminder/streak/inactivity/weekly/monthly -
+   * see notification-dispatch.service.ts on the API), which carries its
+   * own titleKey/bodyKey/bodyParams in `data` for exactly this. Only
+   * covers the case where the app was open (foreground/background with
+   * the JS runtime alive) when it arrived - syncNotificationHistory below
+   * is what backfills one that arrived while fully closed. Every local
+   * type already added its entry synchronously inside sendLocal, so this
+   * only ever runs for server-dispatched ones.
    */
   recordRemoteNotificationDelivered(data: Record<string, unknown> | undefined) {
     const type = data?.type as NotificationType | undefined;
@@ -121,9 +121,8 @@ export const notificationService = {
     await Notifications.cancelAllScheduledNotificationsAsync();
   },
 
-  async enablePush(i18nFn: (key: string) => string) {
+  async enablePush() {
     useNotificationsStore.getState().setPushNotificationsEnabled(true);
-    await this.scheduleDailyCheckIn(i18nFn);
   },
 
   /**
@@ -178,98 +177,51 @@ export const notificationService = {
   },
 
   /**
-   * Schedule the daily check-in push for 20:00 today (or tomorrow if already past).
-   * Cancelled on next sync if user already tracked today.
-   */
-  async scheduleDailyCheckIn(i18nFn: (key: string) => string) {
-    await Notifications.cancelAllScheduledNotificationsAsync();
-
-    const now = new Date();
-    const fire = new Date(now);
-    fire.setHours(20, 0, 0, 0);
-    if (fire <= now) fire.setDate(fire.getDate() + 1);
-    const seconds = Math.round((fire.getTime() - now.getTime()) / 1000);
-
-    if (!isPushAllowed()) return;
-
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: i18nFn('notifications.dailyCheckinTitle'),
-        body: i18nFn('notifications.dailyCheckinBody'),
-        sound: true,
-        data: {
-          type: 'daily_checkin',
-          titleKey: 'notifications.dailyCheckinTitle',
-          bodyKey: 'notifications.dailyCheckinBody',
-        },
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-        seconds,
-        repeats: false,
-      },
-    });
-  },
-
-  async cancelDailyCheckIn() {
-    // Cancel all and re-schedule for tomorrow (user already tracked today)
-    await Notifications.cancelAllScheduledNotificationsAsync();
-  },
-
-  /**
    * Called after each transaction creation to update tracking data.
    *
-   * The streak *push* used to be sent from right here, locally - it now
-   * comes from the server's daily dispatch job instead (see
-   * notification-dispatch.service.ts on the API), which is the only way a
-   * streak/inactivity/weekly/monthly notification can reach a closed app.
-   * currentStreak/lastTransactionDate are still tracked locally because
-   * other client-only features read them (the daily check-in scheduling
-   * below, and the guest-registration nudge in guest-register-modal.tsx) -
-   * only the redundant local push send was removed, to avoid the same
-   * milestone firing twice from two independently-cooldown'd systems.
+   * The streak *push* (and, as of the server-side reminder, the "don't
+   * forget to log a transaction" push too) used to be sent from right here,
+   * locally - both now come from the server's dispatch job instead (see
+   * notification-dispatch.service.ts on the API), which is the only way
+   * either can reach a closed app. The local, app-open-triggered daily
+   * check-in used to re-arm itself here on every create, which is exactly
+   * what made it silently stop firing at all once someone went a while
+   * without opening the app - the server dispatch instead just checks "did
+   * this user log something today" fresh on every run, independent of
+   * whether the app has been opened recently. currentStreak/
+   * lastTransactionDate are still tracked locally because other
+   * client-only features read them (the guest-registration nudge in
+   * guest-register-modal.tsx).
    */
   async onTransactionCreated() {
     const today = new Date().toISOString().slice(0, 10);
     const store = useNotificationsStore.getState();
     store.setLastTransactionDate(today);
     store.updateStreak(today);
-
-    // Cancel today's daily reminder — user already tracked
-    await this.cancelDailyCheckIn();
   },
 
   /**
-   * Called on app open. Used to also fire the inactivity/weekly/monthly
-   * pushes locally - those are now the server's job (see
-   * notification-dispatch.service.ts on the API), since a local, app-open-
-   * only send can never reach a closed app in the first place, and running
-   * both would just double-send the same milestone under two independent
-   * cooldowns. This now only handles the daily check-in reminder, which
-   * stays a genuine local OS-scheduled trigger.
+   * Backfills the in-app notification list with anything the server
+   * actually dispatched (reminder/streak/inactivity/weekly/monthly) that
+   * this client's own addNotificationReceivedListener never saw -  that
+   * listener only fires while the JS runtime is alive, so a push delivered
+   * while the app was fully closed shows as a system banner but was
+   * previously never recorded in-app. Call on app open, after permissions/
+   * push registration resolve.
    */
-  async syncOnAppOpen(i18nFn: (key: string, params?: object) => string) {
-    const store = useNotificationsStore.getState();
-    const lastTx = store.lastTransactionDate;
-
-    const daysSinceTx = lastTx
-      ? Math.floor((Date.now() - new Date(lastTx).getTime()) / 86400000)
-      : null;
-
-    // If user tracked today, cancel daily reminder; otherwise schedule it
-    if (daysSinceTx === 0) {
-      await this.cancelDailyCheckIn();
-    } else {
-      await this.scheduleDailyCheckIn(i18nFn);
+  async syncNotificationHistory() {
+    try {
+      const { data } = await notificationsApi.getHistory();
+      useNotificationsStore.getState().mergeServerNotifications(data);
+    } catch {
+      // best-effort - the live listener still covers same-session pushes
     }
   },
 
   /**
    * Tier 3 of the guest-registration nudge: a push warning a guest that
-   * their data lives only on this device. Called on app open, separately
-   * from syncOnAppOpen, so it can be gated on guest status + transaction
-   * count (context syncOnAppOpen doesn't have) without touching that
-   * method's signature.
+   * their data lives only on this device. Called on app open, gated on
+   * guest status + transaction count.
    */
   async maybeSendGuestDataRiskNotification(
     i18nFn: (key: string, params?: object) => string,

@@ -10,3 +10,4 @@ export { useNetworkStatus } from './use-network-status';
 export { useOfflineGuard } from './use-offline-guard';
 export { useAiUsage } from './use-ai-usage';
 export { useRecurringSync } from './use-recurring-sync';
+export { useReminderSettings } from './use-reminder-settings';
