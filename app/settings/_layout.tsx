@@ -12,6 +12,7 @@ export default function SettingsLayout() {
       <Stack.Screen name="currencies" />
       <Stack.Screen name="support-about" />
       <Stack.Screen name="language" />
+      <Stack.Screen name="reminder" />
     </Stack>
   );
 }

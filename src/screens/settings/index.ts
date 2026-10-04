@@ -3,3 +3,4 @@ export * from './account-screen';
 export * from './currencies-screen';
 export * from './support-about-screen';
 export * from './limits-screen';
+export * from './reminder-settings-screen';

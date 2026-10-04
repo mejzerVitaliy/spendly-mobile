@@ -17,7 +17,7 @@ export function SettingsScreen() {
 
   const handlePushToggle = (value: boolean) => {
     if (value) {
-      notificationService.enablePush(t as any);
+      notificationService.enablePush();
     } else {
       notificationService.disablePush();
     }
@@ -60,6 +60,12 @@ export function SettingsScreen() {
             title={t('settings.limits')}
             icon="speedometer-outline"
             onPress={() => router.push('/settings/limits' as any)}
+          />
+
+          <SettingsItem
+            title={t('settings.transactionReminder')}
+            icon="alarm-outline"
+            onPress={() => router.push('/settings/reminder' as any)}
           />
 
           {/* Push notifications toggle */}

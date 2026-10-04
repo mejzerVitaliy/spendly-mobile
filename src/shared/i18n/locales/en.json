@@ -194,7 +194,18 @@
     "pushPermissionDenied": "Enable in device Settings to receive alerts",
     "showFullAmounts": "Full Amounts",
     "showFullAmountsDesc": "Show exact amounts instead of rounded (e.g. 10450.32 instead of 10.4K)",
-    "supportAbout": "Support & About"
+    "supportAbout": "Support & About",
+    "transactionReminder": "Transaction Reminder"
+  },
+  "reminderSettings": {
+    "title": "Transaction Reminder",
+    "subtitle": "Get a nudge if you haven't logged anything by the time you choose - we'll skip it on days you already did.",
+    "enable": "Remind me",
+    "enableDesc": "Off by default - turn on and pick a time below",
+    "time": "Reminder time",
+    "saved": "Saved",
+    "savedDesc": "We'll remind you at {{time}} on days you haven't logged anything",
+    "saveFailed": "Couldn't save your reminder settings"
   },
   "limits": {
     "title": "Limits & Usage",
